@@ -30,7 +30,9 @@
   --radius-base: 8px;
   --radius-image: calc(var(--radius-base) * 1.25); /* 10px */
 
-  /* Type scale. UI base 0.9375rem (15px) with a 1.2 ratio; case prose 1.0625rem (17px). */
+  /* Type scale, taken from the prototype. Fixed steps: label 0.75rem, small 0.8125rem,
+     UI base 0.9375rem (15px), case prose 1.0625rem (17px). Fluid clamp() steps above
+     that: lead, heading (24-30px), display. */
   --text-label: 0.75rem;
   --text-label--line-height: 1.4;
   --text-small: 0.8125rem;
