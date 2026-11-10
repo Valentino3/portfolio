@@ -12,6 +12,16 @@ test('back to top moves focus to the header', async ({ page }) => {
   await expect(page.locator('#top')).toBeFocused();
 });
 
+test.describe('without JavaScript', () => {
+  test.use({ javaScriptEnabled: false });
+
+  test('back to top still moves focus to the header', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('link', { name: /Back to top/ }).click();
+    await expect(page.locator('#top')).toBeFocused();
+  });
+});
+
 test('external links announce new tab', async ({ page }) => {
   await page.goto('/');
   const links = await page.locator('a[target=_blank]').all();

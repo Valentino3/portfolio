@@ -51,12 +51,14 @@
   --spacing-footer-top: clamp(4rem, 7vw, 6.25rem);
 
   /* Type scale, taken from the prototype. Fixed steps: label 0.75rem, small 0.8125rem,
-     UI base 0.9375rem (15px), case prose 1.0625rem (17px). Fluid clamp() steps above
-     that: lead, heading (24-30px), display. */
+     UI small 0.875rem (14px, header), UI base 0.9375rem (15px), case prose 1.0625rem
+     (17px). Fluid clamp() steps above that: lead, heading (24-30px), display. */
   --text-label: 0.75rem;
   --text-label--line-height: 1.4;
   --text-small: 0.8125rem;
   --text-small--line-height: 1.5;
+  --text-ui-sm: 0.875rem;
+  --text-ui-sm--line-height: 1.55;
   --text-ui: 0.9375rem;
   --text-ui--line-height: 1.55;
   --text-prose: 1.0625rem;

@@ -1,6 +1,6 @@
 import { EMAIL, GITHUB, LINKEDIN } from '@/lib/site';
+import { BackToTopLink } from './back-to-top-link';
 import { ExternalLink } from './external-link';
-import { SiteLink } from './site-link';
 
 const LINK = 'link-u py-1 pointer-coarse:py-2.75';
 
@@ -19,9 +19,9 @@ export function SiteFooter() {
           Email
         </a>
       </nav>
-      <SiteLink href="#top" className={LINK}>
+      <BackToTopLink className={LINK}>
         Back to top <span aria-hidden="true">↑</span>
-      </SiteLink>
+      </BackToTopLink>
     </footer>
   );
 }

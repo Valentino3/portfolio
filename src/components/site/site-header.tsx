@@ -1,5 +1,5 @@
+import Link from 'next/link';
 import { LocalTime } from './local-time';
-import { SiteLink } from './site-link';
 
 type Variant = 'home' | 'case';
 
@@ -30,16 +30,16 @@ export function SiteHeader({ variant }: { variant: Variant }) {
     <header
       id="top"
       tabIndex={-1}
-      className="flex flex-wrap items-center gap-x-7 gap-y-2 pt-header-top focus:outline-none"
+      className="flex flex-wrap items-center gap-x-7 gap-y-2 pt-header-top text-ui-sm focus:outline-none"
     >
-      <SiteLink href="/" className={`${TARGET} font-semibold`}>
+      <Link href="/" className={`${TARGET} font-semibold`}>
         Valentino Rota
-      </SiteLink>
+      </Link>
       <nav aria-label="Primary" className="flex flex-wrap gap-x-5.5 text-text-3">
         {NAV[variant].map(({ label, href }) => (
-          <SiteLink key={label} href={href} className={`link-u ${TARGET}`}>
+          <Link key={label} href={href} className={`link-u ${TARGET}`}>
             {label}
-          </SiteLink>
+          </Link>
         ))}
       </nav>
       <div className="ml-auto flex flex-wrap items-center gap-x-5.5 gap-y-1 font-mono text-small text-text-3 max-sm:ml-0 max-sm:w-full max-sm:justify-between">
