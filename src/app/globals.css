@@ -1,0 +1,113 @@
+@import "tailwindcss";
+
+/*
+ * Single token layer. Components use these utilities (bg-bg, text-ink,
+ * duration-fast, ease-out-soft, rounded-base...) and never loose values.
+ */
+@theme {
+  /* Color. Every text color clears 4.5:1 on --color-bg. */
+  --color-bg: #f7f7f5;
+  --color-surface: #fbfbf9;
+  --color-tint: #ecece8;
+  --color-ink: #141414; /* 17.2:1 */
+  --color-text-2: #4a4a47; /* 8.3:1 */
+  --color-text-3: #63635f; /* 5.6:1 */
+  --color-rule: #e3e3df; /* decorative only, never text */
+  --color-rule-strong: #cfcfca;
+  --color-ok: #1f6b34; /* 6.3:1 */
+  --color-available: #2f9e44; /* availability dot, decorative only, next to text */
+
+  /* Motion */
+  --transition-duration-fast: 180ms; /* hover and focus */
+  --transition-duration-medium: 300ms; /* crossfades, arrows */
+  --transition-duration-slow: 800ms; /* viewer zoom */
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* A bare `transition-*` utility follows the tokens instead of Tailwind's 150ms. */
+  --default-transition-duration: var(--transition-duration-fast);
+  --default-transition-timing-function: var(--ease-out-soft);
+
+  /* Radius: one base, other radii are multiples of it */
+  --radius-base: 8px;
+  --radius-image: calc(var(--radius-base) * 1.25); /* 10px */
+
+  /* Type scale. UI base 0.9375rem (15px) with a 1.2 ratio; case prose 1.0625rem (17px). */
+  --text-label: 0.75rem;
+  --text-label--line-height: 1.4;
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.5;
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.55;
+  --text-prose: 1.0625rem;
+  --text-prose--line-height: 1.65;
+  --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-lead--line-height: 1.5;
+  --text-heading: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
+  --text-heading--line-height: 1.25;
+  --text-display: clamp(2rem, 1.2rem + 3vw, 3.5rem);
+  --text-display--line-height: 1.12;
+}
+
+/* Font variables are set on <html> by next/font at runtime, hence inline. */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-ui font-sans text-ink antialiased;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+}
+
+/* Visually hidden, still read by assistive tech. Same as the prototype. */
+@layer components {
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* !important on purpose: it must beat any utility that sets motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
