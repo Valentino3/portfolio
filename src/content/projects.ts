@@ -97,6 +97,13 @@ export function publishedProjects(list: ProjectSummary[] = ALL_PROJECTS): Number
     .map((p, i) => ({ ...p, number: String(i + 1).padStart(2, '0') }));
 }
 
+/** A project's summary, published or not. A case study reuses its image instead of copying it. */
+export function projectSummary(slug: Slug): ProjectSummary {
+  const project = ALL_PROJECTS.find((p) => p.slug === slug);
+  if (!project) throw new Error(`No project with the slug "${slug}"`);
+  return project;
+}
+
 export function projectBySlug(slug: Slug): NumberedProject | undefined {
   return publishedProjects().find((p) => p.slug === slug);
 }

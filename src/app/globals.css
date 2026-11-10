@@ -24,6 +24,8 @@
   --color-ok: #1f6b34; /* 6.3:1 */
   --color-error: #8a2c0d; /* 8.0:1, the "couldn't copy" message */
   --color-available: #2f9e44; /* availability dot, decorative only, next to text */
+  --color-paper: #ffffff; /* diagram boxes, and the labels on a dark (ink) box */
+  --color-paper-dim: #d4d4cf; /* second label on a dark box, 12.4:1 on ink */
 
   /* Motion */
   --transition-duration-fast: 180ms; /* hover and focus */
@@ -50,6 +52,7 @@
   /* Radius: one base, other radii are multiples of it */
   --radius-base: 8px;
   --radius-image: calc(var(--radius-base) * 1.25); /* 10px */
+  --radius-panel: var(--radius-image); /* decision cards, diagrams and the mobile index match the images */
 
   /* Layout: max content width 1312px, fluid side gutter 16-64px (spec 4.1) and the
      fluid space above the header and between content and footer. */
@@ -63,13 +66,22 @@
   --spacing-list-top: clamp(2rem, 4vw, 3.25rem);
   --spacing-glance-top: clamp(3rem, 5vw, 4.5rem);
   --spacing-section: clamp(4.5rem, 9vw, 8rem);
+  /* Case study rhythm, top to bottom: the back link, the facts and the hero, the outcomes, the
+     body, between two sections, and the contact block at the end. */
+  --spacing-back-top: clamp(2.25rem, 5vw, 4rem);
+  --spacing-case-block: clamp(2rem, 4vw, 3.25rem);
+  --spacing-outcomes-top: clamp(3rem, 6vw, 5.5rem);
+  --spacing-case-body-top: clamp(4rem, 8vw, 7.5rem);
+  --spacing-case-section: clamp(3.5rem, 7vw, 6rem);
+  --spacing-case-end: clamp(5rem, 9vw, 8.75rem);
 
   /* Type scale, taken from the prototype, whose text all inherits its 1.55 body line
      height (case prose, at 1.65, is the exception). Fixed steps: chip 0.72rem, label
      0.75rem, meta 0.78rem, small 0.8125rem, base 1rem, UI small 0.875rem (14px, header),
-     UI base 0.9375rem (15px) and case prose 1.0625rem (17px). Fluid clamp() steps above
-     that: lead (home lede and About), heading (24-30px), display, intro (home h1) and
-     mail (contact address). */
+     UI base 0.9375rem (15px), case prose 1.0625rem (17px) and card (decision card title,
+     18px). Fluid clamp() steps above that: lead (home lede and About), outcome (a case
+     outcome title), dek (a case's summary), heading (case h2, 24-30px), display (case h1),
+     next ("Next project"), intro (home h1) and mail (contact address). */
   --text-label: 0.75rem;
   --text-label--line-height: 1.55;
   --text-small: 0.8125rem;
@@ -86,12 +98,26 @@
   --text-ui--line-height: 1.55;
   --text-prose: 1.0625rem;
   --text-prose--line-height: 1.65;
+  --text-card: 1.125rem;
+  --text-card--line-height: 1.65; /* it sits in the prose */
+  --text-card--letter-spacing: -0.015em;
   --text-lead: clamp(1rem, 0.9rem + 0.35vw, 1.1875rem);
   --text-lead--line-height: 1.5;
+  --text-outcome: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-outcome--line-height: 1.25;
+  --text-outcome--letter-spacing: -0.02em;
+  --text-dek: clamp(1.0625rem, 0.95rem + 0.55vw, 1.4375rem);
+  --text-dek--line-height: 1.4;
+  --text-dek--letter-spacing: -0.015em;
   --text-heading: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
-  --text-heading--line-height: 1.25;
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: -0.025em;
   --text-display: clamp(2rem, 1.2rem + 3vw, 3.5rem);
-  --text-display--line-height: 1.12;
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.04em;
+  --text-next: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  --text-next--line-height: 1.55;
+  --text-next--letter-spacing: -0.035em;
   --text-intro: clamp(1.5rem, 1rem + 1.6vw, 2.375rem); /* home h1 */
   --text-intro--line-height: 1.12;
   --text-intro--letter-spacing: -0.035em;
@@ -145,6 +171,47 @@
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+/*
+ * Case study body copy. Content files write plain p, ul, li, b and code; this gives them the
+ * prototype's reading rhythm (17px, 1.65 line height, lines of up to 64 characters). It is in
+ * the components layer, so a utility on any of those elements still wins.
+ */
+@layer components {
+  .prose {
+    font-size: var(--text-prose);
+    line-height: var(--text-prose--line-height);
+
+    & p,
+    & ul {
+      margin-bottom: calc(var(--spacing) * 4);
+      max-width: 64ch;
+      color: var(--color-text-2);
+    }
+
+    & ul {
+      padding-left: calc(var(--spacing) * 4.5);
+      list-style: disc;
+    }
+
+    & li {
+      margin-bottom: calc(var(--spacing) * 1.5);
+    }
+
+    & li b {
+      color: var(--color-ink);
+      font-weight: var(--font-weight-medium);
+    }
+
+    & code {
+      border-radius: calc(var(--radius-base) / 2);
+      background: var(--color-tint);
+      padding: 1px calc(var(--spacing) * 1.25);
+      font-family: var(--font-mono);
+      font-size: 0.86em;
+    }
   }
 }
 

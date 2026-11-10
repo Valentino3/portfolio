@@ -120,8 +120,7 @@ test.describe('project viewer', () => {
         const page = await ctx.newPage();
         await page.goto('/');
         // The header clock starts in an effect after hydration, so a real time means the page is live and the
-        // viewer has already had its chance to mount. (`networkidle` would never settle while the /work/*
-        // prefetches 404, and gives no better signal.)
+        // viewer has already had its chance to mount (a sharper signal than `networkidle`).
         await expect(page.locator('time').first()).not.toHaveText('--:--');
         await expect(page.locator('[data-viewer] img')).toHaveCount(0);
         await expect(page.locator('[data-viewer]')).toBeHidden();
@@ -196,8 +195,8 @@ test('no axe violations or horizontal scroll with the viewer mounted and a failu
   await expectNoHorizontalScroll(page);
 });
 
-// Passes once Task 6 adds the /work/[slug] route and its header, contact CTA and "All work" link.
-test.fixme('a case opened from a shared link shows availability and contact', async ({ page }) => {
+// Review Focus 5: a visitor who lands on a case from a shared link, never having seen the home.
+test('a case opened from a shared link shows availability and contact', async ({ page }) => {
   await page.goto('/work/conosur');
   await expect(page.getByText('Open to roles in Buenos Aires or remote')).toBeVisible();
   await expect(page.locator('#contact a[href^="mailto:"]')).toBeVisible();
