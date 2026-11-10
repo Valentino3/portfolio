@@ -25,10 +25,30 @@
   /* A bare `transition-*` utility follows the tokens instead of Tailwind's 150ms. */
   --default-transition-duration: var(--transition-duration-fast);
   --default-transition-timing-function: var(--ease-out-soft);
+  /* Availability dot: a ripple that plays 3 times and stops (spec 4.2). */
+  --animate-availability: availability-pulse 2.4s var(--ease-out-soft) 3;
+  @keyframes availability-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-available) 45%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 0.5625rem transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
 
   /* Radius: one base, other radii are multiples of it */
   --radius-base: 8px;
   --radius-image: calc(var(--radius-base) * 1.25); /* 10px */
+
+  /* Layout: max content width 1312px, fluid side gutter 16-64px (spec 4.1) and the
+     fluid space above the header and between content and footer. */
+  --container-site: 82rem;
+  --spacing-gutter: clamp(1rem, 4.5vw, 4rem);
+  --spacing-header-top: clamp(1.25rem, 3.4vw, 2.75rem);
+  --spacing-footer-top: clamp(4rem, 7vw, 6.25rem);
 
   /* Type scale, taken from the prototype. Fixed steps: label 0.75rem, small 0.8125rem,
      UI base 0.9375rem (15px), case prose 1.0625rem (17px). Fluid clamp() steps above
@@ -95,6 +115,37 @@
     clip: rect(0 0 0 0);
     clip-path: inset(50%);
     white-space: nowrap;
+  }
+}
+
+/*
+ * Text link with an underline that wipes in on hover and focus. A utility (not
+ * a component class) so its hover color wins over a text-* color on the link.
+ */
+@utility link-u {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(var(--spacing) * 0.75);
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--transition-duration-medium) var(--ease-out-soft);
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: var(--color-ink);
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
   }
 }
 

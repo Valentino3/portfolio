@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import { SiteFooter } from "@/components/site/site-footer";
+import { SITE_URL } from "@/lib/site";
 import { geistMono, geistSans } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Valentino Rota — Design Engineer",
 };
 
@@ -15,7 +18,12 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <div className="mx-auto max-w-site px-gutter">
+          {children}
+          <SiteFooter />
+        </div>
+      </body>
     </html>
   );
 }
