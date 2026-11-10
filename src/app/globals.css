@@ -54,6 +54,9 @@
   --radius-image: calc(var(--radius-base) * 1.25); /* 10px */
   --radius-panel: var(--radius-image); /* decision cards, diagrams and the mobile index match the images */
 
+  /* Elevation: only the zoom dialog floats above the page. */
+  --shadow-dialog: 0 30px 80px -20px rgb(0 0 0 / 0.45);
+
   /* Layout: max content width 1312px, fluid side gutter 16-64px (spec 4.1) and the
      fluid space above the header and between content and footer. */
   --container-site: 82rem;
