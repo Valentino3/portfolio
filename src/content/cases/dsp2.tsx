@@ -1,3 +1,5 @@
+import { DecisionCard, DecisionCards } from '@/components/case/decision-card';
+import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
 import type { CaseStudy } from '../case-types';
@@ -69,6 +71,106 @@ export const dsp2: CaseStudy = {
             thousands of rows. In 2026 the platform opened to outside organizations logging in on their own. Before
             that day, the API had to be safe for people outside the company.
           </p>
+        </>
+      ),
+    },
+    {
+      id: 'role',
+      title: 'My role',
+      body: (
+        <>
+          <p>
+            I wrote the security review and the two-batch rollout plan. I split the code review into five areas by
+            risk and assigned a reviewer to each; I took login and report scoping. I designed the authorization layer.
+          </p>
+          <p>
+            Day to day I lead one engineer: I review their pull requests and we have regular one-on-ones. I was
+            promoted to Lead UI Developer over time.
+          </p>
+        </>
+      ),
+    },
+    {
+      id: 'decisions',
+      title: 'Decisions',
+      body: (
+        <>
+          <p>The hardening went out in two batches, around the launch.</p>
+          <Diagram
+            label="Diagram: a written review split into five areas, then batch one before launch with 47 integration checks, the launch with the first external client, and batch two after it with 54 checks."
+            rows={[
+              [
+                { l1: 'Review + plan', l2: '5 areas by risk' },
+                { l1: 'Batch 1', l2: '47 checks pass', dark: true },
+                { l1: 'Launch', l2: 'first outside client' },
+                { l1: 'Batch 2', l2: '54 checks pass', dark: true },
+              ],
+            ]}
+            note="Both batches shipped. No security incidents, no rollbacks."
+          />
+          <DecisionCards>
+            <DecisionCard
+              title="Ship the hardening in two batches, by risk"
+              rows={[
+                ['Instead of', 'One release with everything, or a later launch.'],
+                [
+                  'Why',
+                  'The launch date was fixed. What a client could exploit on day one went first; what operations could cover for a few days went second.',
+                ],
+                ['Result', 'Both batches shipped, with no incidents and no rollbacks.'],
+              ]}
+            />
+            <DecisionCard
+              title="No database migrations in the first batch"
+              rows={[
+                ['Why', 'Rollback had to be a redeploy of the previous image, nothing more.'],
+                ['Result', 'A 45-minute staging QA pass and an ordered deploy checklist. The rollback was never needed.'],
+              ]}
+            />
+            <DecisionCard
+              title="Authorization in one layer, not per route"
+              rows={[
+                ['Instead of', 'Checks written route by route.'],
+                ['Why', 'Consistent enforcement: the same checks on every request.'],
+                [
+                  'Result',
+                  'Shared helpers that every handler calls for path ids, body ids and queries, with the integration suite testing cross-organization access over real HTTP.',
+                ],
+              ]}
+            />
+            <DecisionCard
+              title="One component library for two apps"
+              rows={[
+                ['Instead of', 'Each app keeping its own tables and forms.'],
+                ['Why', 'Teams were duplicating the same table and form logic.'],
+                [
+                  'Result',
+                  'DSP2 and Analyzer install Reset GUI from a private registry and render the same websites table, score filters and analytics tabs.',
+                ],
+              ]}
+            />
+          </DecisionCards>
+        </>
+      ),
+    },
+    {
+      id: 'architecture',
+      title: 'Architecture',
+      body: (
+        <>
+          <p>Where the authorization layer sits. Simplified.</p>
+          <Diagram
+            label="Diagram: the Next.js interface, built with Reset GUI, calls API routes with a next-auth session; every request goes through one authorization layer before Prisma reaches MySQL."
+            rows={[
+              [
+                { l1: 'Next.js UI', l2: 'Reset GUI' },
+                { l1: 'API routes', l2: 'next-auth session' },
+                { l1: 'AuthZ layer', l2: 'org scope + roles', dark: true },
+                { l1: 'Prisma', l2: 'MySQL' },
+              ],
+            ]}
+            note="Every request passes the same checks."
+          />
         </>
       ),
     },

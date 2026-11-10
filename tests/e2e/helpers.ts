@@ -20,3 +20,29 @@ export async function expectNoHorizontalScroll(page: Page): Promise<void> {
   }));
   expect(scrollWidth, 'document scrollWidth vs viewport clientWidth').toBeLessThanOrEqual(clientWidth);
 }
+
+/**
+ * Diagram labels that run past the right edge of their box, with the diagram font swapped for
+ * `font` (the web font, or what the browser falls back to while it has not loaded).
+ */
+export async function diagramLabelsOutsideBoxes(page: Page, font: string): Promise<(string | null)[]> {
+  await page.addStyleTag({ content: `.diagram text{font-family:${font} !important}` });
+  return page.evaluate(() =>
+    [...document.querySelectorAll('.diagram svg')].flatMap((svg) => {
+      const rects = [...svg.querySelectorAll('rect')];
+      return [...svg.querySelectorAll('text')]
+        .filter((t) => {
+          const b = t.getBBox();
+          const r = rects.find(
+            (r) =>
+              b.x >= +r.getAttribute('x')! - 1 &&
+              b.x <= +r.getAttribute('x')! + +r.getAttribute('width')! &&
+              b.y >= +r.getAttribute('y')! - 2 &&
+              b.y <= +r.getAttribute('y')! + +r.getAttribute('height')!,
+          );
+          return r && b.x + b.width > +r.getAttribute('x')! + +r.getAttribute('width')! - 2;
+        })
+        .map((t) => t.textContent);
+    }),
+  );
+}

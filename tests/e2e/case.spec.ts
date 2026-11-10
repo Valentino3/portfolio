@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
+import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
 
 const TOC = 'nav[aria-label="On this page"]';
 
@@ -126,28 +126,8 @@ test('diagram labels stay inside boxes, also with the fallback font', async ({ p
   await page.goto('/work/stock-tienda');
   // Not vacuous: there is a diagram, with labels inside its boxes.
   await expect(page.locator('.diagram svg rect + text').first()).toBeAttached();
-  for (const font of ['Geist Mono', 'ui-monospace, Consolas, monospace']) {
-    await page.addStyleTag({ content: `.diagram text{font-family:${font} !important}` });
-    const overflow = await page.evaluate(() =>
-      [...document.querySelectorAll('.diagram svg')].flatMap((svg) => {
-        const rects = [...svg.querySelectorAll('rect')];
-        return [...svg.querySelectorAll('text')]
-          .filter((t) => {
-            const b = t.getBBox();
-            const r = rects.find(
-              (r) =>
-                b.x >= +r.getAttribute('x')! - 1 &&
-                b.x <= +r.getAttribute('x')! + +r.getAttribute('width')! &&
-                b.y >= +r.getAttribute('y')! - 2 &&
-                b.y <= +r.getAttribute('y')! + +r.getAttribute('height')!,
-            );
-            return r && b.x + b.width > +r.getAttribute('x')! + +r.getAttribute('width')! - 2;
-          })
-          .map((t) => t.textContent);
-      }),
-    );
-    expect(overflow).toEqual([]);
-  }
+  for (const font of ['Geist Mono', 'ui-monospace, Consolas, monospace'])
+    expect(await diagramLabelsOutsideBoxes(page, font)).toEqual([]);
 });
 
 test('only a diagram that overflows is focusable and shows the swipe hint', async ({ page }) => {

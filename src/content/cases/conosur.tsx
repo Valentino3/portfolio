@@ -1,8 +1,30 @@
 import { Clip } from '@/components/case/clip';
 import { DecisionCard, DecisionCards } from '@/components/case/decision-card';
 import { Diagram } from '@/components/case/diagram';
+import { Figure } from '@/components/case/figure';
+import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
 import { ExternalLink } from '@/components/site/external-link';
 import type { CaseStudy } from '../case-types';
+import type { Media } from '../types';
+
+const releases: Media = {
+  src: '/img/conosur-pay-respects.webp',
+  width: 2400,
+  height: 1500,
+  alt: 'Releases: a strip of albums and singles above the embedded player and track list',
+};
+const collaborators: Media = {
+  src: '/img/conosur-collabs.webp',
+  width: 2400,
+  height: 1500,
+  alt: 'Collaborators directory: filters by role, a list of 22 people and their credits per project',
+};
+const videos: Media = {
+  src: '/img/conosur-watch.webp',
+  width: 2400,
+  height: 1500,
+  alt: 'Videos section with a large player',
+};
 
 export const conosur: CaseStudy = {
   slug: 'conosur',
@@ -120,6 +142,30 @@ export const conosur: CaseStudy = {
           />
           <p>Deploys run on GitHub Actions, which builds the site and ships it over SSH to a server behind Nginx.</p>
         </>
+      ),
+    },
+    {
+      id: 'interface',
+      title: 'Interface',
+      body: (
+        <Gallery>
+          <Figure
+            image={releases}
+            caption="Releases and player"
+            note="conosur.tv"
+            sizes={GALLERY_SIZES.wide}
+            wide
+            zoom
+          />
+          <Figure
+            image={collaborators}
+            caption="Collaborators and credits"
+            note="conosur.tv"
+            sizes={GALLERY_SIZES.half}
+            zoom
+          />
+          <Figure image={videos} caption="Videos" note="conosur.tv" sizes={GALLERY_SIZES.half} zoom />
+        </Gallery>
       ),
     },
   ],
