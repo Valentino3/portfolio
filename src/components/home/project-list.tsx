@@ -8,6 +8,10 @@ type ProjectListProps = {
   activeIndex?: number;
   /** Reports which row the pointer entered or the keyboard focused, for a parent that drives a viewer. */
   onActivate?: (index: number, via: 'hover' | 'focus') => void;
+  /** The pointer left the whole list (not just a row). */
+  onListLeave?: () => void;
+  /** A row's link lost focus. */
+  onBlur?: () => void;
 };
 
 /**
@@ -41,13 +45,13 @@ const ARROW = [
  * Under the `viewer` variant the thumbnails are hidden and the active row is
  * marked by `data-active`; otherwise every row shows its own 16:10 image.
  */
-export function ProjectList({ projects, activeIndex, onActivate }: ProjectListProps) {
+export function ProjectList({ projects, activeIndex, onActivate, onListLeave, onBlur }: ProjectListProps) {
   return (
     <section id="work" aria-labelledby="work-h" className="col-span-full viewer:col-span-6 viewer:col-start-1">
       <h2 id="work-h" className="sr">
         Selected work
       </h2>
-      <ol className="mt-list-top border-t border-rule">
+      <ol onMouseLeave={onListLeave} className="mt-list-top border-t border-rule">
         {projects.map((p, i) => {
           // Spoken, not typeset: a screen reader would say "plus" for "Design + build".
           const spoken = `${p.role.replace(' + ', ' and ')}. ${p.stack.join(', ')}.`;
@@ -66,6 +70,7 @@ export function ProjectList({ projects, activeIndex, onActivate }: ProjectListPr
                   href={`/work/${p.slug}`}
                   aria-describedby={`desc-${p.slug} meta-${p.slug}`}
                   onFocus={onActivate && (() => onActivate(i, 'focus'))}
+                  onBlur={onBlur}
                   className={TITLE}
                 >
                   {p.title}

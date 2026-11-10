@@ -22,6 +22,7 @@
   --color-rule: #e3e3df; /* decorative only, never text */
   --color-rule-strong: #cfcfca;
   --color-ok: #1f6b34; /* 6.3:1 */
+  --color-error: #8a2c0d; /* 8.0:1, the "couldn't copy" message */
   --color-available: #2f9e44; /* availability dot, decorative only, next to text */
 
   /* Motion */
@@ -152,6 +153,17 @@
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--spacing-grid-gap);
+}
+
+/*
+ * Project viewer crossfade: the image's opacity settles in the medium step, its
+ * zoom (scale 1.03 to 1) takes the slow one. Tailwind's `scale-*` sets the
+ * individual `scale` property, so that is what transitions, not `transform`.
+ */
+@utility crossfade {
+  transition-property: opacity, scale;
+  transition-duration: var(--transition-duration-medium), var(--transition-duration-slow);
+  transition-timing-function: var(--ease-out-soft);
 }
 
 /*

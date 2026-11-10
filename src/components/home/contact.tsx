@@ -1,13 +1,13 @@
-import type { ReactNode } from 'react';
 import { EMAIL } from '@/lib/site';
+import { CopyEmailButton } from './copy-email-button';
 import { SectionHead } from './section-head';
 
 /**
- * The address is a mailto link, large. `children` is the slot next to it,
- * where the copy button goes. The address text is in `[data-mail-text]` so a
- * failed copy can select it.
+ * The address is a mailto link, large, with the copy button next to it (it
+ * wraps under the address on a narrow screen) and its status line under both.
+ * The address text is in `[data-mail-text]` so a failed copy can select it.
  */
-export function Contact({ children }: { children?: ReactNode }) {
+export function Contact() {
   return (
     <section id="contact" aria-labelledby="contact-h" className="mt-section scroll-mt-6">
       <SectionHead id="contact-h" title="Contact" />
@@ -21,7 +21,7 @@ export function Contact({ children }: { children?: ReactNode }) {
         >
           <span data-mail-text>{EMAIL}</span>
         </a>
-        {children}
+        <CopyEmailButton email={EMAIL} />
       </div>
     </section>
   );
