@@ -1,6 +1,13 @@
 @import "tailwindcss";
 
 /*
+ * The home shows a sticky project viewer only where hover is real: a wide
+ * screen with a fine pointer that can hover. Everything else (touch, a tablet in
+ * landscape, a narrow window) gets inline thumbnails. One query, one name.
+ */
+@custom-variant viewer (@media (min-width: 1024px) and (hover: hover) and (pointer: fine));
+
+/*
  * Single token layer. Components use these utilities (bg-bg, text-ink,
  * duration-fast, ease-out-soft, rounded-base...) and never loose values.
  */
@@ -49,26 +56,46 @@
   --spacing-gutter: clamp(1rem, 4.5vw, 4rem);
   --spacing-header-top: clamp(1.25rem, 3.4vw, 2.75rem);
   --spacing-footer-top: clamp(4rem, 7vw, 6.25rem);
+  /* Home rhythm: column gap of the 12-column grid, and the fluid space above each block. */
+  --spacing-grid-gap: clamp(1rem, 2.2vw, 2rem);
+  --spacing-hero-top: clamp(2.5rem, 5vw, 4.5rem);
+  --spacing-list-top: clamp(2rem, 4vw, 3.25rem);
+  --spacing-glance-top: clamp(3rem, 5vw, 4.5rem);
+  --spacing-section: clamp(4.5rem, 9vw, 8rem);
 
-  /* Type scale, taken from the prototype. Fixed steps: label 0.75rem, small 0.8125rem,
-     UI small 0.875rem (14px, header), UI base 0.9375rem (15px), case prose 1.0625rem
-     (17px). Fluid clamp() steps above that: lead, heading (24-30px), display. */
+  /* Type scale, taken from the prototype, whose text all inherits its 1.55 body line
+     height (case prose, at 1.65, is the exception). Fixed steps: chip 0.72rem, label
+     0.75rem, meta 0.78rem, small 0.8125rem, base 1rem, UI small 0.875rem (14px, header),
+     UI base 0.9375rem (15px) and case prose 1.0625rem (17px). Fluid clamp() steps above
+     that: lead (home lede and About), heading (24-30px), display, intro (home h1) and
+     mail (contact address). */
   --text-label: 0.75rem;
-  --text-label--line-height: 1.4;
+  --text-label--line-height: 1.55;
   --text-small: 0.8125rem;
-  --text-small--line-height: 1.5;
+  --text-small--line-height: 1.55;
+  --text-meta: 0.78rem; /* mono metadata: years, numbers, status, header meta */
+  --text-meta--line-height: 1.55;
+  --text-chip: 0.72rem; /* context chip on a project row */
+  --text-chip--line-height: 1.55;
+  --text-base: 1rem; /* list titles, contact line */
+  --text-base--line-height: 1.55;
   --text-ui-sm: 0.875rem;
   --text-ui-sm--line-height: 1.55;
   --text-ui: 0.9375rem;
   --text-ui--line-height: 1.55;
   --text-prose: 1.0625rem;
   --text-prose--line-height: 1.65;
-  --text-lead: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-lead: clamp(1rem, 0.9rem + 0.35vw, 1.1875rem);
   --text-lead--line-height: 1.5;
   --text-heading: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
   --text-heading--line-height: 1.25;
   --text-display: clamp(2rem, 1.2rem + 3vw, 3.5rem);
   --text-display--line-height: 1.12;
+  --text-intro: clamp(1.5rem, 1rem + 1.6vw, 2.375rem); /* home h1 */
+  --text-intro--line-height: 1.12;
+  --text-intro--letter-spacing: -0.035em;
+  --text-mail: clamp(1.5rem, 1rem + 2.6vw, 3.5rem); /* the contact address */
+  --text-mail--letter-spacing: -0.04em;
 }
 
 /* Font variables are set on <html> by next/font at runtime, hence inline. */
@@ -118,6 +145,13 @@
     clip-path: inset(50%);
     white-space: nowrap;
   }
+}
+
+/* The 12-column page grid (spec 4.1). Items place themselves with col-span-* / col-start-*. */
+@utility grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--spacing-grid-gap);
 }
 
 /*

@@ -42,7 +42,7 @@ export function SiteHeader({ variant }: { variant: Variant }) {
           </Link>
         ))}
       </nav>
-      <div className="ml-auto flex flex-wrap items-center gap-x-5.5 gap-y-1 font-mono text-small text-text-3 max-sm:ml-0 max-sm:w-full max-sm:justify-between">
+      <div className="ml-auto flex flex-wrap items-center gap-x-5.5 gap-y-1 font-mono text-meta text-text-3 max-sm:ml-0 max-sm:w-full max-sm:justify-between">
         <span>
           Mar del Plata, Argentina
           {variant === 'home' && (
