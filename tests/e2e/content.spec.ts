@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { findForbiddenTerms } from '../support/forbidden-terms';
 import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
 
 /**
@@ -135,8 +136,6 @@ const expected: Record<string, Expected> = {
   },
 };
 
-const FORBIDDEN = /(?!)/; // superseded by a hash-based check in a later commit
-
 /**
  * Hydrated and settled: the progress bar mounts after hydration, and a diagram that overflows
  * gets its tab stop only after that (a scroll region axe wants to be reachable by keyboard).
@@ -154,14 +153,29 @@ async function settled(page: Page) {
     .toBe(true);
 }
 
+/**
+ * Hashes of terms that must never be published, found in the served page (markup, inline data and
+ * the rendered text, where inline elements no longer split a phrase).
+ */
+async function unpublishedTerms(page: Page): Promise<string[]> {
+  const [html, text] = [await page.content(), await page.locator('body').innerText()];
+  return findForbiddenTerms(`${html}\n${text}`);
+}
+
+test('the home and the not-found page publish no unpublished terms', async ({ page }) => {
+  for (const path of ['/', '/work/not-a-project']) {
+    await page.goto(path);
+    expect(await unpublishedTerms(page), path).toEqual([]);
+  }
+});
+
 for (const [slug, e] of Object.entries(expected)) {
   test.describe(slug, () => {
-    test('title, outcomes and wording', async ({ page }) => {
+    test('title, outcomes, and no unpublished terms', async ({ page }) => {
       await page.goto(`/work/${slug}`);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(e.h1);
       for (const o of e.outcomes) await expect(page.getByText(o, { exact: true })).toBeVisible();
-      const body = (await page.content()).toLowerCase();
-      expect(body).not.toMatch(FORBIDDEN);
+      expect(await unpublishedTerms(page)).toEqual([]);
     });
 
     test('numbered sections in prototype order, each with its cards', async ({ page }) => {

@@ -2,6 +2,7 @@ import { existsSync } from 'node:fs';
 import { expect, test } from 'vitest';
 import { ALL_PROJECTS, kicker, nextProject, projectBySlug, publishedProjects } from '@/content/projects';
 import type { Slug } from '@/content/types';
+import { findForbiddenTerms } from '../support/forbidden-terms';
 
 test('order, numbering and cycle', () => {
   expect(publishedProjects().map((p) => `${p.number} ${p.slug}`)).toEqual([
@@ -26,13 +27,11 @@ test('projectBySlug returns the numbered entry, or undefined for an unknown slug
   expect(projectBySlug('not-a-project' as Slug)).toBeUndefined();
 });
 
-const FORBIDDEN = /(?!)/; // superseded by a hash-based check in a later commit
-
-test('every image exists, has alt text, and nothing unpublished leaks', () => {
+test('every image exists, has alt text, and no unpublished terms leak', () => {
   for (const p of ALL_PROJECTS) {
     expect(existsSync(`public${p.image.src}`)).toBe(true);
     expect(p.image.alt.length).toBeGreaterThan(10);
-    expect(JSON.stringify(p).toLowerCase()).not.toMatch(FORBIDDEN);
+    expect(findForbiddenTerms(JSON.stringify(p)), p.slug).toEqual([]);
   }
 });
 
