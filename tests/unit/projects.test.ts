@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs';
 import { expect, test } from 'vitest';
-import { ALL_PROJECTS, nextProject, projectBySlug, publishedProjects } from '@/content/projects';
+import { ALL_PROJECTS, kicker, nextProject, projectBySlug, publishedProjects } from '@/content/projects';
 import type { Slug } from '@/content/types';
 
 test('order, numbering and cycle', () => {
@@ -34,4 +34,8 @@ test('every image exists, has alt text, and nothing unpublished leaks', () => {
     expect(p.image.alt.length).toBeGreaterThan(10);
     expect(JSON.stringify(p).toLowerCase()).not.toMatch(FORBIDDEN);
   }
+});
+
+test('the kicker is number, context and years', () => {
+  expect(kicker(projectBySlug('dsp2')!)).toBe('03 · Reset Digital · 2024 – now');
 });

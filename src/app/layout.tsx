@@ -7,6 +7,8 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: "Valentino Rota — Design Engineer",
+  description:
+    "Design engineer who builds the whole product: production web apps, design systems, auth and APIs. Based in Mar del Plata, Argentina, open to roles in Buenos Aires or remote.",
 };
 
 export default function RootLayout({

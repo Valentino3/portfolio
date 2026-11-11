@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { HEADLINE, NAME } from '@/lib/site';
 
 /**
  * The headline and lede, and the 12-column grid they share with the project
@@ -11,8 +12,8 @@ export function Hero({ children }: { children: ReactNode }) {
     <div className="grid-12 mt-hero-top items-start">
       <div className="col-span-full viewer:col-span-6 viewer:col-start-1">
         <h1 className="text-intro font-medium">
-          <span className="sr">Valentino Rota, </span>
-          Design engineer who builds the whole product.
+          <span className="sr">{NAME}, </span>
+          {HEADLINE}
         </h1>
         <p className="mt-4 max-w-[46ch] text-lead text-text-2">
           Five years building production web apps. I care about typography, layout and interaction, and I build the

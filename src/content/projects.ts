@@ -114,3 +114,8 @@ export function nextProject(slug: Slug, list: ProjectSummary[] = ALL_PROJECTS): 
   const index = published.findIndex((p) => p.slug === slug);
   return published[(index + 1) % published.length];
 }
+
+/** The small line above a case title and on its share image: number · context · years. */
+export function kicker({ number, context, years }: NumberedProject): string {
+  return `${number} · ${context} · ${years}`;
+}

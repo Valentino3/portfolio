@@ -222,7 +222,8 @@
 @utility grid-12 {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  column-gap: var(--spacing-grid-gap);
+  /* 11 gaps must always fit the box (at 200% text the rem gap alone is wider than a 320 px screen). */
+  column-gap: min(var(--spacing-grid-gap), calc(100% / 24));
 }
 
 /*

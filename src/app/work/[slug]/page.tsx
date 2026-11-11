@@ -88,7 +88,7 @@ export default async function CasePage({ params }: Props) {
                     <span aria-hidden="true" className="font-mono text-meta font-normal text-text-3">
                       {String(i + 1).padStart(2, '0')}
                     </span>
-                    {title}
+                    <span className="min-w-0 wrap-anywhere">{title}</span>
                   </h2>
                   {body}
                 </section>

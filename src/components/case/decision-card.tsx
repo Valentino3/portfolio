@@ -4,7 +4,7 @@ export type DecisionLabel = 'Instead of' | 'Why' | 'Result' | 'Context' | 'Befor
 
 /** The stack of decision cards in a section. */
 export function DecisionCards({ children }: { children: ReactNode }) {
-  return <div className="mt-4.5 grid gap-3.5">{children}</div>;
+  return <div className="mt-4.5 grid grid-cols-[minmax(0,1fr)] gap-3.5">{children}</div>;
 }
 
 /**
