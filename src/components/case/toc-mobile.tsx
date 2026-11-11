@@ -1,5 +1,5 @@
 import type { CaseSection } from '@/content/case-types';
-import { SectionLink } from './section-link';
+import { InPageLink } from '@/components/site/in-page-link';
 
 /** Below 1024px the index is a closed disclosure at the top of the body. */
 export function TocMobile({ sections }: { sections: Pick<CaseSection, 'id' | 'title'>[] }) {
@@ -9,9 +9,9 @@ export function TocMobile({ sections }: { sections: Pick<CaseSection, 'id' | 'ti
       <ol className="mt-2 mb-1 list-decimal pl-5">
         {sections.map(({ id, title }) => (
           <li key={id}>
-            <SectionLink id={id} className="inline-block py-1.5 underline underline-offset-3">
+            <InPageLink href={`#${id}`} className="inline-block py-1.5 underline underline-offset-3">
               {title}
-            </SectionLink>
+            </InPageLink>
           </li>
         ))}
       </ol>

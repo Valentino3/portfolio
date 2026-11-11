@@ -1,6 +1,6 @@
 import { EMAIL, GITHUB, LINKEDIN } from '@/lib/site';
-import { BackToTopLink } from './back-to-top-link';
 import { ExternalLink } from './external-link';
+import { InPageLink } from './in-page-link';
 
 const LINK = 'link-u py-1 pointer-coarse:py-2.75';
 
@@ -19,9 +19,9 @@ export function SiteFooter() {
           Email
         </a>
       </nav>
-      <BackToTopLink className={LINK}>
+      <InPageLink href="#top" className={LINK}>
         Back to top <span aria-hidden="true">↑</span>
-      </BackToTopLink>
+      </InPageLink>
     </footer>
   );
 }

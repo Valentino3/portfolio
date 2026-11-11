@@ -1,10 +1,11 @@
 import Link from 'next/link';
+import { InPageLink } from './in-page-link';
 import { LocalTime } from './local-time';
 
 type Variant = 'home' | 'case';
 
 /** Home links to its own sections; a case study links back to the home ones. */
-const NAV: Record<Variant, { label: string; href: string }[]> = {
+const NAV: Record<Variant, { label: string; href: `#${string}` | `/#${string}` }[]> = {
   home: [
     { label: 'Work', href: '#work' },
     { label: 'About', href: '#about' },
@@ -37,9 +38,9 @@ export function SiteHeader({ variant }: { variant: Variant }) {
       </Link>
       <nav aria-label="Primary" className="flex flex-wrap gap-x-5.5 text-text-3">
         {NAV[variant].map(({ label, href }) => (
-          <Link key={label} href={href} className={`link-u ${TARGET}`}>
+          <InPageLink key={label} href={href} className={`link-u ${TARGET}`}>
             {label}
-          </Link>
+          </InPageLink>
         ))}
       </nav>
       <div className="ml-auto flex flex-wrap items-center gap-x-5.5 gap-y-1 font-mono text-meta text-text-3 max-sm:ml-0 max-sm:w-full max-sm:justify-between">

@@ -79,7 +79,7 @@ export default async function CasePage({ params }: Props) {
             <div className="prose col-span-full lg:col-span-7 lg:col-start-4">
               <TocMobile sections={index} />
               {study.sections.map(({ id, title, body }, i) => (
-                // tabIndex -1: the index links move focus here (see SectionLink), without an outline.
+                // tabIndex -1: the index links move focus here (see InPageLink), without an outline.
                 <section
                   key={id}
                   id={id}

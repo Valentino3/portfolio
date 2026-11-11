@@ -9,7 +9,13 @@ import { SectionHead } from './section-head';
  */
 export function Contact() {
   return (
-    <section id="contact" aria-labelledby="contact-h" className="mt-section scroll-mt-6">
+    // tabIndex -1: an in-page link moves focus here (see InPageLink), without an outline.
+    <section
+      id="contact"
+      aria-labelledby="contact-h"
+      tabIndex={-1}
+      className="mt-section scroll-mt-6 focus:outline-none"
+    >
       <SectionHead id="contact-h" title="Contact" />
       <p className="mt-4.5 text-base text-text-2">
         Open to design engineering and full-stack roles, in Buenos Aires or remote.

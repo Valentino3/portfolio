@@ -41,7 +41,13 @@ const COLUMN = 'col-span-full lg:col-span-6';
 
 export function ExperienceAbout() {
   return (
-    <section id="about" aria-label="Experience and about" className="grid-12 mt-section scroll-mt-6">
+    // tabIndex -1: an in-page link moves focus here (see InPageLink), without an outline.
+    <section
+      id="about"
+      aria-label="Experience and about"
+      tabIndex={-1}
+      className="grid-12 mt-section scroll-mt-6 focus:outline-none"
+    >
       <div className={COLUMN}>
         <SectionHead title="Experience" />
         <ul>

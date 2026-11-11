@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { InPageLink } from '@/components/site/in-page-link';
 import { kicker } from '@/content/projects';
 import type { NumberedProject } from '@/content/types';
 
@@ -9,12 +9,12 @@ import type { NumberedProject } from '@/content/types';
 export function CaseHeader({ project, dek }: { project: NumberedProject; dek: string }) {
   return (
     <>
-      <Link
+      <InPageLink
         href="/#work"
         className="group mt-back-top inline-flex gap-2 py-1.5 font-mono text-meta text-text-3 hover:text-ink focus-visible:text-ink pointer-coarse:py-2.75"
       >
         <span aria-hidden="true" className="transition-transform duration-medium group-hover:-translate-x-0.75">←</span> All work
-      </Link>
+      </InPageLink>
       <div className="mt-4 max-w-[57.5rem]">
         <span data-kicker="" className="font-mono text-meta text-text-3">
           {kicker(project)}

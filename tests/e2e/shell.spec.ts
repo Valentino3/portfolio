@@ -14,6 +14,31 @@ test('back to top moves focus to the header', async ({ page }) => {
   await expect(page.locator('#top')).toBeFocused();
 });
 
+for (const path of ['/', '/work/conosur']) {
+  test(`on ${path}, the header's Contact link hands the keyboard over to the contact section`, async ({ page }) => {
+    await page.goto(path);
+    await hydrated(page);
+    await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Contact' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('#contact')).toBeFocused();
+    // The next Tab continues from the section, instead of starting over from the header.
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#contact a[href^="mailto:"]')).toBeFocused();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  });
+}
+
+test('a modified click on an in-page link opens a new tab and leaves focus alone', async ({ page, context }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop', 'opens a tab of its own');
+  await page.goto('/');
+  await hydrated(page);
+  const contact = page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Contact' });
+  const [tab] = await Promise.all([context.waitForEvent('page'), contact.click({ modifiers: ['ControlOrMeta'] })]);
+  await tab.close();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('#contact')).not.toBeFocused();
+});
+
 test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
 

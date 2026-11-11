@@ -6,7 +6,13 @@ import { EMAIL } from '@/lib/site';
  */
 export function CaseCta() {
   return (
-    <section id="contact" aria-labelledby="cta-h" className="mt-case-end border-t border-rule pt-5">
+    // tabIndex -1: the header's "Contact" moves focus here (see InPageLink), without an outline.
+    <section
+      id="contact"
+      aria-labelledby="cta-h"
+      tabIndex={-1}
+      className="mt-case-end border-t border-rule pt-5 focus:outline-none"
+    >
       <h2 id="cta-h" className="mb-2 font-mono text-label font-normal text-text-3">
         Contact
       </h2>

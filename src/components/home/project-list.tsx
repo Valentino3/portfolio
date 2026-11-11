@@ -47,7 +47,13 @@ const ARROW = [
  */
 export function ProjectList({ projects, activeIndex, onActivate, onListLeave, onBlur }: ProjectListProps) {
   return (
-    <section id="work" aria-labelledby="work-h" className="col-span-full viewer:col-span-6 viewer:col-start-1">
+    // tabIndex -1: an in-page link moves focus here (see InPageLink), without an outline.
+    <section
+      id="work"
+      aria-labelledby="work-h"
+      tabIndex={-1}
+      className="col-span-full focus:outline-none viewer:col-span-6 viewer:col-start-1"
+    >
       <h2 id="work-h" className="sr">
         Selected work
       </h2>

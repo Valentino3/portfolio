@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { CaseSection } from '@/content/case-types';
-import { SectionLink } from './section-link';
+import { InPageLink } from '@/components/site/in-page-link';
 
 /** The band of the viewport (30% to 40% from the top) a section has to cross to become current. */
 const BAND = '-30% 0px -60% 0px';
@@ -39,13 +39,13 @@ export function Toc({ sections }: { sections: Pick<CaseSection, 'id' | 'title'>[
       <ol className="border-l border-rule">
         {sections.map(({ id, title }) => (
           <li key={id}>
-            <SectionLink
-              id={id}
+            <InPageLink
+              href={`#${id}`}
               aria-current={id === current ? 'location' : undefined}
               className="-ml-px block border-l border-transparent py-1.5 pl-3.5 text-text-3 transition-colors hover:text-ink aria-[current=location]:border-ink aria-[current=location]:text-ink"
             >
               {title}
-            </SectionLink>
+            </InPageLink>
           </li>
         ))}
       </ol>
