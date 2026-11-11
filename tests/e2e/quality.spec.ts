@@ -62,18 +62,21 @@ test('open graph uses absolute urls and images render', async ({ page, request }
   expect(res.headers()['content-type']).toContain('image/png');
 });
 
-test('the home and every case have an open graph image, a canonical-based url and the sitemap lists them', async ({
-  page,
-  request,
-}) => {
+test('the home has a 1200x630 open graph image, and the sitemap and robots list the site', async ({ page, request }) => {
   await page.goto('/');
-  expect(await page.locator('meta[property="og:image"]').getAttribute('content')).toMatch(/^https?:\/\//);
-  const home = await request.get('/opengraph-image');
-  expect(home.status()).toBe(200);
-  expect(home.headers()['content-type']).toContain('image/png');
+  const meta = (property: string) => page.locator(`meta[property="${property}"]`).getAttribute('content');
+  const og = await meta('og:image');
+  expect(og).toMatch(/^https?:\/\//);
+  expect([await meta('og:image:width'), await meta('og:image:height')]).toEqual(['1200', '630']);
+  const image = await request.get(new URL(og!).pathname);
+  expect(image.status()).toBe(200);
+  expect(image.headers()['content-type']).toContain('image/png');
+  const png = await image.body();
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
 
   const sitemap = await (await request.get('/sitemap.xml')).text();
-  for (const p of pages) expect(sitemap).toMatch(new RegExp(`<loc>https?://[^<]+${p === '/' ? '' : p}</loc>`));
+  expect(sitemap).toMatch(/<loc>https?:\/\/[^<]+\/<\/loc>/);
+  for (const p of pages.slice(1)) expect(sitemap).toMatch(new RegExp(`<loc>https?://[^<]+${p}</loc>`));
 
   const robots = await (await request.get('/robots.txt')).text();
   expect(robots).toMatch(/Allow: \//);

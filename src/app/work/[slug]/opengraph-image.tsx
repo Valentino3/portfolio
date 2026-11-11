@@ -3,6 +3,7 @@ import { kicker, projectBySlug, publishedProjects } from '@/content/projects';
 import type { Slug } from '@/content/types';
 import { OG_CONTENT_TYPE, OG_SIZE, ogImage } from '@/lib/og';
 
+export const alt = 'Case study by Valentino Rota';
 export const size = OG_SIZE;
 export const contentType = OG_CONTENT_TYPE;
 

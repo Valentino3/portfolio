@@ -11,7 +11,7 @@ export const OG_CONTENT_TYPE = 'image/png';
  * `--color-bg`, `--color-ink`, `--color-text-3`, `--color-rule-strong` and `--color-available`
  * in `globals.css`; this is the only other place they appear.
  */
-const COLOR = {
+export const COLOR = {
   bg: '#f7f7f5',
   ink: '#141414',
   muted: '#63635f',
@@ -21,14 +21,13 @@ const COLOR = {
 
 // Satori reads TTF/OTF, not the woff2 the site serves. Same Geist, static weights.
 const fontDir = join(process.cwd(), 'src/app/og-fonts');
-const fonts = Promise.all([
-  readFile(join(fontDir, 'Geist-SemiBold.ttf')),
-  readFile(join(fontDir, 'GeistMono-Regular.ttf')),
-]);
 
 /** The 1200x630 share card: a mono line on top, the title, and the site address with the availability dot. */
 export async function ogImage({ top, title }: { top: string; title: string }) {
-  const [semiBold, mono] = await fonts;
+  const [semiBold, mono] = await Promise.all([
+    readFile(join(fontDir, 'Geist-SemiBold.ttf')),
+    readFile(join(fontDir, 'GeistMono-Regular.ttf')),
+  ]);
   const host = new URL(SITE_URL).host;
   return new ImageResponse(
     (
