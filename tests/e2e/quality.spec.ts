@@ -104,6 +104,16 @@ test('the home and a case declare an absolute canonical url and their open graph
   }
 });
 
+test('responses carry the baseline security headers', async ({ request }) => {
+  for (const path of ['/', '/does-not-exist']) {
+    const headers = (await request.get(path)).headers();
+    expect(headers['x-content-type-options'], path).toBe('nosniff');
+    expect(headers['referrer-policy'], path).toBe('strict-origin-when-cross-origin');
+    expect(headers['x-frame-options'], path).toBe('DENY');
+    expect(headers['permissions-policy'], path).toBe('camera=(), microphone=(), geolocation=()');
+  }
+});
+
 test('every internal link resolves', async ({ page, request }) => {
   for (const p of pages) {
     await page.goto(p);

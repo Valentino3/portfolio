@@ -16,7 +16,7 @@ npm i
 npm run dev
 ```
 
-Open http://localhost:3000. Requires Node 22.
+Open http://localhost:3000. Requires Node 22 or later.
 
 | Command | What it does |
 | --- | --- |
@@ -59,4 +59,4 @@ To roll back, open the project in Vercel and use **Instant Rollback** to return 
 
 ## Fonts
 
-Geist and Geist Mono are licensed under the SIL Open Font License 1.1. The license text is in [`src/app/fonts/LICENSE.txt`](src/app/fonts/LICENSE.txt).
+Geist and Geist Mono are licensed under the SIL Open Font License 1.1. The license text sits next to each copy of the fonts: [`src/app/fonts/LICENSE.txt`](src/app/fonts/LICENSE.txt) for the web fonts and [`src/app/og-fonts/LICENSE.txt`](src/app/og-fonts/LICENSE.txt) for the ones the Open Graph images are drawn with.
