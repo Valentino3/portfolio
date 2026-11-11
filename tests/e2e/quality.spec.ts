@@ -83,6 +83,24 @@ test('the home has a 1200x630 open graph image, and the sitemap and robots list 
   expect(robots).toMatch(/Sitemap: https?:\/\/\S+\/sitemap\.xml/);
 });
 
+test('the home and a case declare an absolute canonical url and their open graph type, url and site name', async ({
+  page,
+}) => {
+  for (const [path, type] of [
+    ['/', 'website'],
+    ['/work/conosur', 'article'],
+  ] as const) {
+    await page.goto(path);
+    const meta = (property: string) => page.locator(`meta[property="${property}"]`).getAttribute('content');
+    expect(await meta('og:type'), path).toBe(type);
+    expect(await meta('og:site_name'), path).toBe('Valentino Rota');
+    const url = await meta('og:url');
+    expect(url, path).toMatch(/^https?:\/\/[^/]/);
+    expect(new URL(url!).pathname, path).toBe(path);
+    await expect(page.locator('link[rel="canonical"]'), path).toHaveAttribute('href', url!);
+  }
+});
+
 test('every internal link resolves', async ({ page, request }) => {
   for (const p of pages) {
     await page.goto(p);

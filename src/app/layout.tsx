@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SiteFooter } from "@/components/site/site-footer";
-import { SITE_URL } from "@/lib/site";
+import { OPEN_GRAPH_SITE, SITE_URL } from "@/lib/site";
 import { geistMono, geistSans } from "./fonts";
 import "./globals.css";
 
@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "Valentino Rota — Design Engineer",
   description:
     "Design engineer who builds the whole product: production web apps, design systems, auth and APIs. Based in Mar del Plata, Argentina, open to roles in Buenos Aires or remote.",
+  // Relative URLs resolve against metadataBase, so both come out absolute.
+  alternates: { canonical: "/" },
+  openGraph: { type: "website", url: "/", ...OPEN_GRAPH_SITE },
 };
 
 export default function RootLayout({

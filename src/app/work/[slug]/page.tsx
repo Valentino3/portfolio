@@ -14,6 +14,7 @@ import { SiteHeader } from '@/components/site/site-header';
 import { getCase } from '@/content/cases';
 import { nextProject, projectBySlug, publishedProjects } from '@/content/projects';
 import type { Slug } from '@/content/types';
+import { OPEN_GRAPH_SITE } from '@/lib/site';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -35,10 +36,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { project, study } = load((await params).slug);
   const title = `${project.title} — Valentino Rota`;
   const { description } = study.seo;
+  const url = `/work/${project.slug}`;
   return {
     title,
     description,
-    openGraph: { type: 'article', title, description, url: `/work/${project.slug}` },
+    alternates: { canonical: url },
+    openGraph: { type: 'article', title, description, url, ...OPEN_GRAPH_SITE },
   };
 }
 
