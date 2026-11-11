@@ -2,9 +2,12 @@ import Link from 'next/link';
 import { InPageLink } from './in-page-link';
 import { LocalTime } from './local-time';
 
-type Variant = 'home' | 'case';
+type Variant = 'home' | 'case' | 'other';
 
-/** Home links to its own sections; a case study links back to the home ones. */
+/**
+ * Home links to its own sections; a case study links back to the home ones, except Contact, its
+ * own block at the end. Any other page (the 404) has no sections: all three go to the home.
+ */
 const NAV: Record<Variant, { label: string; href: `#${string}` | `/#${string}` }[]> = {
   home: [
     { label: 'Work', href: '#work' },
@@ -15,6 +18,11 @@ const NAV: Record<Variant, { label: string; href: `#${string}` | `/#${string}` }
     { label: 'Work', href: '/#work' },
     { label: 'About', href: '/#about' },
     { label: 'Contact', href: '#contact' },
+  ],
+  other: [
+    { label: 'Work', href: '/#work' },
+    { label: 'About', href: '/#about' },
+    { label: 'Contact', href: '/#contact' },
   ],
 };
 

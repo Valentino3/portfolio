@@ -27,8 +27,15 @@ test('case header points Work and About at the home and only shows the location'
   expect(html).toContain('Open to roles in Buenos Aires or remote');
 });
 
-test('both header variants are the #top focus target of the back to top link', () => {
-  for (const variant of ['home', 'case'] as const) {
+test('any other page (the 404) points all three at the home, and only shows the location', () => {
+  const html = renderToStaticMarkup(<SiteHeader variant="other" />);
+  expect(navHrefs(html, 'Primary')).toEqual(['/#work', '/#about', '/#contact']);
+  expect(html).toContain('Mar del Plata, Argentina');
+  expect(html).not.toContain('<time');
+});
+
+test('every header variant is the #top focus target of the back to top link', () => {
+  for (const variant of ['home', 'case', 'other'] as const) {
     const html = renderToStaticMarkup(<SiteHeader variant={variant} />);
     expect(html).toContain('id="top"');
     expect(html).toContain('tabindex="-1"');

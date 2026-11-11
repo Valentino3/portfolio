@@ -2,10 +2,13 @@ import { expect, test, type Locator } from '@playwright/test';
 import { expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
 
 const pages = ['/', '/work/stock-tienda', '/work/conosur', '/work/dsp2', '/work/analyzer', '/work/bakery-concept'];
+/** A case that does not exist (or is not published) and a URL the site never had: both get the 404 page. */
+const notFound = ['/work/not-a-project', '/does-not-exist'];
 
-for (const p of pages) {
+for (const p of [...pages, ...notFound]) {
   test(`axe + no h-scroll ${p}`, async ({ page }) => {
-    await page.goto(p);
+    const response = await page.goto(p);
+    expect(response?.status()).toBe(notFound.includes(p) ? 404 : 200);
     await expectNoAxeViolations(page);
     await expectNoHorizontalScroll(page);
   });
@@ -18,7 +21,7 @@ test('no horizontal scroll from 320 to 1920, also with 200% text at 320', async 
   for (const width of [320, 768, 1024, 1180, 1280, 1920]) {
     const context = await browser.newContext({ viewport: { width, height: 900 } });
     try {
-      for (const p of pages) {
+      for (const p of [...pages, ...notFound]) {
         const page = await context.newPage();
         await page.goto(p);
         if (width === 320) await page.addStyleTag({ content: 'html{font-size:200%}' });

@@ -39,6 +39,41 @@ test('a modified click on an in-page link opens a new tab and leaves focus alone
   await expect(page.locator('#contact')).not.toBeFocused();
 });
 
+for (const path of ['/work/not-a-project', '/does-not-exist']) {
+  test(`${path} answers 404 with the site's header, a heading and the ways back`, async ({ page }) => {
+    const response = await page.goto(path);
+    expect(response?.status()).toBe(404);
+    await expect(page).toHaveTitle('Page not found — Valentino Rota');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    // The home's canonical URL is not this page's.
+    await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+    await expect(page.getByText('Open to roles in Buenos Aires or remote')).toBeVisible();
+    const main = page.getByRole('main');
+    await expect(main.getByRole('heading', { level: 1 })).toHaveText('Page not found');
+    await expect(main.getByRole('link', { name: 'Home', exact: true })).toHaveAttribute('href', '/');
+    await expect(main.getByRole('link', { name: 'All work' })).toHaveAttribute('href', '/#work');
+    // Every header link leads to a section of the home: this page has none of its own.
+    const nav = page.getByRole('navigation', { name: 'Primary' }).getByRole('link');
+    expect(await nav.evaluateAll((links) => links.map((a) => a.getAttribute('href')))).toEqual([
+      '/#work',
+      '/#about',
+      '/#contact',
+    ]);
+
+    await hydrated(page);
+    await page.getByRole('link', { name: /Back to top/ }).click();
+    await expect(page.locator('#top')).toBeFocused();
+  });
+}
+
+test('"All work" on the 404 page leads to the list of projects', async ({ page }) => {
+  await page.goto('/does-not-exist');
+  await hydrated(page);
+  await page.getByRole('main').getByRole('link', { name: 'All work' }).click();
+  await expect(page).toHaveURL(/\/#work$/);
+  await expect(page.locator('#work li').first()).toBeInViewport();
+});
+
 test.describe('without JavaScript', () => {
   test.use({ javaScriptEnabled: false });
 
