@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      CI: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end and accessibility tests
+        run: npm run e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      # Both presets write to .lighthouseci/, so each one is uploaded
+      # and cleared before the next runs.
+      - name: Lighthouse (mobile)
+        run: npm run lhci:mobile
+
+      - name: Upload Lighthouse mobile results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-mobile
+          path: .lighthouseci/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Clear Lighthouse output
+        if: always()
+        run: rm -rf .lighthouseci
+
+      - name: Lighthouse (desktop)
+        run: npm run lhci:desktop
+
+      - name: Upload Lighthouse desktop results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-desktop
+          path: .lighthouseci/
+          if-no-files-found: ignore
+          retention-days: 14
