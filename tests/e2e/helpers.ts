@@ -3,6 +3,15 @@ import { expect, type Page } from '@playwright/test';
 
 const AXE_TAGS = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa', 'best-practice'];
 
+/**
+ * React has hydrated the page (`data-hydrated` on <html>, see HydrationFlag): the router owns the
+ * in-page links and the buttons work. Clicked earlier, a link is a native jump and a button does
+ * nothing.
+ */
+export async function hydrated(page: Page): Promise<void> {
+  await expect(page.locator('html[data-hydrated]')).toBeAttached();
+}
+
 /** Fails with a readable list of rule ids, impact and offending selectors. */
 export async function expectNoAxeViolations(page: Page): Promise<void> {
   const { violations } = await new AxeBuilder({ page }).withTags(AXE_TAGS).analyze();

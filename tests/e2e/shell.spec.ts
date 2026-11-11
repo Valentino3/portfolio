@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { hydrated } from './helpers';
 
 test('header shows availability and a client-side clock', async ({ page }) => {
   await page.goto('/');
@@ -8,6 +9,7 @@ test('header shows availability and a client-side clock', async ({ page }) => {
 
 test('back to top moves focus to the header', async ({ page }) => {
   await page.goto('/');
+  await hydrated(page);
   await page.getByRole('link', { name: /Back to top/ }).click();
   await expect(page.locator('#top')).toBeFocused();
 });

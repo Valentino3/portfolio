@@ -1,16 +1,9 @@
-import { expect, test, type Page } from '@playwright/test';
-import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
+import { expect, test } from '@playwright/test';
+import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
+// In-page links are clicked only once the page is hydrated: earlier, a click is a native jump,
+// the very thing the Back test below guards against.
 const TOC = 'nav[aria-label="On this page"]';
-
-/**
- * The reading progress bar mounts in an effect after hydration, so once it is attached the
- * router owns the in-page links. Clicking one earlier would be a native jump, which is the
- * very thing the Back test below guards against.
- */
-async function hydrated(page: Page) {
-  await expect(page.locator('[data-reading-progress]')).toBeAttached();
-}
 
 test('case renders kicker, toc and cycles to next project', async ({ page }) => {
   await page.goto('/work/stock-tienda');
@@ -155,6 +148,15 @@ test('the reading progress bar follows the scroll and is removed under reduced m
   await expect(bar).toHaveCount(0);
 });
 
+test('the hydration signal shows up under reduced motion too, where the progress bar never mounts', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/work/stock-tienda');
+  await hydrated(page);
+  await expect(page.locator('[data-reading-progress]')).toHaveCount(0);
+});
+
 test('a case has no axe violations and no horizontal scroll', async ({ page }) => {
   await page.goto('/work/stock-tienda');
   await hydrated(page);
@@ -176,6 +178,7 @@ test.describe('without JavaScript', () => {
   test('a case shows every section, and back to top is a plain #top link', async ({ page }) => {
     await page.goto('/work/stock-tienda');
     for (const id of ['context', 'engineering']) await expect(page.locator(`#${id}`)).toBeVisible();
+    await expect(page.locator('html')).not.toHaveAttribute('data-hydrated');
     const backToTop = page.getByRole('link', { name: /Back to top/ });
     await expect(backToTop).toHaveAttribute('href', '#top');
     await backToTop.click();

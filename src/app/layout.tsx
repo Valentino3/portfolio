@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { HydrationFlag } from "@/components/site/hydration-flag";
 import { SiteFooter } from "@/components/site/site-footer";
 import { OPEN_GRAPH_SITE, SITE_URL } from "@/lib/site";
 import { geistMono, geistSans } from "./fonts";
@@ -28,6 +29,7 @@ export default function RootLayout({
           {children}
           <SiteFooter />
         </div>
+        <HydrationFlag />
       </body>
     </html>
   );

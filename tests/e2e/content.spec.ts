@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { findForbiddenTerms } from '../support/forbidden-terms';
-import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
+import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
 /**
  * Each case against the approved prototype: its title, outcomes, numbered sections in order, the
@@ -137,11 +137,11 @@ const expected: Record<string, Expected> = {
 };
 
 /**
- * Hydrated and settled: the progress bar mounts after hydration, and a diagram that overflows
- * gets its tab stop only after that (a scroll region axe wants to be reachable by keyboard).
+ * Hydrated and settled: each diagram has been measured, and only one that overflows keeps its tab
+ * stop (a scroll region axe wants to be reachable by keyboard).
  */
 async function settled(page: Page) {
-  await expect(page.locator('[data-reading-progress]')).toBeAttached();
+  await hydrated(page);
   await expect
     .poll(() =>
       page.evaluate(() =>

@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
+import { expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
 const EMAIL = 'valentino.rota3@gmail.com';
 
@@ -119,9 +119,8 @@ test.describe('project viewer', () => {
       try {
         const page = await ctx.newPage();
         await page.goto('/');
-        // The header clock starts in an effect after hydration, so a real time means the page is live and the
-        // viewer has already had its chance to mount (a sharper signal than `networkidle`).
-        await expect(page.locator('time').first()).not.toHaveText('--:--');
+        // Hydrated: the viewer has already had its chance to mount (a sharper signal than `networkidle`).
+        await hydrated(page);
         await expect(page.locator('[data-viewer] img')).toHaveCount(0);
         await expect(page.locator('[data-viewer]')).toBeHidden();
       } finally {
@@ -134,6 +133,7 @@ test.describe('project viewer', () => {
 test('copy email reports success', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
+  await hydrated(page);
   const button = page.getByRole('button', { name: 'Copy email' });
   await button.click();
   await expect(page.getByRole('status')).toHaveText('Copied to the clipboard.');
@@ -145,6 +145,7 @@ test('copy email reports success', async ({ page, context }) => {
 test('the copy status clears itself after 6 seconds', async ({ page, context }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.goto('/');
+  await hydrated(page);
   await page.clock.install();
   await page.getByRole('button', { name: 'Copy email' }).click();
   await expect(page.getByRole('status')).toHaveText('Copied to the clipboard.');
@@ -159,6 +160,7 @@ test('copy email failure selects the address and explains', async ({ page, isMob
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('denied')) } });
   });
   await page.goto('/');
+  await hydrated(page);
   await page.getByRole('button', { name: 'Copy email' }).click();
   await expect(page.getByRole('status')).toContainText('Couldn’t copy');
   // A touch device has no Ctrl+C: it is told to press and hold instead.
@@ -175,6 +177,7 @@ test('copy email falls back when there is no clipboard API at all', async ({ pag
     Object.defineProperty(navigator, 'clipboard', { value: undefined });
   });
   await page.goto('/');
+  await hydrated(page);
   await page.getByRole('button', { name: 'Copy email' }).click();
   await expect(page.getByRole('status')).toContainText('Couldn’t copy');
   expect(await page.evaluate(() => getSelection()?.toString())).toBe(EMAIL);
@@ -188,6 +191,7 @@ test('no axe violations or horizontal scroll with the viewer mounted and a failu
     Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('denied')) } });
   });
   await page.goto('/');
+  await hydrated(page);
   if (!isMobile) await expect(page.locator('[data-viewer] img.on')).toBeVisible();
   await page.getByRole('button', { name: 'Copy email' }).click();
   await expect(page.getByRole('status')).toContainText('Couldn’t copy');

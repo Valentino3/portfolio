@@ -1,16 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
-import { expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
+import { expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
+// Zoom links are clicked only once the page is hydrated: earlier, a click just follows the link to
+// the image, which is the no-JavaScript behavior tested separately below.
 const WEBSITES = /^Enlarge: Websites table/;
-
-/**
- * The reading progress bar mounts after hydration, so once it is attached the zoom links belong
- * to the page's script. Clicking one earlier would just follow the link to the image, which is
- * the no-JavaScript behavior tested separately below.
- */
-async function hydrated(page: Page) {
-  await expect(page.locator('[data-reading-progress]')).toBeAttached();
-}
 
 /** Instant, whatever the page's smooth-scroll setting says. */
 async function scrollToY(page: Page, top: number) {
@@ -97,12 +90,13 @@ test('without JS a clip shows its poster and no dead Play button', async ({ brow
 
 test('clip plays when visible and can be paused', async ({ page }) => {
   await page.goto('/work/conosur');
+  await hydrated(page);
   const v = page.locator('video[data-clip]');
+  const paused = () => v.evaluate((e: HTMLVideoElement) => e.paused);
   await v.scrollIntoViewIfNeeded();
-  await page.waitForTimeout(800);
-  expect(await v.evaluate((e: HTMLVideoElement) => e.paused)).toBe(false);
+  await expect.poll(paused).toBe(false);
   await page.getByRole('button', { name: 'Pause' }).click();
-  expect(await v.evaluate((e: HTMLVideoElement) => e.paused)).toBe(true);
+  expect(await paused()).toBe(true);
   await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
 });
 
@@ -125,6 +119,7 @@ test('a clip pauses when it leaves the view and resumes when it returns, unless 
   page,
 }) => {
   await page.goto('/work/conosur');
+  await hydrated(page);
   const v = page.locator('video[data-clip]');
   const paused = () => v.evaluate((e: HTMLVideoElement) => e.paused);
   await v.scrollIntoViewIfNeeded();
@@ -157,6 +152,8 @@ test('reduced motion: clip does not autoplay', async ({ browser }, testInfo) => 
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
   await page.goto('/work/conosur');
+  // Hydrated first, so the wait below gives the clip a real chance to start.
+  await hydrated(page);
   const v = page.locator('video[data-clip]');
   await v.scrollIntoViewIfNeeded();
   await page.waitForTimeout(800);
