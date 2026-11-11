@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { kicker, publishedProjects } from '@/content/projects';
 import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
 // In-page links are clicked only once the page is hydrated: earlier, a click is a native jump,
@@ -12,19 +13,13 @@ test('case renders kicker, toc and cycles to next project', async ({ page }) => 
 });
 
 test('every published case is generated, and the last one cycles back to the first', async ({ page }) => {
-  const cases = [
-    ['stock-tienda', 'Stock Tienda', '01 · Own product · 2026 – now'],
-    ['conosur', 'Conosur', '02 · Client work · 2025 – now'],
-    ['dsp2', 'DSP2 + Reset GUI', '03 · Reset Digital · 2024 – now'],
-    ['analyzer', 'Analyzer', '04 · Reset Digital · 2025 – now'],
-    ['bakery-concept', 'Bakery concept', '05 · Personal concept · 2026'],
-  ];
-  for (const [slug, title, kicker] of cases) {
-    await page.goto(`/work/${slug}`);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(title);
-    await expect(page.locator('[data-kicker]')).toHaveText(kicker);
+  const cases = publishedProjects();
+  for (const project of cases) {
+    await page.goto(`/work/${project.slug}`);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(project.title);
+    await expect(page.locator('[data-kicker]')).toHaveText(kicker(project));
   }
-  await expect(page.getByRole('link', { name: /Next project/ })).toHaveAttribute('href', '/work/stock-tienda');
+  await expect(page.getByRole('link', { name: /Next project/ })).toHaveAttribute('href', `/work/${cases[0].slug}`);
 });
 
 test('the template follows the prototype: back link, facts, hero, outcomes, sections, contact', async ({ page }) => {
@@ -138,12 +133,31 @@ test('only a diagram that overflows is focusable and shows the swipe hint', asyn
   await expect(hint).toBeHidden();
 });
 
+test('before the script runs, a phone can reach the overflowing diagram by keyboard, and axe passes', async ({
+  page,
+}) => {
+  await page.route('**/_next/static/chunks/*.js', (route) => route.abort());
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/work/stock-tienda');
+  const diagram = page.getByRole('img', { name: /^Diagram: the counter app/ });
+  // Not vacuous: the drawing overflows, and no script has run to measure it.
+  expect(await diagram.evaluate((d) => d.scrollWidth > d.clientWidth + 1)).toBe(true);
+  await expect(page.locator('html')).not.toHaveAttribute('data-hydrated');
+  await expect(diagram).toHaveAttribute('tabindex', '0');
+  await expectNoAxeViolations(page);
+});
+
 test('the reading progress bar follows the scroll and is removed under reduced motion', async ({ page }) => {
   await page.goto('/work/stock-tienda');
   const bar = page.locator('[data-reading-progress]');
   await expect(bar).toHaveCSS('transform', 'matrix(0, 0, 0, 1, 0, 0)');
-  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  await expect(bar).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+  // To the very bottom, again until it holds: lazy content further down can still grow the page.
+  await expect
+    .poll(async () => {
+      await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+      return bar.evaluate((el) => getComputedStyle(el).transform);
+    })
+    .toBe('matrix(1, 0, 0, 1, 0, 0)');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect(bar).toHaveCount(0);
 });

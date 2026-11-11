@@ -106,6 +106,8 @@
   --text-card--letter-spacing: -0.015em;
   --text-lead: clamp(1rem, 0.9rem + 0.35vw, 1.1875rem);
   --text-lead--line-height: 1.5;
+  /* The prototype's body line height, for text set in a step that brings its own (About, in lead). */
+  --leading-body: 1.55;
   --text-outcome: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
   --text-outcome--line-height: 1.25;
   --text-outcome--letter-spacing: -0.02em;

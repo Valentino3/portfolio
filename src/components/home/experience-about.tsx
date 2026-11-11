@@ -67,11 +67,11 @@ export function ExperienceAbout() {
       </div>
       <div className={`${COLUMN} max-lg:mt-14`}>
         <SectionHead title="About" />
-        <p className="mt-4 max-w-[52ch] text-lead text-text-2">
+        <p className="mt-4 max-w-[52ch] text-lead leading-body text-text-2">
           I like problems where the interface and the system behind it have to agree: a cash count that adds up, a
           report that only shows a client its own numbers, a table that doesn’t jump while it loads.
         </p>
-        <p className="mt-4 max-w-[52ch] text-lead text-text-2">
+        <p className="mt-4 max-w-[52ch] text-lead leading-body text-text-2">
           Before I call something done, I prove it works, with tests and measurements. I use AI assistants mainly for
           testing.
         </p>

@@ -1,4 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { publishedProjects } from '@/content/projects';
+import type { Slug } from '@/content/types';
 import { findForbiddenTerms } from '../support/forbidden-terms';
 import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
@@ -6,6 +8,7 @@ import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScr
  * Each case against the approved prototype: its title, outcomes, numbered sections in order, the
  * cards in each, and how many diagrams, clips and pictures it holds. The full text is compared
  * to the prototype by a throwaway script at review time; this keeps what would be missed first.
+ * Only published cases run: unpublishing one takes its checks out with it.
  */
 type Expected = {
   h1: string;
@@ -20,7 +23,7 @@ type Expected = {
   pictures: Record<string, number>;
 };
 
-const expected: Record<string, Expected> = {
+const expected: Record<Slug, Expected> = {
   'stock-tienda': {
     h1: 'Stock Tienda',
     outcomes: ['Three stores pay for it', 'It keeps selling offline', 'Electronic invoicing with ARCA'],
@@ -169,7 +172,8 @@ test('the home and the not-found page publish no unpublished terms', async ({ pa
   }
 });
 
-for (const [slug, e] of Object.entries(expected)) {
+for (const { slug } of publishedProjects()) {
+  const e = expected[slug];
   test.describe(slug, () => {
     test('title, outcomes, and no unpublished terms', async ({ page }) => {
       await page.goto(`/work/${slug}`);

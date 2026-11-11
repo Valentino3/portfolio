@@ -1,16 +1,17 @@
 import { expect, test } from '@playwright/test';
+import { publishedProjects } from '@/content/projects';
 import { expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
 
-test('lists five projects in order with context chips', async ({ page }) => {
+const projects = publishedProjects();
+
+test('lists the published projects in order with context chips', async ({ page }) => {
   await page.goto('/');
   const rows = page.locator('#work li');
-  await expect(rows).toHaveCount(5);
-  await expect(rows.nth(0)).toContainText('Stock Tienda');
-  await expect(rows.nth(0)).toContainText('Own product');
-  await expect(rows.nth(1)).toContainText('Conosur');
-  await expect(rows.nth(2)).toContainText('DSP2 + Reset GUI');
-  await expect(rows.nth(3)).toContainText('Analyzer');
-  await expect(rows.nth(4)).toContainText('Bakery concept');
+  await expect(rows).toHaveCount(projects.length);
+  for (const [i, { title, context }] of projects.entries()) {
+    await expect(rows.nth(i)).toContainText(title);
+    await expect(rows.nth(i)).toContainText(context);
+  }
 });
 
 test('each row links to its case and announces role and stack', async ({ page }) => {
@@ -46,7 +47,7 @@ test('without a viewer, every row shows its own thumbnail and caption', async ({
   test.skip(!isMobile, 'the desktop project has the viewer, which hides the thumbnails');
   await page.goto('/');
   const rows = page.locator('#work li');
-  for (let i = 0; i < 5; i++) await expect(rows.nth(i).locator('figure')).toBeVisible();
+  for (let i = 0; i < projects.length; i++) await expect(rows.nth(i).locator('figure')).toBeVisible();
   const first = rows.first().locator('figure');
   await expect(first.locator('img')).toHaveAttribute('alt', '');
   await expect(first.locator('figcaption')).toHaveAttribute('aria-hidden', 'true');
@@ -76,7 +77,7 @@ test('works without JavaScript', async ({ browser }, testInfo) => {
   const page = await ctx.newPage();
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Design engineer who builds the whole product.');
-  await expect(page.locator('#work li a')).toHaveCount(5);
+  await expect(page.locator('#work li a')).toHaveCount(projects.length);
   await ctx.close();
 });
 
@@ -127,6 +128,19 @@ test('at a glance, open source, experience and contact carry the prototype copy'
     'mailto:valentino.rota3@gmail.com',
   );
   await expect(contact.locator('[data-mail-text]')).toHaveText('valentino.rota3@gmail.com');
+});
+
+test('the About copy keeps the body line height, the lede its own', async ({ page }) => {
+  await page.goto('/');
+  /** Line height as a multiple of the font size, as the type scale states it. */
+  const leading = (text: string) =>
+    page.getByText(text).evaluate((p) => {
+      const { lineHeight, fontSize } = getComputedStyle(p);
+      return parseFloat(lineHeight) / parseFloat(fontSize);
+    });
+  expect(await leading('I like problems where the interface')).toBeCloseTo(1.55, 2);
+  expect(await leading('Before I call something done')).toBeCloseTo(1.55, 2);
+  expect(await leading('Five years building production web apps.')).toBeCloseTo(1.5, 2);
 });
 
 test('the home has no axe violations and no horizontal scroll', async ({ page }) => {

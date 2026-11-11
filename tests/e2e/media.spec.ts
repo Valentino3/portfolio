@@ -34,6 +34,8 @@ test('the dialog shows the large image with the figure alt, and every way out re
   await expect(image).toBeVisible();
   await expect(image).toHaveAttribute('src', '/img/dsp2-websites.webp');
   await expect(dialog.getByRole('button', { name: 'Close' })).toBeFocused();
+  // It never runs past the visible part of the viewport (on a phone, the browser's bars take some).
+  expect(await dialog.evaluate((d) => d.getBoundingClientRect().bottom <= window.innerHeight)).toBe(true);
 
   // The Close button.
   await dialog.getByRole('button', { name: 'Close' }).click();

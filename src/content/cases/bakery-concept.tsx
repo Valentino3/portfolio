@@ -1,4 +1,5 @@
 import { Clip } from '@/components/case/clip';
+import { CodeToken } from '@/components/case/code-token';
 import { DecisionCard, DecisionCards } from '@/components/case/decision-card';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
@@ -64,7 +65,7 @@ export const bakeryConcept: CaseStudy = {
             The site keeps its current direction, with product cutouts layered over the type. Before settling, I
             explored three alternatives on the same content: A, editorial, with photography as the lead; B, immersive,
             with full-screen photos; and C, grid, with photos in an asymmetric grid. A floating selector and a{' '}
-            <code className="whitespace-nowrap">?v=</code> parameter switch between them.
+            <CodeToken>?v=</CodeToken> parameter switch between them.
           </p>
           <Clip
             name="bakery-scroll"

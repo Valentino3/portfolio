@@ -14,7 +14,7 @@ function rows(html: string): string[] {
 
 test('renders one row per project with the number hidden from assistive tech', () => {
   const html = renderToStaticMarkup(<ProjectList projects={projects} />);
-  expect(rows(html)).toHaveLength(5);
+  expect(rows(html)).toHaveLength(projects.length);
   expect(html).toContain('<h2 id="work-h" class="sr">Selected work</h2>');
   expect(html).toMatch(/<span[^>]*aria-hidden="true"[^>]*>01<\/span>/);
 });
@@ -44,8 +44,8 @@ test('the role is spoken, not typeset: "Design + build" is read as "Design and b
 
 test('only the first thumbnail loads eagerly, the others wait until they are near', () => {
   const imgs = [...renderToStaticMarkup(<ProjectList projects={projects} />).matchAll(/<img [^>]*>/g)].map((m) => m[0]);
-  expect(imgs).toHaveLength(5);
-  expect(imgs.map((img) => /\sloading="(\w+)"/.exec(img)?.[1])).toEqual(['eager', 'lazy', 'lazy', 'lazy', 'lazy']);
+  expect(imgs).toHaveLength(projects.length);
+  expect(imgs.map((img) => /\sloading="(\w+)"/.exec(img)?.[1])).toEqual(projects.map((_, i) => (i === 0 ? 'eager' : 'lazy')));
 });
 
 test('the thumbnail is decorative: empty alt and an aria-hidden caption', () => {
@@ -61,7 +61,7 @@ test('no row is active unless a parent says which one', () => {
   expect(renderToStaticMarkup(<ProjectList projects={projects} />)).not.toMatch(ACTIVE);
   const html = renderToStaticMarkup(<ProjectList projects={projects} activeIndex={2} />);
   const active = rows(html).map((r) => ACTIVE.test(r));
-  expect(active).toEqual([false, false, true, false, false]);
+  expect(active).toEqual(projects.map((_, i) => i === 2));
 });
 
 test('works with fewer projects when one is unpublished', () => {

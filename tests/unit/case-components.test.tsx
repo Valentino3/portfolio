@@ -1,7 +1,10 @@
+import { readdirSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, test } from 'vitest';
 import { CaseHeader } from '@/components/case/case-header';
+import { CodeToken } from '@/components/case/code-token';
 import { DecisionCard } from '@/components/case/decision-card';
+import { Diagram } from '@/components/case/diagram';
 import { getCase } from '@/content/cases';
 import { projectBySlug, publishedProjects } from '@/content/projects';
 
@@ -53,4 +56,21 @@ test('section ids are unique in a case and never take an id the template uses', 
     expect(new Set(ids).size, p.slug).toBe(ids.length);
     for (const id of ids) expect(['top', 'contact', 'cta'], p.slug).not.toContain(id);
   }
+});
+
+// renderToStaticMarkup is the markup a visitor gets before hydration, and without JavaScript.
+test('before the script runs, a diagram panel is in the tab order and the swipe hint is hidden', () => {
+  const html = renderToStaticMarkup(<Diagram label="Diagram: A to B" rows={[[{ l1: 'A', edge: 'calls' }, { l1: 'B' }]]} />);
+  // Without the script nothing can measure whether the drawing overflows: a keyboard must reach it anyway.
+  expect(html).toMatch(/<div role="img" aria-label="Diagram: A to B" tabindex="0"/);
+  expect(html).toMatch(/^<p aria-hidden="true" hidden=""[^>]*>Swipe to see the whole diagram →<\/p>/);
+});
+
+test('a code token keeps its text on one line', () => {
+  expect(renderToStaticMarkup(<CodeToken>?v=</CodeToken>)).toBe('<code class="whitespace-nowrap">?v=</code>');
+});
+
+test('case content is plain markup and components: no utility classes', () => {
+  const dir = 'src/content/cases';
+  for (const file of readdirSync(dir)) expect(readFileSync(`${dir}/${file}`, 'utf8'), file).not.toContain('className');
 });

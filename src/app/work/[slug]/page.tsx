@@ -49,8 +49,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * The case study template (spec 4.3): back link, kicker, title and dek, facts, hero, outcomes,
  * then the numbered sections beside their index, the contact block and "Next project". The
  * footer comes from the layout. The zoom provider holds the page's one dialog for every figure
- * that can be enlarged. The hero is the likely LCP element: eager and high priority, with no
- * preload link, so it is fetched once.
+ * that can be enlarged. The hero is the likely LCP element: eager and high priority. React also
+ * puts a preload link for it in the head (it does for any img that is not lazy, high priority
+ * first), with the same srcset and sizes as the img, so the browser still fetches it once.
  */
 export default async function CasePage({ params }: Props) {
   const { project, study } = load((await params).slug);

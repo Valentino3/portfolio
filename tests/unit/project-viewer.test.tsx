@@ -24,7 +24,7 @@ test('the viewer container is only displayed under the viewer variant', () => {
 test('WorkIndex renders the list with only the first row active, then the viewer', () => {
   const html = renderToStaticMarkup(<WorkIndex projects={projects} />);
   const rows = [...html.matchAll(/<li\b[^>]*>/g)].map((m) => m[0]);
-  expect(rows).toHaveLength(5);
+  expect(rows).toHaveLength(projects.length);
   expect(rows[0]).toMatch(/\sdata-active=""/);
   // The attribute itself, not the `data-active:` utility classes that mention it.
   rows.slice(1).forEach((row) => expect(row).not.toMatch(/\sdata-active=""/));

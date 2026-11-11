@@ -28,15 +28,21 @@ function selectAddress() {
  *
  * It renders a fragment: the button is an item of the contact row (a wrapping
  * flex box) and the status line takes the full width under it.
+ *
+ * Each outcome is a new text node, keyed by a count: a live region speaks what is
+ * added to it, and the same text set again would add nothing, so a second click
+ * with the same outcome would go unannounced.
  */
 export function CopyEmailButton({ email }: { email: string }) {
-  const [status, setStatus] = useState<Status | null>(null);
+  const [status, setStatus] = useState<(Status & { count: number }) | null>(null);
+  const shown = useRef(0);
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   const show = (next: Status) => {
     clearTimeout(timer.current);
-    setStatus(next);
+    shown.current += 1;
+    setStatus({ ...next, count: shown.current });
     timer.current = setTimeout(() => setStatus(null), CLEAR_AFTER_MS);
   };
 
@@ -66,7 +72,7 @@ export function CopyEmailButton({ email }: { email: string }) {
           status?.kind === 'done' ? 'text-ok' : status?.kind === 'fail' ? 'text-error' : 'text-text-2'
         }`}
       >
-        {status?.text}
+        {status && <span key={status.count}>{status.text}</span>}
       </p>
     </>
   );

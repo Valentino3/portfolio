@@ -1,7 +1,9 @@
 import { expect, test, type Locator } from '@playwright/test';
+import { publishedProjects } from '@/content/projects';
 import { expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
 
-const pages = ['/', '/work/stock-tienda', '/work/conosur', '/work/dsp2', '/work/analyzer', '/work/bakery-concept'];
+const projects = publishedProjects();
+const pages = ['/', ...projects.map(({ slug }) => `/work/${slug}`)];
 /** A case that does not exist (or is not published) and a URL the site never had: both get the 404 page. */
 const notFound = ['/work/not-a-project', '/does-not-exist'];
 
@@ -142,11 +144,11 @@ async function expectVisibleImagesLoaded(images: Locator) {
 
 test('home thumbnails (first and lower rows, or the viewer) and case images load', async ({ page }) => {
   await page.goto('/');
-  // Below the viewer breakpoint the rows show their own thumbnails; above it the viewer holds all five.
-  // The viewer's images mount after hydration, so wait for the five to exist before checking them.
+  // Below the viewer breakpoint the rows show their own thumbnails; above it the viewer holds them all.
+  // The viewer's images mount after hydration, so wait for all of them to exist before checking them.
   const thumbnails = page.locator('#work figure img:visible, [data-viewer] img');
-  await expect(thumbnails).toHaveCount(5);
-  expect(await expectVisibleImagesLoaded(thumbnails)).toBe(5);
+  await expect(thumbnails).toHaveCount(projects.length);
+  expect(await expectVisibleImagesLoaded(thumbnails)).toBe(projects.length);
 
   await page.goto('/work/stock-tienda');
   expect(await expectVisibleImagesLoaded(page.locator('main img'))).toBeGreaterThan(0);

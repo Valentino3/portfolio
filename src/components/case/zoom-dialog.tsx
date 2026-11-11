@@ -50,7 +50,7 @@ export function ZoomProvider({ children }: { children: ReactNode }) {
           // The backdrop belongs to the dialog itself; its contents fill the box.
           if (event.target === event.currentTarget) event.currentTarget.close();
         }}
-        className="m-auto max-h-[92vh] max-w-[min(1400px,94vw)] overflow-auto rounded-image border-0 bg-bg p-0 text-ink shadow-dialog backdrop:bg-ink/72"
+        className="m-auto max-h-[92dvh] max-w-[min(1400px,94vw)] overflow-auto rounded-image border-0 bg-bg p-0 text-ink shadow-dialog backdrop:bg-ink/72"
       >
         <form method="dialog" className="flex justify-end p-2">
           <button
@@ -69,7 +69,7 @@ export function ZoomProvider({ children }: { children: ReactNode }) {
             // The original file, the one the link points to: no resized copy, and one download.
             unoptimized
             loading="eager"
-            className="block h-auto max-h-[calc(92vh-3.25rem)] w-auto max-w-full"
+            className="block h-auto max-h-[calc(92dvh-3.25rem)] w-auto max-w-full"
           />
         )}
       </dialog>
