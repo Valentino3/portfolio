@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { CLIPS, type ClipName } from '@/content/clips';
 import { FigureFrame } from './figure-frame';
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
@@ -20,8 +21,8 @@ function useHydrated(): boolean {
  * (or without it) it is its poster, with no button that would do nothing. The button sits in the
  * caption row, so it never covers the recording.
  *
- * Files: `/media/{name}.webm` and `/media/{name}-poster.webp`, both 1280x800. `alt` describes
- * what happens in the recording, for assistive tech.
+ * Files and size come from the `CLIPS` registry, so the box is reserved at the clip's own
+ * proportions. `alt` describes what happens in the recording, for assistive tech.
  */
 export function Clip({
   name,
@@ -29,7 +30,7 @@ export function Clip({
   caption,
   note,
 }: {
-  name: 'conosur-releases' | 'bakery-scroll';
+  name: ClipName;
   alt: string;
   caption: string;
   note?: string;
@@ -101,8 +102,8 @@ export function Clip({
         playsInline
         preload="none"
         poster={`/media/${name}-poster.webp`}
-        width={1280}
-        height={800}
+        width={CLIPS[name].width}
+        height={CLIPS[name].height}
         aria-label={alt}
         data-clip=""
         onPlay={() => setPlaying(true)}

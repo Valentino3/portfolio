@@ -1,3 +1,4 @@
+import { Clip } from '@/components/case/clip';
 import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
@@ -91,6 +92,11 @@ export const stockTienda: CaseStudy = {
             ledger you can trust at a glance. The tokens and rules are written down in the repository, so every new
             screen follows them.
           </p>
+          <Clip
+            name="stock-counter"
+            alt="Screen recording of the Vender screen: the cursor searches ‘bolt’, adds Lightning Bolt, raises the quantity to 3, switches the line to the cash price list so the total drops from $ 13.500,00 to $ 12.600,00, and confirms; a notice reads ‘Venta #1 registrada’ and the cart returns to empty."
+            caption="A counter sale: search, quantity, cash price list, charge"
+          />
           <Decisions>
             <Decision
               title="Every figure in tabular mono"

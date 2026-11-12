@@ -8,12 +8,36 @@ import type { CaseStudy } from '../case-types';
 import { projectSummary } from '../projects';
 import type { Media } from '../types';
 
-const directions: Media = {
-  src: '/img/bakery-directions.webp',
-  width: 2400,
-  height: 489,
-  alt: 'The three alternative directions side by side: editorial, immersive and grid',
-};
+/** The three alternative directions, each the top of the same page. */
+const directions: { image: Media; caption: string }[] = [
+  {
+    image: {
+      src: '/img/bakery-direction-a.webp',
+      width: 2400,
+      height: 1500,
+      alt: 'Direction A, editorial: a large serif headline beside a photo of a hand on a sourdough loaf',
+    },
+    caption: 'A editorial',
+  },
+  {
+    image: {
+      src: '/img/bakery-direction-b.webp',
+      width: 2400,
+      height: 1500,
+      alt: 'Direction B, immersive: the headline over a full-screen photo of bread shelves',
+    },
+    caption: 'B immersive',
+  },
+  {
+    image: {
+      src: '/img/bakery-direction-c.webp',
+      width: 2400,
+      height: 1500,
+      alt: 'Direction C, grid: the headline in a panel among photos in an asymmetric grid',
+    },
+    caption: 'C grid',
+  },
+];
 const cutouts: Media = {
   src: '/img/bakery-cutouts.webp',
   width: 2400,
@@ -70,14 +94,12 @@ export const bakeryConcept: CaseStudy = {
             alt="Screen recording: the headline and product cutouts animate in, then the page scrolls into the manifesto section"
             caption="Motion: entrance and scroll into the manifesto"
           />
+          <Gallery columns={3}>
+            {directions.map(({ image, caption }) => (
+              <Figure key={image.src} image={image} caption={caption} sizes={GALLERY_SIZES.third} zoom />
+            ))}
+          </Gallery>
           <Gallery>
-            <Figure
-              image={directions}
-              caption="A editorial · B immersive · C grid"
-              sizes={GALLERY_SIZES.wide}
-              wide
-              zoom
-            />
             <Figure
               image={cutouts}
               caption="Current direction: cutouts over the type"
