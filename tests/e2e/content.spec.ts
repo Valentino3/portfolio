@@ -30,7 +30,7 @@ const expected: Record<Slug, Expected> = {
     h1: 'Stock Tienda',
     meta: [
       'Own product, 2026 – now.',
-      'Solo: product, design, code and operations.',
+      'Product, design, code and operations.',
       'Next.js, TypeScript, Tailwind CSS 4, shadcn/Radix, PostgreSQL (Neon), Drizzle, Vitest, Playwright, fast-check.',
       'Repository (public)',
       'Screens come from a test store with demo data.',
@@ -64,7 +64,6 @@ const expected: Record<Slug, Expected> = {
     h1: 'Conosur',
     meta: [
       'Client work, 2025 – now.',
-      'Design, build, deploy and maintenance, for CONOSUR, music artist.',
       'React, TypeScript, Vite, Tailwind, Framer Motion, i18next, Nginx.',
       'Live at conosur.tv',
     ],
@@ -90,7 +89,7 @@ const expected: Record<Slug, Expected> = {
     meta: [
       'Reset Digital, 2024 – now.',
       'Lead UI Developer (promoted). I lead one engineer and review their pull requests.',
-      'Product UI, authorization, API hardening, Reset GUI.',
+      'Product UI, authorization, Reset GUI.',
       'Next.js 14 (App Router), TypeScript, MUI, TanStack Table, Prisma, MySQL, next-auth, Storybook.',
       'Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
     ],
@@ -122,8 +121,7 @@ const expected: Record<Slug, Expected> = {
     h1: 'Analyzer',
     meta: [
       'Reset Digital, 2025 – now.',
-      'Main contributor, including all of the authentication work.',
-      'Authentication, access model, LLM evaluation, client UI.',
+      'Access model, client UI.',
       'React 19, Vite, MUI, oidc-client-ts, Python API, MySQL, Keycloak, Nginx, Docker Compose.',
       'Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
     ],
@@ -155,7 +153,7 @@ const expected: Record<Slug, Expected> = {
     h1: 'Bakery concept',
     meta: [
       'Personal concept, 2026.',
-      'Design and build: art direction, scroll scenes, content model, image pipeline.',
+      'Design and build: content model.',
       'React, TypeScript, Vite, GSAP ScrollTrigger, sharp.',
     ],
     outcomes: ['Three art directions, one codebase', 'Nothing unconfirmed gets published', 'Photos made usable locally'],
@@ -172,6 +170,19 @@ const expected: Record<Slug, Expected> = {
     pictures: { directions: 4, interface: 1 },
   },
 };
+
+/** Lowercase words, punctuation and dashes dropped. */
+const words = (text: string) => text.toLowerCase().match(/[\p{L}\p{N}]+(?:['’][\p{L}]+)?/gu) ?? [];
+
+/** Every run of `n` consecutive words that appears in both texts. */
+function sharedRuns(a: string, b: string, n: number): string[] {
+  const runs = (text: string) => {
+    const w = words(text);
+    return new Set(w.slice(0, Math.max(0, w.length - n + 1)).map((_, i) => w.slice(i, i + n).join(' ')));
+  };
+  const inA = runs(a);
+  return [...runs(b)].filter((run) => inA.has(run));
+}
 
 /**
  * Hydrated and settled: each diagram has been measured, and only one that overflows keeps its tab
@@ -222,9 +233,9 @@ for (const { slug } of publishedProjects()) {
       for (const fact of e.meta) await expect(meta).toContainText(fact);
       // No label-over-value: the facts are paragraphs, not a term list.
       await expect(meta.locator('dl, dt, dd')).toHaveCount(0);
-      const dek = (await page.locator('h1 + p').innerText()).toLowerCase();
-      const sentences = (await meta.innerText()).split(/(?<=\.)\s+/).filter((s) => s.length > 24);
-      for (const sentence of sentences) expect(dek, sentence).not.toContain(sentence.replace(/\.$/, '').toLowerCase());
+      // Repeating the dek means sharing a run of four or more words with it, whatever the case or punctuation.
+      const shared = sharedRuns(await page.locator('h1 + p').innerText(), await meta.innerText(), 4);
+      expect(shared).toEqual([]);
     });
 
     test('sections in prototype order, with no numbers, each with its decisions', async ({ page }) => {

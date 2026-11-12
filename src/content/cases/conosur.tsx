@@ -30,7 +30,7 @@ export const conosur: CaseStudy = {
   slug: 'conosur',
   dek: 'The website of CONOSUR, a music artist: releases with a Spotify player that falls back to YouTube, a directory of 22 collaborators, and videos, in Spanish and English. Client work: I designed and built it, and I’ve deployed and maintained it since July 2025.',
   meta: [
-    'Design, build, deploy and maintenance, for CONOSUR, music artist.',
+    null,
     <>
       React, TypeScript, Vite, Tailwind, Framer Motion, i18next, Nginx. Live at{' '}
       <ExternalLink href="https://conosur.tv">conosur.tv</ExternalLink>.
@@ -109,8 +109,8 @@ export const conosur: CaseStudy = {
                 their monthly costs, fees and build times, instead of picking a platform and building.
               </p>
               <Result>
-                The result was a recommendation (a custom storefront inside the site, on top of Shopify), plus an
-                early warning: none of the five options could sell show tickets.
+                A recommendation (a custom storefront inside the site, on top of Shopify), plus an early warning:
+                none of the five options could sell show tickets.
               </Result>
             </Decision>
           </Decisions>

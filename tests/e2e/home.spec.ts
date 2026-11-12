@@ -137,10 +137,13 @@ test('stack, open source, experience and contact carry the owner’s copy', asyn
   );
   const internship = about.locator('li').nth(4);
   await expect(internship).toContainText('Developer Intern, Forensic Informatics (internship)');
-  // Undated: no date column, so no empty cell; the role starts where the row starts.
-  await expect(internship.locator('> span.tabular-nums')).toHaveCount(0);
-  const [row, role] = await Promise.all([internship.boundingBox(), internship.locator('b').boundingBox()]);
-  expect(role!.x - row!.x).toBeLessThan(2);
+  // Dated like every other row, and laid out like them: the role starts where the others' do.
+  await expect(internship.locator('> span.tabular-nums')).toHaveText('2018');
+  const [role, firstRole] = await Promise.all([
+    internship.locator('b').boundingBox(),
+    about.locator('li').nth(0).locator('b').boundingBox(),
+  ]);
+  expect(Math.abs(role!.x - firstRole!.x)).toBeLessThan(1);
   await expect(about).not.toContainText('AI assistants');
 
   const contact = page.locator('#contact');

@@ -25,7 +25,7 @@ export const stockTienda: CaseStudy = {
   slug: 'stock-tienda',
   dek: 'Software for small stores to sell at the counter, keep their stock and close the cash register. I built it alone, end to end. Three stores pay for it and have used it for about three months.',
   meta: [
-    'Solo: product, design, code and operations.',
+    'Product, design, code and operations.',
     <>
       Next.js, TypeScript, Tailwind CSS 4, shadcn/Radix, PostgreSQL (Neon), Drizzle, Vitest, Playwright, fast-check.{' '}
       <ExternalLink href="https://github.com/Valentino3/stock-tienda">Repository (public)</ExternalLink>. Screens come

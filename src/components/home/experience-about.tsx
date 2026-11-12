@@ -1,7 +1,7 @@
 import { SectionHead } from './section-head';
 
-/** `when` is a date range and nothing else. A row without one has no date column at all. */
-const EXPERIENCE: { when?: string; role: string; org: string; summary: string }[] = [
+/** `when` is a date or a date range and nothing else. */
+const EXPERIENCE: { when: string; role: string; org: string; summary: string }[] = [
   {
     when: 'Jun 2022 – now',
     role: 'Lead UI Developer',
@@ -30,14 +30,12 @@ const EXPERIENCE: { when?: string; role: string; org: string; summary: string }[
     summary: 'Applications and websites for several clients, in C#, ASP.NET and Node.js.',
   },
   {
+    when: '2018',
     role: 'Developer Intern',
     org: 'Forensic Informatics (internship)',
     summary: 'Computer-vision tooling for video evidence: face detection and object measurement.',
   },
 ];
-
-/** A dated row: the dates in a column of their own, the role and summary beside them. */
-const DATED = 'grid-cols-[9.5rem_minmax(0,1fr)]';
 
 /** Two columns from 1024px up: Experience on the left, About on the right. */
 const COLUMN = 'col-span-full lg:col-span-6';
@@ -57,14 +55,14 @@ export function ExperienceAbout() {
           {EXPERIENCE.map(({ when, role, org, summary }) => (
             <li
               key={role}
-              className={`grid items-baseline gap-x-4 gap-y-1 border-b border-rule py-4 max-sm:grid-cols-1 ${when ? DATED : ''}`}
+              className="grid grid-cols-[9.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 border-b border-rule py-4 max-sm:grid-cols-1"
             >
-              {when && <span className="text-ui-sm text-text-3 tabular-nums">{when}</span>}
+              <span className="text-ui-sm text-text-3 tabular-nums">{when}</span>
               <span>
                 <b className="font-medium">{role}</b>
                 <span className="text-text-2">, {org}</span>
               </span>
-              <p className={`text-ui-sm text-text-2 max-sm:col-start-1 ${when ? 'col-start-2' : ''}`}>{summary}</p>
+              <p className="col-start-2 text-ui-sm text-text-2 max-sm:col-start-1">{summary}</p>
             </li>
           ))}
         </ul>

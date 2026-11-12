@@ -57,19 +57,29 @@ export function Toc({ sections }: { sections: Pick<CaseSection, 'id' | 'title'>[
 
   useEffect(() => {
     const element = marker.current;
+    const rail = list.current;
     const index = sections.findIndex(({ id }) => id === current);
-    const item = list.current?.children[index] as HTMLElement | undefined;
-    if (!element) return;
+    const item = rail?.children[index] as HTMLElement | undefined;
+    if (!element || !rail) return;
     if (!item) {
       element.style.opacity = '0';
       shown.current = false;
       return;
     }
-    const target = [item.offsetTop, item.offsetHeight];
-    if (shown.current) spring.current?.to(target);
-    else spring.current?.jump(target);
+    const target = () => [item.offsetTop, item.offsetHeight];
+    if (shown.current) spring.current?.to(target());
+    else spring.current?.jump(target());
     element.style.opacity = '1';
     shown.current = true;
+    // A reflow (a resize, a font that arrives) moves the entry: the marker follows, unanimated. The
+    // observer also reports once when it starts; that one is skipped, or it would cut the slide short.
+    let started = false;
+    const observer = new ResizeObserver(() => {
+      if (started) spring.current?.jump(target());
+      started = true;
+    });
+    observer.observe(rail);
+    return () => observer.disconnect();
   }, [current, sections]);
 
   return (

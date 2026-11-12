@@ -28,12 +28,10 @@ export function Clip({
   name,
   alt,
   caption,
-  note,
 }: {
   name: ClipName;
   alt: string;
   caption: string;
-  note?: string;
 }) {
   const video = useRef<HTMLVideoElement>(null);
   // Set by the visitor's Pause, and from the start under reduced motion: scrolling must not undo it.
@@ -79,7 +77,6 @@ export function Clip({
   return (
     <FigureFrame
       caption={caption}
-      note={note}
       className="mt-6"
       action={
         hydrated && (

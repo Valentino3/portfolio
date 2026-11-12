@@ -29,7 +29,7 @@ export const dsp2: CaseStudy = {
   slug: 'dsp2',
   dek: 'Software that buys and sells online ad space automatically (a DSP/SSP platform), and the design system it shares with Analyzer. I led the security hardening that let the first outside client use it on its own.',
   meta: [
-    'Lead UI Developer (promoted). I lead one engineer and review their pull requests. Product UI, authorization, API hardening, Reset GUI.',
+    'Lead UI Developer (promoted). I lead one engineer and review their pull requests. Product UI, authorization, Reset GUI.',
     'Next.js 14 (App Router), TypeScript, MUI, TanStack Table, Prisma, MySQL, next-auth, Storybook. Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
   ],
   hero: {

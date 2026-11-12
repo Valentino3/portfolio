@@ -66,7 +66,7 @@ test('a gallery is a two-column grid that stacks on a phone', () => {
 });
 
 test('before the page script runs a clip is its poster: no autoplay, no controls, no dead button', () => {
-  const html = renderToStaticMarkup(<Clip name="bakery-scroll" alt="The page scrolls" caption="Scroll" note="demo data" />);
+  const html = renderToStaticMarkup(<Clip name="bakery-scroll" alt="The page scrolls" caption="Scroll" />);
   const video = html.match(/<video [^>]*>/)![0];
   // HTML attribute names are case-insensitive: React writes playsInline as is.
   for (const attribute of ['muted=""', 'loop=""', 'playsinline=""', 'preload="none"', 'data-clip=""']) {
@@ -78,7 +78,7 @@ test('before the page script runs a clip is its poster: no autoplay, no controls
   expect(video).toContain('aria-label="The page scrolls"');
   expect(video).not.toMatch(/\b(autoplay|controls)\b/i);
   expect(html).toContain('<source src="/media/bakery-scroll.webm" type="video/webm"/>');
-  expect(html.match(/<figcaption[^>]*>(.*)<\/figcaption>/)![1].replace(/<[^>]+>/g, '')).toBe('Scroll (demo data)');
+  expect(html.match(/<figcaption[^>]*>(.*)<\/figcaption>/)![1]).toBe('<span>Scroll</span>');
   expect(html).not.toContain('<button');
   // Standalone in a section, so it brings its own space above, like galleries and diagrams.
   expect(html).toMatch(/^<figure class="mt-6">/);
