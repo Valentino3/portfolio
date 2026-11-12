@@ -23,7 +23,7 @@ export const analyzer: CaseStudy = {
   slug: 'analyzer',
   dek: 'An AI service that scores websites by the emotions their pages evoke, so ads can be placed where the mood fits. DSP2 uses those scores for site selection. I’m its main contributor: I took it from no authentication to Keycloak, and I ran the study that measured whether its scores could be trusted.',
   meta: [
-    'Access model, client UI.',
+    'Authentication, access model, LLM evaluation, client UI.',
     'React 19, Vite, MUI, oidc-client-ts, Python API, MySQL, Keycloak, Nginx, Docker Compose. Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
   ],
   hero: {

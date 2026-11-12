@@ -55,7 +55,7 @@ export const bakeryConcept: CaseStudy = {
   slug: 'bakery-concept',
   dek: 'A self-initiated site concept for a local sourdough bakery, which I’m presenting to its owners. An exercise in art direction, scroll motion and an image pipeline. Here the bakery’s name and logo are replaced with a placeholder, “Horno Lento”.',
   meta: [
-    'Design and build: content model.',
+    'Design and build: art direction, scroll scenes, content model, image pipeline.',
     'React, TypeScript, Vite, GSAP ScrollTrigger, sharp.',
   ],
   hero: {

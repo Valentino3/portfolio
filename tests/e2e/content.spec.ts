@@ -121,7 +121,7 @@ const expected: Record<Slug, Expected> = {
     h1: 'Analyzer',
     meta: [
       'Reset Digital, 2025 – now.',
-      'Access model, client UI.',
+      'Authentication, access model, LLM evaluation, client UI.',
       'React 19, Vite, MUI, oidc-client-ts, Python API, MySQL, Keycloak, Nginx, Docker Compose.',
       'Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
     ],
@@ -153,7 +153,7 @@ const expected: Record<Slug, Expected> = {
     h1: 'Bakery concept',
     meta: [
       'Personal concept, 2026.',
-      'Design and build: content model.',
+      'Design and build: art direction, scroll scenes, content model, image pipeline.',
       'React, TypeScript, Vite, GSAP ScrollTrigger, sharp.',
     ],
     outcomes: ['Three art directions, one codebase', 'Nothing unconfirmed gets published', 'Photos made usable locally'],
