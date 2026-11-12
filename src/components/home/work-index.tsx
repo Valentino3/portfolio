@@ -22,7 +22,7 @@ function barFor(list: HTMLOListElement, index: number): [y: number, height: numb
  * The project list and the viewer that follows it. It returns a fragment so both stay direct
  * grid items of the hero's 12-column grid.
  *
- * Two things follow the pointer at different speeds. The active row (its arrow, and the one bar
+ * Two things follow the pointer at different speeds. The active row (marked by the one bar
  * shared by all rows) follows at once: the bar is on a spring that is retargeted mid-flight, so
  * a sweep down the list reads as one movement. The viewer waits HOVER_INTENT_MS for the pointer
  * to rest, so a sweep does not flash through every image. Keyboard focus moves both at once.
