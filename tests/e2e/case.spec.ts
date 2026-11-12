@@ -79,6 +79,17 @@ test('desktop toc marks the section in view', async ({ page, isMobile }) => {
     window.scrollTo({ top: scrollY + top - innerHeight * 0.35, behavior: 'instant' });
   });
   await expect(page.locator(`${TOC} a[aria-current="location"]`)).toHaveText('Engineering decisions');
+  // One marker on the rail, and it has slid to the current entry.
+  await expect(page.locator(`${TOC} [data-toc-marker]`)).toHaveCount(1);
+  const markerOnCurrent = () =>
+    page.evaluate((toc) => {
+      const marker = document.querySelector(`${toc} [data-toc-marker]`)!.getBoundingClientRect();
+      const entry = document.querySelector(`${toc} a[aria-current="location"]`)!.getBoundingClientRect();
+      return Math.abs(marker.top - entry.top) < 1 && Math.abs(marker.height - entry.height) < 1;
+    }, TOC);
+  await expect.poll(markerOnCurrent).toBe(true);
+  // No "On this page" label on desktop: the nav's accessible name says what it is.
+  await expect(page.locator(TOC)).not.toContainText('On this page');
 
   // Back above the first section, nothing is current.
   await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));

@@ -112,7 +112,9 @@ test('a clip has a text alternative and a visible caption, and the button never 
   await expect(figure.locator('video')).toHaveAttribute('preload', 'none');
   await expect(figure.locator('source')).toHaveAttribute('src', '/media/conosur-releases.webm');
   await expect(figure.locator('figcaption')).toContainText('Motion: scrolling into releases and switching between them');
-  await expect(figure.locator('figcaption')).toContainText('conosur.tv, recorded');
+  // The provenance note is said once per case, on the hero; the clip is not an exception.
+  await expect(figure.locator('figcaption')).not.toContainText('conosur.tv');
+  await expect(figure.locator('figcaption')).not.toContainText('recorded');
   // Ruling R5: the label itself says what the button does, so there is no aria-pressed on top of it.
   await expect(figure.getByRole('button', { name: /^(Play|Pause)$/ })).not.toHaveAttribute('aria-pressed', /.*/);
 });
@@ -147,6 +149,71 @@ test('a clip pauses when it leaves the view and resumes when it returns, unless 
   // And Play puts it back under the visitor's control.
   await page.getByRole('button', { name: 'Play' }).click();
   expect(await paused()).toBe(false);
+});
+
+test('the stock tienda counter clip plays in view, pauses out of it, at its own size', async ({ page }) => {
+  await page.goto('/work/stock-tienda');
+  await hydrated(page);
+  const v = page.locator('#design video[data-clip]');
+  await expect(v).toHaveAttribute('poster', '/media/stock-counter-poster.webp');
+  await expect(v).toHaveAttribute('width', '1952');
+  await expect(v).toHaveAttribute('height', '1226');
+  // It comes after the section's intro, before the first decision.
+  const [intro, clip, decision] = await Promise.all([
+    page.locator('#design > p').first().boundingBox(),
+    v.boundingBox(),
+    page.locator('#design article').first().boundingBox(),
+  ]);
+  expect(intro!.y).toBeLessThan(clip!.y);
+  expect(clip!.y).toBeLessThan(decision!.y);
+  await expect(page.locator('#design figure', { has: v }).locator('figcaption')).toHaveText(
+    'A counter sale: search, quantity, cash price list, charge',
+  );
+
+  const paused = () => v.evaluate((e: HTMLVideoElement) => e.paused);
+  await v.scrollIntoViewIfNeeded();
+  await expect.poll(paused).toBe(false);
+  // The reserved box has the clip's proportions: nothing letterboxed, nothing cropped.
+  const box = (await v.boundingBox())!;
+  expect(box.width / box.height).toBeCloseTo(1952 / 1226, 1);
+  await scrollToY(page, 0);
+  await expect.poll(paused).toBe(true);
+  await v.scrollIntoViewIfNeeded();
+  await expect.poll(paused).toBe(false);
+  await page.locator('#design figure', { has: v }).getByRole('button', { name: 'Pause' }).click();
+  expect(await paused()).toBe(true);
+});
+
+test('the bakery shows three direction figures, each opening its own zoom', async ({ page }, testInfo) => {
+  await page.goto('/work/bakery-concept');
+  await hydrated(page);
+  const captions = ['A editorial', 'B immersive', 'C grid'];
+  const figures = page.locator('#directions figure', { has: page.locator('a[href^="/img/bakery-direction-"]') });
+  await expect(figures).toHaveCount(3);
+  await expect(figures.locator('figcaption')).toHaveText(captions);
+  const boxes = await Promise.all([0, 1, 2].map(async (i) => (await figures.nth(i).boundingBox())!));
+  if (testInfo.project.name === 'desktop') {
+    // Three columns: one row, side by side.
+    expect(new Set(boxes.map((b) => Math.round(b.y))).size).toBe(1);
+    expect(boxes[0].x).toBeLessThan(boxes[1].x);
+    expect(boxes[1].x).toBeLessThan(boxes[2].x);
+  } else {
+    // One column: stacked, each the full width.
+    expect(boxes[0].y).toBeLessThan(boxes[1].y);
+    expect(boxes[1].y).toBeLessThan(boxes[2].y);
+    expect(boxes[0].width).toBeCloseTo(boxes[1].width, 0);
+  }
+  const dialog = page.getByRole('dialog', { name: 'Enlarged image' });
+  for (const [i, letter] of ['a', 'b', 'c'].entries()) {
+    const link = page.getByRole('link', { name: `Enlarge: ${captions[i]}` });
+    await link.click();
+    await expect(dialog.getByRole('img')).toHaveAttribute('src', `/img/bakery-direction-${letter}.webp`);
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(link).toBeFocused();
+  }
+  // The old single strip is gone.
+  await expect(page.locator('img[src*="bakery-directions"]')).toHaveCount(0);
 });
 
 test('reduced motion: clip does not autoplay', async ({ browser }, testInfo) => {

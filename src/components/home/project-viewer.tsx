@@ -47,6 +47,8 @@ function createSwap(images: HTMLImageElement[], initial: number) {
   const paint = (progress: number) => {
     images.forEach((image, i) => {
       const style = image.style;
+      // Which picture is the one on show, for anything that has to know without reading styles.
+      image.toggleAttribute('data-shown', i === shown);
       if (i === shown) {
         style.visibility = 'visible';
         style.opacity = String(OPACITY_FROM + (1 - OPACITY_FROM) * clamp(progress / OPAQUE_AT));

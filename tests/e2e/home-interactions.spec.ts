@@ -26,7 +26,7 @@ test.describe('project viewer', () => {
 
   test('viewer follows the hovered row, and focus once the pointer is off the list', async ({ page }) => {
     await page.goto('/');
-    const viewerImg = page.locator('[data-viewer] img.on');
+    const viewerImg = page.locator('[data-viewer] img[data-shown]');
     // The first image mounts after hydration and the media query match: from then on, handlers are live.
     await expect(viewerImg).toBeVisible();
     await expect(page.locator('[data-viewer] a')).toHaveAttribute('href', work(0));
@@ -51,7 +51,7 @@ test.describe('project viewer', () => {
     page,
   }) => {
     await page.goto('/');
-    await expect(page.locator('[data-viewer] img.on')).toBeVisible();
+    await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
     const link = page.locator('[data-viewer] a');
     const rows = page.locator('#work li');
     await stopTime(page);
@@ -67,7 +67,7 @@ test.describe('project viewer', () => {
 
   test('crossing a row on the way to another never shows the crossed row', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('[data-viewer] img.on')).toBeVisible();
+    await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
     const link = page.locator('[data-viewer] a');
     const rows = page.locator('#work li');
     // Every row that becomes active, recorded as it happens: a brief flash cannot slip between two checks.
@@ -94,7 +94,7 @@ test.describe('project viewer', () => {
 
   test('leaving the list cancels a pending hover, and keeps the row that was shown', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('[data-viewer] img.on')).toBeVisible();
+    await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
     const link = page.locator('[data-viewer] a');
     const rows = page.locator('#work li');
     await stopTime(page);
@@ -119,7 +119,7 @@ test.describe('project viewer', () => {
 
   test('focus shows the row and survives blur; a hovered row wins over the focused one', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('[data-viewer] img.on')).toBeVisible();
+    await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
     const link = page.locator('[data-viewer] a');
     await page.mouse.move(5, 5);
     await stopTime(page);
@@ -144,30 +144,101 @@ test.describe('project viewer', () => {
     await page.goto('/');
     const viewer = page.locator('[data-viewer]');
     const cap = viewer.locator('[data-cap]');
-    await expect(cap).toContainText('Solo, end to end · own product');
-    await expect(cap).toContainText('Next.js · TypeScript · Tailwind · PostgreSQL');
+    // One sans line: the role, nothing else.
+    await expect(cap).toHaveText('Solo, end to end');
 
     await page.locator('#work li').nth(3).hover();
-    await expect(cap).toContainText('Main contributor · AI site-scoring service');
-    await expect(cap).toContainText('React · Python · Keycloak');
-    await expect(cap).toHaveCSS('opacity', '1');
+    await expect(cap).toHaveText('Main contributor');
 
     await expect(viewer).toHaveAttribute('aria-hidden', 'true');
     await expect(viewer.locator('a')).toHaveAttribute('tabindex', '-1');
     await expect(viewer.locator('img')).toHaveCount(projects.length);
-    await expect(viewer.locator('img.on')).toHaveCount(1);
+    await expect(viewer.locator('img[data-shown]')).toHaveCount(1);
     await expect(viewer.getByRole('link')).toHaveCount(0); // hidden from the tree, not just unfocusable
   });
 
-  test('the crossfade follows the motion tokens and is off under reduced motion', async ({ page }) => {
+  test('the incoming picture settles in on a spring; under reduced motion it is in place at once', async ({ page }) => {
     await page.goto('/');
-    const img = page.locator('[data-viewer] img.on');
-    await expect(img).toHaveCSS('transition-property', 'opacity, scale');
-    await expect(img).toHaveCSS('transition-duration', '0.3s, 0.8s'); // medium for opacity, slow for the zoom
-    await expect(page.locator('[data-viewer] [data-cap]')).toHaveCSS('transition-duration', '0.18s');
+    const shown = page.locator('[data-viewer] img[data-shown]');
+    await expect(shown).toBeVisible();
+    const style = () => shown.evaluate((img: HTMLImageElement) => [img.style.opacity, img.style.scale]);
+
+    await page.locator('#work li').nth(2).hover();
+    await expect(shown).toHaveAttribute('src', imageOf(2));
+    // It arrives: fully opaque, at its own size.
+    await expect.poll(style).toEqual(['1', '1']);
+
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await expect(img).toHaveCSS('transition-duration', '0s');
-    await expect(page.locator('[data-viewer] [data-cap]')).toHaveCSS('transition-duration', '0s');
+    await stopTime(page);
+    await page.locator('#work li').nth(4).hover();
+    await page.clock.runFor(HOVER_INTENT_MS);
+    // No frame has run since the swap, and none needs to: the end state is already painted.
+    await expect(shown).toHaveAttribute('src', imageOf(4));
+    expect(await style()).toEqual(['1', '1']);
+  });
+
+  test('one shared bar marks the active row and follows it; rows never draw their own', async ({ page }) => {
+    await page.goto('/');
+    await hydrated(page);
+    const bar = page.locator('#work [data-indicator]');
+    await expect(bar).toHaveCount(1);
+    await expect(bar).toBeVisible();
+    const rows = page.locator('#work li');
+    const ownBars = () =>
+      rows.evaluateAll((items) => items.filter((li) => getComputedStyle(li, '::before').display !== 'none').length);
+    expect(await ownBars()).toBe(0);
+
+    /** The bar's vertical extent sits inside the row's. */
+    const onRow = (i: number) =>
+      page.evaluate((index) => {
+        const b = document.querySelector('#work [data-indicator]')!.getBoundingClientRect();
+        const r = document.querySelectorAll('#work li')[index].getBoundingClientRect();
+        return b.height > 4 && b.top >= r.top - 1 && b.bottom <= r.bottom + 1;
+      }, i);
+    expect(await onRow(0)).toBe(true);
+    await rows.nth(3).hover();
+    await expect.poll(() => onRow(3)).toBe(true);
+    expect(await ownBars()).toBe(0);
+  });
+
+  test('sweeping the list paints one picture at most and one bar, on every frame', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
+    // Sampled on every animation frame while the pointer sweeps down and back up.
+    await page.evaluate(() => {
+      const peaks = { pictures: 0, bars: 0, frames: 0 };
+      Object.assign(window, { peaks });
+      const sample = () => {
+        const painted = [...document.querySelectorAll<HTMLImageElement>('[data-viewer] img')].filter((img) => {
+          const s = getComputedStyle(img);
+          return s.visibility !== 'hidden' && parseFloat(s.opacity) > 0;
+        });
+        const bars = [...document.querySelectorAll('#work [data-indicator], #work li')].filter((el) =>
+          el.matches('li') ? getComputedStyle(el, '::before').display !== 'none' : getComputedStyle(el).display !== 'none',
+        );
+        peaks.pictures = Math.max(peaks.pictures, painted.length);
+        peaks.bars = Math.max(peaks.bars, bars.length);
+        peaks.frames += 1;
+        requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+    const rows = page.locator('#work li');
+    const centers = await Promise.all(
+      [0, 1, 2, 3, 4].map(async (i) => {
+        const box = (await rows.nth(i).boundingBox())!;
+        return [box.x + box.width / 2, box.y + box.height / 2] as const;
+      }),
+    );
+    for (const [x, y] of [...centers, ...centers.slice().reverse(), centers[2], centers[4], centers[1]]) {
+      await page.mouse.move(x, y, { steps: 4 });
+      await page.waitForTimeout(40);
+    }
+    await page.waitForTimeout(600);
+    const peaks = await page.evaluate(() => (window as unknown as { peaks: Record<string, number> }).peaks);
+    expect(peaks.frames).toBeGreaterThan(20);
+    expect(peaks.pictures).toBe(1);
+    expect(peaks.bars).toBe(1);
   });
 
   for (const [name, viewport] of [
@@ -274,7 +345,7 @@ test('no axe violations or horizontal scroll with the viewer mounted and a failu
   });
   await page.goto('/');
   await hydrated(page);
-  if (!isMobile) await expect(page.locator('[data-viewer] img.on')).toBeVisible();
+  if (!isMobile) await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
   await page.getByRole('button', { name: 'Copy email' }).click();
   await expect(page.getByRole('status')).toContainText('Couldn’t copy');
   await expectNoAxeViolations(page);

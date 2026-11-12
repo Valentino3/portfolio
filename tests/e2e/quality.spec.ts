@@ -16,6 +16,53 @@ for (const p of [...pages, ...notFound]) {
   });
 }
 
+/*
+ * Mono has one job: data and code. On every page, any element that sets text in the mono face
+ * must sit in a figure caption, a diagram or a code element. The failure names the offending text.
+ */
+for (const p of [...pages, notFound[0]]) {
+  test(`mono only in captions, diagrams and code on ${p}`, async ({ page }) => {
+    await page.goto(p);
+    await page.evaluate(() => document.fonts.ready);
+    const offenders = await page.evaluate(() => {
+      // next/font names the face; the first family of its variable is what an element computes to.
+      const family = (el: Element) => getComputedStyle(el).fontFamily.replace(/["']/g, '');
+      const vars = getComputedStyle(document.documentElement).getPropertyValue('--font-geist-mono');
+      const mono = vars.split(',')[0].replace(/["']/g, '').trim();
+      const sample = document.querySelector('.diagram svg, figcaption, code');
+      if (!mono || (sample && !family(sample).startsWith(mono))) return ['(no mono face found)'];
+      return [...document.body.querySelectorAll('*')]
+        .filter((el) => [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent!.trim()))
+        .filter((el) => family(el).startsWith(mono))
+        .filter((el) => !el.closest('figcaption, .diagram, code'))
+        .map((el) => `<${el.tagName.toLowerCase()}> ${el.textContent!.trim().slice(0, 60)}`);
+    });
+    expect(offenders).toEqual([]);
+  });
+}
+
+/*
+ * No eyebrows: a heading never has a small text label set right above it. Links (the way back,
+ * say) are controls, not labels.
+ */
+for (const p of pages) {
+  test(`no small label directly above a heading on ${p}`, async ({ page }) => {
+    await page.goto(p);
+    const eyebrows = await page.evaluate(() =>
+      [...document.querySelectorAll('main h1, main h2, main h3')]
+        .filter((h) => h.getBoundingClientRect().height > 0)
+        .flatMap((h) => {
+          const above = h.previousElementSibling;
+          if (!above || above.matches('a, button, details, h1, h2, h3, figure, .diagram')) return [];
+          const text = above.textContent?.trim() ?? '';
+          const smaller = parseFloat(getComputedStyle(above).fontSize) < parseFloat(getComputedStyle(h).fontSize);
+          return text && text.length < 40 && smaller ? [`"${text}" above "${h.textContent?.trim()}"`] : [];
+        }),
+    );
+    expect(eyebrows).toEqual([]);
+  });
+}
+
 // Creates its own contexts, so only the desktop project runs it (ruling R8).
 test('no horizontal scroll from 320 to 1920, also with 200% text at 320', async ({ browser }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
@@ -36,7 +83,7 @@ test('no horizontal scroll from 320 to 1920, also with 200% text at 320', async 
   }
 });
 
-test('with text at 200% on 320 px, the mail and "Next project" stay inside the viewport', async ({ browser }, testInfo) => {
+test('with text at 200% on 320 px, the mail and "Next: …" stay inside the viewport', async ({ browser }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   const context = await browser.newContext({ viewport: { width: 320, height: 900 } });
   try {
@@ -45,7 +92,7 @@ test('with text at 200% on 320 px, the mail and "Next project" stay inside the v
       await page.goto(p);
       await page.addStyleTag({ content: 'html{font-size:200%}' });
       const targets: Locator[] = [page.locator('#contact a[href^="mailto:"]')];
-      if (p !== '/') targets.push(page.getByRole('link', { name: /Next project/ }));
+      if (p !== '/') targets.push(page.getByRole('link', { name: /^Next: / }));
       for (const target of targets) {
         await target.scrollIntoViewIfNeeded();
         const box = await target.boundingBox();

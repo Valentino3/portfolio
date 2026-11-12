@@ -4,7 +4,7 @@ import { expectNoAxeViolations, expectNoHorizontalScroll } from './helpers';
 
 const projects = publishedProjects();
 
-test('lists the published projects in order with context chips', async ({ page }) => {
+test('lists the published projects in order with their context', async ({ page }) => {
   await page.goto('/');
   const rows = page.locator('#work li');
   await expect(rows).toHaveCount(projects.length);
@@ -51,14 +51,25 @@ test('without a viewer, every row shows its own thumbnail and caption', async ({
   const first = rows.first().locator('figure');
   await expect(first.locator('img')).toHaveAttribute('alt', '');
   await expect(first.locator('figcaption')).toHaveAttribute('aria-hidden', 'true');
-  await expect(first.locator('figcaption')).toContainText('Solo, end to end');
-  await expect(first.locator('figcaption')).toContainText('Next.js · TypeScript · Tailwind · PostgreSQL');
+  // One sans line: the role only, no stack line.
+  await expect(first.locator('figcaption')).toHaveText('Solo, end to end');
 });
 
 test('with a viewer (desktop, fine pointer) the thumbnails are not shown', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await page.goto('/');
   await expect(page.locator('#work li figure').first()).toBeHidden();
+});
+
+test('a desktop window under 1280px shows inline thumbnails, no viewer', async ({ browser }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  // Half the grid is too narrow there for a screenshot as tall as the list.
+  const ctx = await browser.newContext({ viewport: { width: 1180, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto('/');
+  await expect(page.locator('[data-viewer]')).toBeHidden();
+  await expect(page.locator('#work li figure').first()).toBeVisible();
+  await ctx.close();
 });
 
 test('tablet landscape with touch shows inline thumbnails, no viewer', async ({ browser }, testInfo) => {
@@ -92,6 +103,7 @@ test('has one h1 and an h2 for every section, with the header anchors present', 
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Valentino Rota, Design engineer who builds the whole product.');
   await expect(page.getByRole('heading', { level: 2 })).toHaveText([
     'Selected work',
+    'Stack',
     'Open source',
     'Experience',
     'About',
@@ -100,29 +112,41 @@ test('has one h1 and an h2 for every section, with the header anchors present', 
   for (const id of ['work', 'about', 'contact']) await expect(page.locator(`#${id}`)).toHaveCount(1);
 });
 
-test('at a glance, open source, experience and contact carry the prototype copy', async ({ page }) => {
+test('stack, open source, experience and contact carry the owner’s copy', async ({ page }) => {
   await page.goto('/');
-  const glance = page.getByRole('region', { name: 'At a glance' });
-  await expect(glance.locator('dt')).toHaveText(['Now', 'Based', 'Stack', 'Elsewhere']);
-  await expect(glance).toContainText('Lead UI Developer at Reset Digital since June 2022');
-  await expect(glance).toContainText('Mar del Plata, Argentina. Open to Buenos Aires or remote (UTC−3).');
-  await expect(glance.getByRole('link')).toHaveCount(2);
+  const stack = page.getByRole('region', { name: 'Stack' });
+  await expect(stack.locator('li b')).toHaveText(['Frontend', 'Backend', 'Data & auth', 'Quality & ops']);
+  await expect(stack).toContainText('TypeScript, React, Next.js, Tailwind, MUI, shadcn/Radix');
+  // No label-over-value grid on the home.
+  await expect(page.locator('main dl')).toHaveCount(0);
 
   const oss = page.getByRole('region', { name: 'Open source' });
   await expect(oss.getByRole('link')).toHaveCount(2);
   await expect(oss.getByRole('link').nth(0)).toHaveAttribute('href', 'https://github.com/prebid/prebid-server/pull/4475');
   await expect(oss.getByRole('link').nth(1)).toHaveAttribute('href', 'https://github.com/prebid/Prebid.js/pull/14975');
-  await expect(oss).toContainText('Merged · #4475');
-  await expect(oss).toContainText('Merged · #14975');
+  await expect(oss).toContainText('Merged, #4475');
+  await expect(oss).toContainText('Merged, #14975');
 
   const about = page.locator('#about');
   await expect(about.locator('li')).toHaveCount(5);
   await expect(about.locator('li').nth(0)).toContainText('Jun 2022 – now');
-  await expect(about.locator('li').nth(4)).toContainText('Forensic Informatics');
-  await expect(about).toContainText('I use AI assistants mainly for testing.');
+  // What "Now" used to say, in the first entry, in the owner's words.
+  await expect(about.locator('li').nth(0)).toContainText('In practice I work across the stack');
+  await expect(about.locator('li').nth(0)).toContainText(
+    'I lead one engineer: I review their pull requests and we have regular one-on-ones.',
+  );
+  const internship = about.locator('li').nth(4);
+  await expect(internship).toContainText('Developer Intern, Forensic Informatics (internship)');
+  // Undated: no date column, so no empty cell; the role starts where the row starts.
+  await expect(internship.locator('> span.tabular-nums')).toHaveCount(0);
+  const [row, role] = await Promise.all([internship.boundingBox(), internship.locator('b').boundingBox()]);
+  expect(role!.x - row!.x).toBeLessThan(2);
+  await expect(about).not.toContainText('AI assistants');
 
   const contact = page.locator('#contact');
-  await expect(contact).toContainText('Open to design engineering and full-stack roles, in Buenos Aires or remote.');
+  await expect(contact).toContainText(
+    'Open to design engineering and full-stack roles, in Buenos Aires or remote (UTC−3). Spanish (native), English (professional, spoken and written).',
+  );
   await expect(contact.getByRole('link', { name: 'valentino.rota3@gmail.com' })).toHaveAttribute(
     'href',
     'mailto:valentino.rota3@gmail.com',

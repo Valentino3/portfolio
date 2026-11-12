@@ -1,10 +1,14 @@
 import { expect, test } from '@playwright/test';
 import { hydrated } from './helpers';
 
-test('header shows availability and a client-side clock', async ({ page }) => {
+test('header shows availability and, from 640px up, the location; no clock', async ({ page, isMobile }) => {
   await page.goto('/');
-  await expect(page.getByText('Open to roles in Buenos Aires or remote')).toBeVisible();
-  await expect(page.locator('time[datetime]')).toHaveText(/^\d{2}:\d{2}$/);
+  const header = page.locator('header');
+  await expect(header.getByText('Open to roles in Buenos Aires or remote')).toBeVisible();
+  // On a phone the strip is one line: the location moves to the footer.
+  await expect(header.getByText('Mar del Plata, Argentina')).toBeVisible({ visible: !isMobile });
+  await expect(page.locator('footer').getByText(/Mar del Plata, Argentina/)).toBeVisible({ visible: isMobile });
+  await expect(page.locator('time')).toHaveCount(0);
 });
 
 test('back to top moves focus to the header', async ({ page }) => {

@@ -5,17 +5,19 @@ import { findForbiddenTerms } from '../support/forbidden-terms';
 import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
 /**
- * Each case against the approved prototype: its title, outcomes, numbered sections in order, the
- * cards in each, and how many diagrams, clips and pictures it holds. The full text is compared
+ * Each case against the approved prototype: its title, the facts under the dek, outcomes, sections
+ * in order, the decisions in each, and how many diagrams, clips and pictures it holds. The full text is compared
  * to the prototype by a throwaway script at review time; this keeps what would be missed first.
  * Only published cases run: unpublishing one takes its checks out with it.
  */
 type Expected = {
   h1: string;
+  /** Every fact the metadata sentences under the dek must carry, verbatim. */
+  meta: string[];
   outcomes: string[];
   /** [id, title], in page order. */
   sections: [string, string][];
-  /** Card titles by section id. */
+  /** Decision titles by section id. */
   cards: Record<string, string[]>;
   diagrams: number;
   clips: number;
@@ -26,6 +28,13 @@ type Expected = {
 const expected: Record<Slug, Expected> = {
   'stock-tienda': {
     h1: 'Stock Tienda',
+    meta: [
+      'Own product, 2026 – now.',
+      'Solo: product, design, code and operations.',
+      'Next.js, TypeScript, Tailwind CSS 4, shadcn/Radix, PostgreSQL (Neon), Drizzle, Vitest, Playwright, fast-check.',
+      'Repository (public)',
+      'Screens come from a test store with demo data.',
+    ],
     outcomes: ['Three stores pay for it', 'It keeps selling offline', 'Electronic invoicing with ARCA'],
     sections: [
       ['context', 'Context'],
@@ -48,11 +57,17 @@ const expected: Record<Slug, Expected> = {
       ],
     },
     diagrams: 1,
-    clips: 0,
+    clips: 1,
     pictures: { design: 2 },
   },
   conosur: {
     h1: 'Conosur',
+    meta: [
+      'Client work, 2025 – now.',
+      'Design, build, deploy and maintenance, for CONOSUR, music artist.',
+      'React, TypeScript, Vite, Tailwind, Framer Motion, i18next, Nginx.',
+      'Live at conosur.tv.',
+    ],
     outcomes: ['Live since July 2025', 'Music that keeps playing when Spotify fails', 'Two languages'],
     sections: [
       ['context', 'Context'],
@@ -72,6 +87,13 @@ const expected: Record<Slug, Expected> = {
   },
   dsp2: {
     h1: 'DSP2 + Reset GUI',
+    meta: [
+      'Reset Digital, 2024 – now.',
+      'Lead UI Developer (promoted). I lead one engineer and review their pull requests.',
+      'Product UI, authorization, API hardening, Reset GUI.',
+      'Next.js 14 (App Router), TypeScript, MUI, TanStack Table, Prisma, MySQL, next-auth, Storybook.',
+      'Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
+    ],
     outcomes: [
       'The first outside client, onboarded safely',
       'Tested over real logins',
@@ -98,6 +120,13 @@ const expected: Record<Slug, Expected> = {
   },
   analyzer: {
     h1: 'Analyzer',
+    meta: [
+      'Reset Digital, 2025 – now.',
+      'Main contributor, including all of the authentication work.',
+      'Authentication, access model, LLM evaluation, client UI.',
+      'React 19, Vite, MUI, oidc-client-ts, Python API, MySQL, Keycloak, Nginx, Docker Compose.',
+      'Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
+    ],
     outcomes: [
       'From no authentication to Keycloak',
       'A 500-domain study that changed the roadmap',
@@ -124,6 +153,11 @@ const expected: Record<Slug, Expected> = {
   },
   'bakery-concept': {
     h1: 'Bakery concept',
+    meta: [
+      'Personal concept, 2026.',
+      'Design and build: art direction, scroll scenes, content model, image pipeline.',
+      'React, TypeScript, Vite, GSAP ScrollTrigger, sharp.',
+    ],
     outcomes: ['Three art directions, one codebase', 'Nothing unconfirmed gets published', 'Photos made usable locally'],
     sections: [
       ['directions', 'Three directions'],
@@ -135,7 +169,7 @@ const expected: Record<Slug, Expected> = {
     },
     diagrams: 1,
     clips: 1,
-    pictures: { directions: 2, interface: 1 },
+    pictures: { directions: 4, interface: 1 },
   },
 };
 
@@ -182,7 +216,18 @@ for (const { slug } of publishedProjects()) {
       expect(await unpublishedTerms(page)).toEqual([]);
     });
 
-    test('numbered sections in prototype order, each with its cards', async ({ page }) => {
+    test('the metadata sentences carry the case facts and repeat nothing from the dek', async ({ page }) => {
+      await page.goto(`/work/${slug}`);
+      const meta = page.locator('[data-case-meta]');
+      for (const fact of e.meta) await expect(meta).toContainText(fact);
+      // No label-over-value: the facts are paragraphs, not a term list.
+      await expect(meta.locator('dl, dt, dd')).toHaveCount(0);
+      const dek = (await page.locator('h1 + p').innerText()).toLowerCase();
+      const sentences = (await meta.innerText()).split(/(?<=\.)\s+/).filter((s) => s.length > 24);
+      for (const sentence of sentences) expect(dek, sentence).not.toContain(sentence.replace(/\.$/, '').toLowerCase());
+    });
+
+    test('sections in prototype order, with no numbers, each with its decisions', async ({ page }) => {
       await page.goto(`/work/${slug}`);
       const ids = await page.locator('main .prose > section').evaluateAll((s) => s.map((x) => x.id));
       expect(ids).toEqual(e.sections.map(([id]) => id));
@@ -238,6 +283,13 @@ for (const { slug } of publishedProjects()) {
     });
   });
 }
+
+test('stock tienda: the metadata does not repeat the users and months the dek already gives', async ({ page }) => {
+  await page.goto('/work/stock-tienda');
+  await expect(page.locator('h1 + p')).toContainText('about three months');
+  await expect(page.locator('[data-case-meta]')).not.toContainText('three months');
+  await expect(page.locator('[data-case-meta]')).not.toContainText('paying stores');
+});
 
 test('stock tienda shows design decisions before engineering decisions', async ({ page }) => {
   await page.goto('/work/stock-tienda');
