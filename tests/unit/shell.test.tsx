@@ -10,11 +10,11 @@ function navHrefs(html: string, label: string): string[] {
   return [...nav.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
 }
 
-test('home header links to sections on the same page and shows the clock', () => {
+test('home header links to sections on the same page and shows location and availability, no clock', () => {
   const html = renderToStaticMarkup(<SiteHeader variant="home" />);
   expect(navHrefs(html, 'Primary')).toEqual(['#work', '#about', '#contact']);
-  expect(html).toContain('local time');
-  expect(html).toContain('--:--');
+  expect(html).toContain('Mar del Plata, Argentina');
+  expect(html).not.toContain('<time');
   expect(html).toContain('Open to roles in Buenos Aires or remote');
 });
 

@@ -3,6 +3,7 @@ import { expect, test } from 'vitest';
 import { Clip } from '@/components/case/clip';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
+import { CLIPS, type ClipName } from '@/content/clips';
 import type { Media } from '@/content/types';
 
 const image: Media = { src: '/img/dsp2-websites.webp', width: 2400, height: 1665, alt: 'A table of websites' };
@@ -15,7 +16,10 @@ test('a figure is a picture and a two-part caption, and the picture can be left 
   );
   expect(html).toMatch(/^<figure>/);
   expect(html).toContain('<figcaption');
-  expect(html).toMatch(/<span>Websites table<\/span><span>mock data<\/span>/);
+  // On a phone the note runs on after the caption in parentheses; from 640px up it sits at the end of the row.
+  const caption = html.match(/<figcaption[^>]*>(.*)<\/figcaption>/)![1];
+  expect(caption.replace(/<[^>]+>/g, '')).toBe('Websites table (mock data)');
+  expect(caption).toMatch(/^<span>Websites table<\/span> <span><span class="sm:hidden">\(<\/span>mock data/);
   expect(html).toMatch(/<img [^>]*alt="A table of websites"/);
   expect(html).toMatch(/<img [^>]*width="2400"[^>]*height="1665"/);
   expect(html).not.toContain('<a ');
@@ -62,9 +66,7 @@ test('a gallery is a two-column grid that stacks on a phone', () => {
 });
 
 test('before the page script runs a clip is its poster: no autoplay, no controls, no dead button', () => {
-  const html = renderToStaticMarkup(
-    <Clip name="bakery-scroll" alt="The page scrolls" caption="Scroll" note="recorded" />,
-  );
+  const html = renderToStaticMarkup(<Clip name="bakery-scroll" alt="The page scrolls" caption="Scroll" note="demo data" />);
   const video = html.match(/<video [^>]*>/)![0];
   // HTML attribute names are case-insensitive: React writes playsInline as is.
   for (const attribute of ['muted=""', 'loop=""', 'playsinline=""', 'preload="none"', 'data-clip=""']) {
@@ -76,8 +78,27 @@ test('before the page script runs a clip is its poster: no autoplay, no controls
   expect(video).toContain('aria-label="The page scrolls"');
   expect(video).not.toMatch(/\b(autoplay|controls)\b/i);
   expect(html).toContain('<source src="/media/bakery-scroll.webm" type="video/webm"/>');
-  expect(html).toMatch(/<span>Scroll<\/span><span>recorded<\/span>/);
+  expect(html.match(/<figcaption[^>]*>(.*)<\/figcaption>/)![1].replace(/<[^>]+>/g, '')).toBe('Scroll (demo data)');
   expect(html).not.toContain('<button');
-  // Standalone in a section, so it brings its own space above, like cards, galleries and diagrams.
-  expect(html).toMatch(/^<figure class="mt-4\.5">/);
+  // Standalone in a section, so it brings its own space above, like galleries and diagrams.
+  expect(html).toMatch(/^<figure class="mt-6">/);
+});
+
+test('a clip reserves its own size from the registry, not an assumed 1280x800', () => {
+  for (const [name, { width, height }] of Object.entries(CLIPS)) {
+    const html = renderToStaticMarkup(<Clip name={name as ClipName} alt="A clip" caption="Clip" />);
+    const video = html.match(/<video [^>]*>/)![0];
+    expect(video, name).toContain(`width="${width}"`);
+    expect(video, name).toContain(`height="${height}"`);
+  }
+  expect(CLIPS['stock-counter']).toEqual({ width: 1952, height: 1226 });
+});
+
+test('a three-column gallery stacks on a phone', () => {
+  const html = renderToStaticMarkup(
+    <Gallery columns={3}>
+      <figure>one</figure>
+    </Gallery>,
+  );
+  expect(html).toMatch(/^<div class="[^"]*\bgrid-cols-3\b[^"]*\bmax-sm:grid-cols-1\b/);
 });
