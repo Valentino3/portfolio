@@ -25,12 +25,14 @@ for (const p of [...pages, notFound[0]]) {
     await page.goto(p);
     await page.evaluate(() => document.fonts.ready);
     const offenders = await page.evaluate(() => {
-      // next/font names the face; the first family of its variable is what an element computes to.
       const family = (el: Element) => getComputedStyle(el).fontFamily.replace(/["']/g, '');
-      const vars = getComputedStyle(document.documentElement).getPropertyValue('--font-geist-mono');
-      const mono = vars.split(',')[0].replace(/["']/g, '').trim();
-      const sample = document.querySelector('.diagram svg, figcaption, code');
-      if (!mono || (sample && !family(sample).startsWith(mono))) return ['(no mono face found)'];
+      // The face the `font-mono` utility sets, read from a probe.
+      const probe = document.createElement('span');
+      probe.className = 'font-mono';
+      document.body.append(probe);
+      const mono = family(probe).split(',')[0].trim();
+      probe.remove();
+      if (!mono || mono === family(document.body).split(',')[0].trim()) return ['(no mono face found)'];
       return [...document.body.querySelectorAll('*')]
         .filter((el) => [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent!.trim()))
         .filter((el) => family(el).startsWith(mono))

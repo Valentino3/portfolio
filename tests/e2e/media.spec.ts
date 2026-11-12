@@ -166,7 +166,8 @@ test('the stock tienda counter clip plays in view, pauses out of it, at its own 
   ]);
   expect(intro!.y).toBeLessThan(clip!.y);
   expect(clip!.y).toBeLessThan(decision!.y);
-  await expect(page.locator('#design figure', { has: v }).locator('figcaption')).toHaveText(
+  const figure = page.locator('#design figure:has(video[data-clip])');
+  await expect(figure.locator('figcaption')).toHaveText(
     'A counter sale: search, quantity, cash price list, charge',
   );
 
@@ -180,7 +181,7 @@ test('the stock tienda counter clip plays in view, pauses out of it, at its own 
   await expect.poll(paused).toBe(true);
   await v.scrollIntoViewIfNeeded();
   await expect.poll(paused).toBe(false);
-  await page.locator('#design figure', { has: v }).getByRole('button', { name: 'Pause' }).click();
+  await figure.getByRole('button', { name: 'Pause' }).click();
   expect(await paused()).toBe(true);
 });
 

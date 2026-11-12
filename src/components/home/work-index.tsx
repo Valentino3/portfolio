@@ -35,7 +35,11 @@ export function WorkIndex({ projects }: { projects: ProjectSummary[] }) {
   const fromKeyboard = useRef(false);
   useEffect(() => {
     if (shown === active) return;
-    const timer = setTimeout(() => setShown(active), fromKeyboard.current ? 0 : HOVER_INTENT_MS);
+    if (fromKeyboard.current) {
+      setShown(active);
+      return;
+    }
+    const timer = setTimeout(() => setShown(active), HOVER_INTENT_MS);
     return () => clearTimeout(timer);
   }, [active, shown]);
 

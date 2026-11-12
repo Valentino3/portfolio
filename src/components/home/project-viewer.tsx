@@ -67,6 +67,8 @@ function createSwap(images: HTMLImageElement[], initial: number) {
     show(index: number) {
       if (index === shown) return;
       shown = index;
+      // The outgoing picture goes now, not on the next frame; the spring takes the new one from here.
+      paint(0);
       spring.place([0]);
       spring.to([1]);
     },

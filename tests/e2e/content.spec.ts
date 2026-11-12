@@ -66,7 +66,7 @@ const expected: Record<Slug, Expected> = {
       'Client work, 2025 – now.',
       'Design, build, deploy and maintenance, for CONOSUR, music artist.',
       'React, TypeScript, Vite, Tailwind, Framer Motion, i18next, Nginx.',
-      'Live at conosur.tv.',
+      'Live at conosur.tv',
     ],
     outcomes: ['Live since July 2025', 'Music that keeps playing when Spotify fails', 'Two languages'],
     sections: [

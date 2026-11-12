@@ -47,7 +47,7 @@ test.describe('project viewer', () => {
 
   // Time stands still in these tests: nothing changes between two checks unless the test advances the
   // clock, so "not yet" is as meaningful as "now".
-  test('a hovered row becomes active only once the pointer has rested on it for the hover intent', async ({
+  test('the row follows the pointer at once; the viewer only once the pointer has rested on it', async ({
     page,
   }) => {
     await page.goto('/');
@@ -57,12 +57,12 @@ test.describe('project viewer', () => {
     await stopTime(page);
 
     await rows.nth(1).hover();
+    await expect(rows.nth(1)).toHaveAttribute('data-active', '');
+    await expect(rows.nth(0)).not.toHaveAttribute('data-active', '');
     await page.clock.runFor(HOVER_INTENT_MS - 1);
     await expect(link).toHaveAttribute('href', work(0));
-    await expect(rows.nth(1)).not.toHaveAttribute('data-active', '');
     await page.clock.runFor(2);
     await expect(link).toHaveAttribute('href', work(1));
-    await expect(rows.nth(1)).toHaveAttribute('data-active', '');
   });
 
   test('crossing a row on the way to another never shows the crossed row', async ({ page }) => {
@@ -70,14 +70,14 @@ test.describe('project viewer', () => {
     await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
     const link = page.locator('[data-viewer] a');
     const rows = page.locator('#work li');
-    // Every row that becomes active, recorded as it happens: a brief flash cannot slip between two checks.
-    await page.locator('#work ol').evaluate((list) => {
+    // Every picture the viewer puts on show, recorded as it happens: a brief flash cannot slip between two checks.
+    await page.locator('[data-viewer] a').evaluate((frame) => {
       const shown: number[] = [];
       Object.assign(window, { shown });
       new MutationObserver((records) => {
         for (const { target } of records)
-          if ((target as Element).hasAttribute('data-active')) shown.push([...list.children].indexOf(target as Element));
-      }).observe(list, { subtree: true, attributeFilter: ['data-active'] });
+          if ((target as Element).hasAttribute('data-shown')) shown.push([...frame.children].indexOf(target as Element));
+      }).observe(frame, { subtree: true, attributeFilter: ['data-shown'] });
     });
     await stopTime(page);
 
@@ -92,20 +92,20 @@ test.describe('project viewer', () => {
     expect(await page.evaluate(() => (window as unknown as { shown: number[] }).shown)).toEqual([1]);
   });
 
-  test('leaving the list cancels a pending hover, and keeps the row that was shown', async ({ page }) => {
+  test('leaving the list keeps the row the pointer was last on, and the viewer catches up with it', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
     const link = page.locator('[data-viewer] a');
     const rows = page.locator('#work li');
     await stopTime(page);
 
-    // Enter row 3 and leave the list before the intent: it is cancelled.
+    // Enter row 3 and leave the list before the intent: the bar already marks row 3, and the viewer
+    // follows it rather than disagree with the bar.
     await rows.nth(3).hover();
     await page.mouse.move(5, 5);
-    await page.clock.runFor(HOVER_INTENT_MS * 3);
-    await expect(link).toHaveAttribute('href', work(0));
-    await expect(rows.nth(0)).toHaveAttribute('data-active', '');
-    await expect(rows.nth(3)).not.toHaveAttribute('data-active', '');
+    await expect(rows.nth(3)).toHaveAttribute('data-active', '');
+    await page.clock.runFor(HOVER_INTENT_MS);
+    await expect(link).toHaveAttribute('href', work(3));
 
     // Settled on a row, leaving the list keeps the last one shown.
     await rows.nth(2).hover();
@@ -184,8 +184,15 @@ test.describe('project viewer', () => {
     await expect(bar).toHaveCount(1);
     await expect(bar).toBeVisible();
     const rows = page.locator('#work li');
+    // A row's own bar is its ::before; it exists only when generated (content) and displayed.
     const ownBars = () =>
-      rows.evaluateAll((items) => items.filter((li) => getComputedStyle(li, '::before').display !== 'none').length);
+      rows.evaluateAll(
+        (items) =>
+          items.filter((li) => {
+            const before = getComputedStyle(li, '::before');
+            return before.content !== 'none' && before.display !== 'none';
+          }).length,
+      );
     expect(await ownBars()).toBe(0);
 
     /** The bar's vertical extent sits inside the row's. */
@@ -213,9 +220,11 @@ test.describe('project viewer', () => {
           const s = getComputedStyle(img);
           return s.visibility !== 'hidden' && parseFloat(s.opacity) > 0;
         });
-        const bars = [...document.querySelectorAll('#work [data-indicator], #work li')].filter((el) =>
-          el.matches('li') ? getComputedStyle(el, '::before').display !== 'none' : getComputedStyle(el).display !== 'none',
-        );
+        const bars = [...document.querySelectorAll('#work [data-indicator], #work li')].filter((el) => {
+          if (!el.matches('li')) return getComputedStyle(el).display !== 'none';
+          const before = getComputedStyle(el, '::before');
+          return before.content !== 'none' && before.display !== 'none';
+        });
         peaks.pictures = Math.max(peaks.pictures, painted.length);
         peaks.bars = Math.max(peaks.bars, bars.length);
         peaks.frames += 1;
@@ -348,6 +357,10 @@ test('no axe violations or horizontal scroll with the viewer mounted and a failu
   if (!isMobile) await expect(page.locator('[data-viewer] img[data-shown]')).toBeVisible();
   await page.getByRole('button', { name: 'Copy email' }).click();
   await expect(page.getByRole('status')).toContainText('Couldn’t copy');
+  // The message rises in from transparent: axe judges its contrast once it has arrived.
+  await page.getByRole('status').evaluate((status) =>
+    Promise.all(status.getAnimations({ subtree: true }).map((animation) => animation.finished)),
+  );
   await expectNoAxeViolations(page);
   await expectNoHorizontalScroll(page);
 });
