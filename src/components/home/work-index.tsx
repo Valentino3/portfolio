@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useReducer, useRef, useState } from 'react';
-import type { NumberedProject } from '@/content/types';
+import type { ProjectSummary } from '@/content/types';
 import { createSpring, type Spring } from '@/lib/spring';
 import { activeIndex, HOVER_INTENT_MS, INITIAL_VIEWER_STATE, viewerReducer } from '@/lib/viewer-state';
 import { ProjectList } from './project-list';
@@ -27,7 +27,7 @@ function barFor(list: HTMLOListElement, index: number): [y: number, height: numb
  * a sweep down the list reads as one movement. The viewer waits HOVER_INTENT_MS for the pointer
  * to rest, so a sweep does not flash through every image. Keyboard focus moves both at once.
  */
-export function WorkIndex({ projects }: { projects: NumberedProject[] }) {
+export function WorkIndex({ projects }: { projects: ProjectSummary[] }) {
   const [state, dispatch] = useReducer(viewerReducer, INITIAL_VIEWER_STATE);
   const active = activeIndex(state);
   // What the viewer shows: the active row, once the pointer has rested on it.

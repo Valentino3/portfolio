@@ -1,10 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Ref } from 'react';
-import type { NumberedProject } from '@/content/types';
+import type { ProjectSummary } from '@/content/types';
 
 type ProjectListProps = {
-  projects: NumberedProject[];
+  projects: ProjectSummary[];
   /** The row the project viewer is showing. With no viewer (or no parent that tracks it), none. */
   activeIndex?: number;
   /** Reports which row the pointer entered or the keyboard focused, for a parent that drives a viewer. */
@@ -22,25 +22,19 @@ type ProjectListProps = {
 };
 
 /**
- * A row is title, kind and years on one line and the description under it. Under `viewer:` the
- * thumbnail is hidden and the active row (`data-active`, set by the parent that drives the
- * viewer) shows its arrow. Until a parent has placed the shared bar (and without script) the
- * active row draws a bar of its own in the left margin, so there is never more than one.
+ * A row is title, context and years on one line and the description under it. Under `viewer:`
+ * the thumbnail is hidden and the active row (`data-active`, set by the parent that drives the
+ * viewer) is marked by one bar in the left margin. Until a parent has placed the shared bar (and
+ * without script) the active row draws a bar of its own, so there is never more than one.
  */
 const ROW =
-  'group/row relative grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 border-b border-rule py-4 viewer:py-3.5';
+  'relative grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 border-b border-rule py-4 viewer:py-3.5';
 const OWN_BAR = [
   'before:absolute before:top-3.5 before:bottom-3.5 before:-left-3.5 before:hidden before:w-0.5 before:bg-ink',
   'viewer:data-active:before:block forced-colors:before:bg-[CanvasText]',
 ].join(' ');
 // The title is the only link. Its ::after covers the whole row, thumbnail included.
 const TITLE = 'text-base font-medium text-ink after:absolute after:inset-0 after:z-1';
-// A small thing that answers the pointer: it may overshoot.
-const ARROW = [
-  'ml-1.5 inline-block text-text-3 transition-[translate,opacity] duration-pop ease-spring-pop',
-  'viewer:-translate-x-2 viewer:text-ink viewer:opacity-0',
-  'viewer:group-data-active/row:translate-x-0 viewer:group-data-active/row:opacity-100',
-].join(' ');
 const BAR = [
   'pointer-events-none absolute top-0 -left-3.5 hidden h-px w-0.5 origin-top bg-ink will-change-transform',
   'forced-colors:bg-[CanvasText]',
@@ -93,9 +87,6 @@ export function ProjectList({
                     className={TITLE}
                   >
                     {p.title}
-                    <span aria-hidden="true" className={ARROW}>
-                      →
-                    </span>
                   </Link>
                   <span className="text-ui-sm text-text-3">{p.context}</span>
                 </span>

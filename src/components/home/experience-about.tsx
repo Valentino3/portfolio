@@ -1,13 +1,13 @@
 import { SectionHead } from './section-head';
 
-/** `when` is a date range and nothing else: a row without one leaves the column empty. */
+/** `when` is a date range and nothing else. A row without one has no date column at all. */
 const EXPERIENCE: { when?: string; role: string; org: string; summary: string }[] = [
   {
     when: 'Jun 2022 – now',
     role: 'Lead UI Developer',
     org: 'Reset Digital',
     summary:
-      'Promoted to Lead. Product UI for the ad platform and Analyzer, the shared component library, multi-tenant authorization, and the security hardening before the first outside client. I lead one engineer.',
+      'Promoted to Lead. In practice I work across the stack: product UI for the ad platform and Analyzer, the shared component library, multi-tenant authorization, and the security hardening before the first outside client. I lead one engineer: I review their pull requests and we have regular one-on-ones.',
   },
   {
     when: 'Jul 2025 – now',
@@ -36,6 +36,9 @@ const EXPERIENCE: { when?: string; role: string; org: string; summary: string }[
   },
 ];
 
+/** A dated row: the dates in a column of their own, the role and summary beside them. */
+const DATED = 'grid-cols-[9.5rem_minmax(0,1fr)]';
+
 /** Two columns from 1024px up: Experience on the left, About on the right. */
 const COLUMN = 'col-span-full lg:col-span-6';
 
@@ -54,14 +57,14 @@ export function ExperienceAbout() {
           {EXPERIENCE.map(({ when, role, org, summary }) => (
             <li
               key={role}
-              className="grid grid-cols-[9.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 border-b border-rule py-4 max-sm:grid-cols-1"
+              className={`grid items-baseline gap-x-4 gap-y-1 border-b border-rule py-4 max-sm:grid-cols-1 ${when ? DATED : ''}`}
             >
-              <span className={`text-ui-sm text-text-3 tabular-nums ${when ? '' : 'max-sm:hidden'}`}>{when}</span>
+              {when && <span className="text-ui-sm text-text-3 tabular-nums">{when}</span>}
               <span>
                 <b className="font-medium">{role}</b>
                 <span className="text-text-2">, {org}</span>
               </span>
-              <p className="col-start-2 text-ui-sm text-text-2 max-sm:col-start-1">{summary}</p>
+              <p className={`text-ui-sm text-text-2 max-sm:col-start-1 ${when ? 'col-start-2' : ''}`}>{summary}</p>
             </li>
           ))}
         </ul>

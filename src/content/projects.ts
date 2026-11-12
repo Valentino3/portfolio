@@ -1,6 +1,6 @@
-import type { NumberedProject, ProjectSummary, Slug } from './types';
+import type { ProjectSummary, Slug } from './types';
 
-/** Display order. Numbers are derived from it, among published projects only. */
+/** Display order: the home list, the viewer and "Next" all follow it. */
 export const ALL_PROJECTS: ProjectSummary[] = [
   {
     slug: 'stock-tienda',
@@ -9,7 +9,6 @@ export const ALL_PROJECTS: ProjectSummary[] = [
     years: '2026 – now',
     description: 'Point of sale, stock and cash control for small stores. Three stores pay for it.',
     role: 'Solo, end to end',
-    kind: 'own product',
     stack: ['Next.js', 'TypeScript', 'Tailwind', 'PostgreSQL'],
     image: {
       src: '/img/stock-reportes.webp',
@@ -26,7 +25,6 @@ export const ALL_PROJECTS: ProjectSummary[] = [
     years: '2025 – now',
     description: 'Website for a music artist: releases, collaborators and videos, in two languages.',
     role: 'Design + build',
-    kind: 'client work',
     stack: ['React', 'TypeScript', 'Framer Motion', 'i18n'],
     image: {
       src: '/img/conosur-pay-respects.webp',
@@ -44,7 +42,6 @@ export const ALL_PROJECTS: ProjectSummary[] = [
     description:
       'Programmatic ad platform and the design system behind it. Led the security hardening for its first outside client.',
     role: 'Lead UI Developer',
-    kind: 'ad platform + design system',
     stack: ['Next.js', 'TypeScript', 'MUI', 'Prisma'],
     image: {
       src: '/img/dsp2-hero.webp',
@@ -62,7 +59,6 @@ export const ALL_PROJECTS: ProjectSummary[] = [
     description:
       'AI service that scores websites by emotional fit for ads. Auth rollout and a 500-domain study of its scores.',
     role: 'Main contributor',
-    kind: 'AI site-scoring service',
     stack: ['React', 'Python', 'Keycloak'],
     image: {
       src: '/img/analyzer-hero.webp',
@@ -79,7 +75,6 @@ export const ALL_PROJECTS: ProjectSummary[] = [
     years: '2026',
     description: 'Self-initiated site for a local sourdough bakery, explored in three art directions.',
     role: 'Design + build',
-    kind: 'personal concept',
     stack: ['React', 'GSAP', 'Vite'],
     image: {
       src: '/img/bakery-hero.webp',
@@ -91,10 +86,8 @@ export const ALL_PROJECTS: ProjectSummary[] = [
   },
 ];
 
-export function publishedProjects(list: ProjectSummary[] = ALL_PROJECTS): NumberedProject[] {
-  return list
-    .filter((p) => p.published)
-    .map((p, i) => ({ ...p, number: String(i + 1).padStart(2, '0') }));
+export function publishedProjects(list: ProjectSummary[] = ALL_PROJECTS): ProjectSummary[] {
+  return list.filter((p) => p.published);
 }
 
 /** A project's summary, published or not. A case study reuses its image instead of copying it. */
@@ -104,18 +97,13 @@ export function projectSummary(slug: Slug): ProjectSummary {
   return project;
 }
 
-export function projectBySlug(slug: Slug): NumberedProject | undefined {
+export function projectBySlug(slug: Slug): ProjectSummary | undefined {
   return publishedProjects().find((p) => p.slug === slug);
 }
 
 /** The project after `slug` among the published ones, wrapping from the last to the first. */
-export function nextProject(slug: Slug, list: ProjectSummary[] = ALL_PROJECTS): NumberedProject {
+export function nextProject(slug: Slug, list: ProjectSummary[] = ALL_PROJECTS): ProjectSummary {
   const published = publishedProjects(list);
   const index = published.findIndex((p) => p.slug === slug);
   return published[(index + 1) % published.length];
-}
-
-/** The small line on a case's share image: context and years. */
-export function kicker({ context, years }: NumberedProject): string {
-  return `${context}, ${years}`;
 }

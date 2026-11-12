@@ -9,11 +9,7 @@ export type ProjectSummary = {
   years: string;
   description: string;
   role: string;
-  kind: string;
   stack: string[];
   image: Media;
   published: boolean;
 };
-
-/** A published project with its position in the list, "01".."05". */
-export type NumberedProject = ProjectSummary & { number: string };

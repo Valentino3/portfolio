@@ -1,4 +1,4 @@
-import { Decision, Decisions, Result } from '@/components/case/decision-card';
+import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES } from '@/components/case/gallery';
@@ -24,7 +24,7 @@ export const stockTienda: CaseStudy = {
   slug: 'stock-tienda',
   dek: 'Software for small stores to sell at the counter, keep their stock and close the cash register. I built it alone, end to end. Three stores pay for it and have used it for about three months.',
   meta: [
-    'Solo: product, design, code and operations. Three paying stores, in production for about three months.',
+    'Solo: product, design, code and operations.',
     <>
       Next.js, TypeScript, Tailwind CSS 4, shadcn/Radix, PostgreSQL (Neon), Drizzle, Vitest, Playwright, fast-check.{' '}
       <ExternalLink href="https://github.com/Valentino3/stock-tienda">Repository (public)</ExternalLink>. Screens come

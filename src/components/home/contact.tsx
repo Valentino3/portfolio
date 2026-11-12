@@ -1,3 +1,4 @@
+import { ContactLine } from '@/components/site/contact-line';
 import { EMAIL } from '@/lib/site';
 import { CopyEmailButton } from './copy-email-button';
 
@@ -19,9 +20,7 @@ export function Contact() {
       <h2 id="contact-h" className="sr">
         Contact
       </h2>
-      <p className="text-base text-text-2">
-        Open to design engineering and full-stack roles, in Buenos Aires or remote.
-      </p>
+      <ContactLine />
       <div className="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-2.5">
         <a
           href={`mailto:${EMAIL}`}

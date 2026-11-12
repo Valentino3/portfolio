@@ -1,9 +1,9 @@
 import type { ReactNode } from 'react';
 import { InPageLink } from '@/components/site/in-page-link';
-import type { NumberedProject } from '@/content/types';
+import type { ProjectSummary } from '@/content/types';
 
 /** The top of a case: the way back to the home list, then the title and the dek. */
-export function CaseHeader({ project, dek }: { project: NumberedProject; dek: string }) {
+export function CaseHeader({ project, dek }: { project: ProjectSummary; dek: string }) {
   return (
     <>
       <InPageLink
@@ -31,7 +31,7 @@ export function CaseHeader({ project, dek }: { project: NumberedProject; dek: st
  * and when (from the project summary), who did what for whom, then what it is built with and
  * where to see it. Links in them are underlined.
  */
-export function CaseMeta({ project, meta }: { project: NumberedProject; meta: [ReactNode, ReactNode] }) {
+export function CaseMeta({ project, meta }: { project: ProjectSummary; meta: [ReactNode, ReactNode] }) {
   return (
     <div className="mt-5 max-w-[70ch] space-y-1.5 text-ui text-text-3 [&_a]:text-text-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-ink">
       <p>

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import type { Media, Slug } from './types';
 
 /**
- * A case study's own content. Title, number, context and years are not repeated here: the
+ * A case study's own content. Title, context and years are not repeated here: the
  * template takes them from the project summary (`projects.ts`), the single source for the home
  * list, the viewer and "Next project" too.
  */

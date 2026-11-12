@@ -1,3 +1,4 @@
+import { ContactLine } from '@/components/site/contact-line';
 import { EMAIL } from '@/lib/site';
 
 /**
@@ -17,7 +18,7 @@ export function CaseCta() {
       <h2 id="cta-h" className="sr">
         Contact
       </h2>
-      <p className="text-base text-text-2">Open to design engineering and full-stack roles, in Buenos Aires or remote.</p>
+      <ContactLine />
       <p className="mt-2.5">
         <a
           href={`mailto:${EMAIL}`}

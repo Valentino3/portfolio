@@ -1,6 +1,6 @@
 import { Clip } from '@/components/case/clip';
 import { CodeToken } from '@/components/case/code-token';
-import { DecisionCard, DecisionCards } from '@/components/case/decision-card';
+import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
@@ -31,7 +31,7 @@ export const bakeryConcept: CaseStudy = {
   slug: 'bakery-concept',
   dek: 'A self-initiated site concept for a local sourdough bakery, which I’m presenting to its owners. An exercise in art direction, scroll motion and an image pipeline. Here the bakery’s name and logo are replaced with a placeholder, “Horno Lento”.',
   meta: [
-    'Design and build: art direction, scroll scenes, content model, image pipeline. A concept, being presented to the bakery.',
+    'Design and build: art direction, scroll scenes, content model, image pipeline.',
     'React, TypeScript, Vite, GSAP ScrollTrigger, sharp.',
   ],
   hero: {
@@ -94,38 +94,28 @@ export const bakeryConcept: CaseStudy = {
       title: 'Decisions',
       body: (
         <>
-          <DecisionCards>
-            <DecisionCard
-              title="All content in one file"
-              rows={[
-                [
-                  'Why',
-                  'Products, process, services, FAQ, gallery and image metadata live in one config. Items marked as unconfirmed render in development, with a mark, and never reach the build.',
-                ],
-                ['Result', 'The site can’t publish a price or an opening hour the business hasn’t confirmed.'],
-              ]}
-            />
-            <DecisionCard
-              title="Buttons that don’t pretend"
-              rows={[
-                ['Why', 'A link to nowhere is worse than no link.'],
-                [
-                  'Result',
-                  'If the WhatsApp number or the address is missing, the button says so clearly instead of linking nowhere.',
-                ],
-              ]}
-            />
-            <DecisionCard
-              title="Verification by screenshots"
-              rows={[
-                ['Why', 'Scroll scenes break in ways a code review can’t see.'],
-                [
-                  'Result',
-                  'Scripts that capture the whole page, product sheets and keyboard states against the preview build.',
-                ],
-              ]}
-            />
-          </DecisionCards>
+          <Decisions>
+            <Decision title="All content in one file">
+              <p>
+                Products, process, services, FAQ, gallery and image metadata live in one config. Items marked as
+                unconfirmed render in development, with a mark, and never reach the build.
+              </p>
+              <Result>The site can’t publish a price or an opening hour the business hasn’t confirmed.</Result>
+            </Decision>
+            <Decision title="Buttons that don’t pretend">
+              <p>A link to nowhere is worse than no link.</p>
+              <Result>
+                If the WhatsApp number or the address is missing, the button says so clearly instead of linking
+                nowhere.
+              </Result>
+            </Decision>
+            <Decision title="Verification by screenshots">
+              <p>Scroll scenes break in ways a code review can’t see.</p>
+              <Result>
+                Scripts that capture the whole page, product sheets and keyboard states against the preview build.
+              </Result>
+            </Decision>
+          </Decisions>
           <Diagram
             label="Diagram: a product photo goes through local background removal, edge cleanup and WebP export at 800 and 1600 pixels before it reaches a scroll scene."
             rows={[

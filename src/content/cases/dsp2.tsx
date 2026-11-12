@@ -1,4 +1,4 @@
-import { DecisionCard, DecisionCards } from '@/components/case/decision-card';
+import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
@@ -103,48 +103,35 @@ export const dsp2: CaseStudy = {
             ]}
             note="Both batches shipped. No security incidents, no rollbacks."
           />
-          <DecisionCards>
-            <DecisionCard
-              title="Ship the hardening in two batches, by risk"
-              rows={[
-                ['Instead of', 'One release with everything, or a later launch.'],
-                [
-                  'Why',
-                  'The launch date was fixed. What a client could exploit on day one went first; what operations could cover for a few days went second.',
-                ],
-                ['Result', 'Both batches shipped, with no incidents and no rollbacks.'],
-              ]}
-            />
-            <DecisionCard
-              title="No database migrations in the first batch"
-              rows={[
-                ['Why', 'Rollback had to be a redeploy of the previous image, nothing more.'],
-                ['Result', 'A 45-minute staging QA pass and an ordered deploy checklist. The rollback was never needed.'],
-              ]}
-            />
-            <DecisionCard
-              title="Authorization in one layer, not per route"
-              rows={[
-                ['Instead of', 'Checks written route by route.'],
-                ['Why', 'Consistent enforcement: the same checks on every request.'],
-                [
-                  'Result',
-                  'Shared helpers that every handler calls for path ids, body ids and queries, with the integration suite testing cross-organization access over real HTTP.',
-                ],
-              ]}
-            />
-            <DecisionCard
-              title="One component library for two apps"
-              rows={[
-                ['Instead of', 'Each app keeping its own tables and forms.'],
-                ['Why', 'Teams were duplicating the same table and form logic.'],
-                [
-                  'Result',
-                  'DSP2 and Analyzer install Reset GUI from a private registry and render the same websites table, score filters and analytics tabs.',
-                ],
-              ]}
-            />
-          </DecisionCards>
+          <Decisions>
+            <Decision title="Ship the hardening in two batches, by risk">
+              <p>
+                The launch date was fixed. Instead of one release with everything, or a later launch, what a client
+                could exploit on day one went first; what operations could cover for a few days went second.
+              </p>
+              <Result>Both batches shipped, with no incidents and no rollbacks.</Result>
+            </Decision>
+            <Decision title="No database migrations in the first batch">
+              <p>Rollback had to be a redeploy of the previous image, nothing more.</p>
+              <Result>
+                A 45-minute staging QA pass and an ordered deploy checklist. The rollback was never needed.
+              </Result>
+            </Decision>
+            <Decision title="Authorization in one layer, not per route">
+              <p>Instead of checks written route by route, consistent enforcement: the same checks on every request.</p>
+              <Result>
+                Shared helpers that every handler calls for path ids, body ids and queries, with the integration suite
+                testing cross-organization access over real HTTP.
+              </Result>
+            </Decision>
+            <Decision title="One component library for two apps">
+              <p>Teams were duplicating the same table and form logic.</p>
+              <Result>
+                Instead of each app keeping its own tables and forms, DSP2 and Analyzer install Reset GUI from a
+                private registry and render the same websites table, score filters and analytics tabs.
+              </Result>
+            </Decision>
+          </Decisions>
         </>
       ),
     },

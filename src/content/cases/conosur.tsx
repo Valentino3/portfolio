@@ -1,5 +1,5 @@
 import { Clip } from '@/components/case/clip';
-import { Decision, Decisions, Result } from '@/components/case/decision-card';
+import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';

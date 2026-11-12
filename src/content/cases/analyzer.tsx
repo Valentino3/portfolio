@@ -1,4 +1,4 @@
-import { DecisionCard, DecisionCards } from '@/components/case/decision-card';
+import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
@@ -93,32 +93,23 @@ export const analyzer: CaseStudy = {
       id: 'decisions',
       title: 'Decisions',
       body: (
-        <DecisionCards>
-          <DecisionCard
-            title="OIDC with PKCE through Keycloak"
-            rows={[
-              ['Why', 'The client is a browser app, which can’t keep a secret; PKCE is the flow for that case.'],
-              ['Result', 'Rolled out from staging to production.'],
-            ]}
-          />
-          <DecisionCard
-            title="Roles by attribute, per entity"
-            rows={[
-              ['Why', 'Accounts sit in a four-level hierarchy.'],
-              ['Result', 'An attribute-based access model behind per-entity roles.'],
-            ]}
-          />
-          <DecisionCard
-            title="A measuring harness outside the product"
-            rows={[
-              [
-                'Why',
-                'To measure the pipeline without changing it, the harness runs the production prompt extracted byte for byte. If the prompt differs even in whitespace, every comparison is suspect.',
-              ],
-              ['Result', 'Production stayed untouched while it was measured.'],
-            ]}
-          />
-        </DecisionCards>
+        <Decisions>
+          <Decision title="OIDC with PKCE through Keycloak">
+            <p>The client is a browser app, which can’t keep a secret; PKCE is the flow for that case.</p>
+            <Result>Rolled out from staging to production.</Result>
+          </Decision>
+          <Decision title="Roles by attribute, per entity">
+            <p>Accounts sit in a four-level hierarchy.</p>
+            <Result>An attribute-based access model behind per-entity roles.</Result>
+          </Decision>
+          <Decision title="A measuring harness outside the product">
+            <p>
+              To measure the pipeline without changing it, the harness runs the production prompt extracted byte for
+              byte. If the prompt differs even in whitespace, every comparison is suspect.
+            </p>
+            <Result>Production stayed untouched while it was measured.</Result>
+          </Decision>
+        </Decisions>
       ),
     },
     {

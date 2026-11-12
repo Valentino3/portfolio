@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { kicker, projectBySlug, publishedProjects } from '@/content/projects';
+import { projectBySlug, publishedProjects } from '@/content/projects';
 import type { Slug } from '@/content/types';
 import { OG_CONTENT_TYPE, OG_SIZE, ogImage } from '@/lib/og';
 
@@ -14,5 +14,5 @@ export function generateStaticParams(): { slug: Slug }[] {
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const project = projectBySlug((await params).slug as Slug);
   if (!project) notFound();
-  return ogImage({ top: kicker(project), title: project.title });
+  return ogImage({ title: project.title, line: `${project.context}, ${project.years}` });
 }

@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import type { NumberedProject } from '@/content/types';
+import type { ProjectSummary } from '@/content/types';
 import { createSpring, type Spring } from '@/lib/spring';
 import { useMediaQuery } from '@/lib/use-media-query';
 import { VIEWER_QUERY } from '@/lib/viewer-state';
@@ -81,7 +81,7 @@ function createSwap(images: HTMLImageElement[], initial: number) {
  * order (the rows are the real links). The caption is the role and changes with the picture,
  * unanimated: it is text. With reduced motion the picture changes at once too.
  */
-export function ProjectViewer({ projects, activeIndex }: { projects: NumberedProject[]; activeIndex: number }) {
+export function ProjectViewer({ projects, activeIndex }: { projects: ProjectSummary[]; activeIndex: number }) {
   const enabled = useMediaQuery(VIEWER_QUERY);
   const frame = useRef<HTMLAnchorElement>(null);
   const swap = useRef<ReturnType<typeof createSwap>>(null);

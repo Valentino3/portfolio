@@ -20,8 +20,6 @@ export const INITIAL_VIEWER_STATE: ViewerState = { hovered: null, focused: null,
 
 /** The pointer has to rest on a row this long before the viewer follows it, so a sweep down the list does not flash through every image. The row indicator does not wait. */
 export const HOVER_INTENT_MS = 60;
-/** Unused since the caption changes with its image; kept so the existing tests still compile. */
-export const CAPTION_SWAP_MS = 0;
 
 /** Mirror of the `viewer` variant in globals.css: a wide screen with a fine pointer that can hover. */
 export const VIEWER_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';

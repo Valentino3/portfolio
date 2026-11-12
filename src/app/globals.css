@@ -101,7 +101,6 @@
   --spacing-grid-gap: clamp(1rem, 2.2vw, 2rem);
   --spacing-hero-top: clamp(2.5rem, 5vw, 4.5rem);
   --spacing-list-top: clamp(2rem, 4vw, 3.25rem);
-  --spacing-glance-top: clamp(3rem, 5vw, 4.5rem);
   --spacing-section: clamp(4.5rem, 9vw, 8rem);
   /* Case study rhythm, top to bottom: the back link, the facts and the hero, the outcomes, the
      body, between two sections, and the contact block at the end. */
