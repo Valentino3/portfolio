@@ -29,12 +29,43 @@
 
   /* Motion */
   --transition-duration-fast: 180ms; /* hover and focus */
-  --transition-duration-medium: 300ms; /* crossfades, arrows */
-  --transition-duration-slow: 800ms; /* viewer zoom */
+  --transition-duration-medium: 300ms; /* underline wipes */
   --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /*
+   * One-shot springs for things that answer the pointer (arrows, button presses, the copy
+   * confirmation). Each curve is a damped spring sampled into linear(), and only makes sense
+   * with its own duration: `duration-spring ease-spring`, `duration-pop ease-spring-pop`.
+   * spring: critically damped (no overshoot). pop: damping ratio 0.5, about 16% overshoot, for
+   * elements under 24px only. Anything that can change direction mid-flight (row indicator,
+   * viewer, index marker) uses the script spring in src/lib/spring.ts instead.
+   */
+  --transition-duration-spring: 420ms;
+  --ease-spring: linear(
+    0, 0.079, 0.236, 0.403, 0.551, 0.671, 0.764, 0.833, 0.883, 0.919, 0.945, 0.962, 0.974, 0.983, 0.988, 0.992,
+    0.995, 0.997, 0.998, 0.998, 1
+  );
+  --transition-duration-pop: 600ms;
+  --ease-spring-pop: linear(
+    0, 0.065, 0.223, 0.425, 0.633, 0.819, 0.967, 1.072, 1.135, 1.161, 1.159, 1.138, 1.107, 1.073, 1.041, 1.014,
+    0.994, 0.981, 0.975, 0.973, 0.976, 0.98, 0.986, 0.991, 0.996, 1, 1.002, 1.004, 1
+  );
   /* A bare `transition-*` utility follows the tokens instead of Tailwind's 150ms. */
   --default-transition-duration: var(--transition-duration-fast);
   --default-transition-timing-function: var(--ease-out-soft);
+  /* The copy confirmation: the line rises into place, its check mark pops. Both play once. */
+  --animate-confirm: confirm-in var(--transition-duration-spring) var(--ease-spring) both;
+  --animate-check: check-pop var(--transition-duration-pop) var(--ease-spring-pop) both;
+  @keyframes confirm-in {
+    from {
+      opacity: 0;
+      translate: 0 0.25rem;
+    }
+  }
+  @keyframes check-pop {
+    from {
+      scale: 0.4;
+    }
+  }
   /* Availability dot: a ripple that plays 3 times and stops (spec 4.2). */
   --animate-availability: availability-pulse 2.4s var(--ease-out-soft) 3;
   @keyframes availability-pulse {
@@ -49,10 +80,13 @@
     }
   }
 
+  /* Between regular and medium: the result of a decision, set apart from its reasoning. */
+  --font-weight-book: 450;
+
   /* Radius: one base, other radii are multiples of it */
   --radius-base: 8px;
   --radius-image: calc(var(--radius-base) * 1.25); /* 10px */
-  --radius-panel: var(--radius-image); /* decision cards, diagrams and the mobile index match the images */
+  --radius-panel: var(--radius-image); /* diagrams and the mobile index match the images */
 
   /* Elevation: only the zoom dialog floats above the page. */
   --shadow-dialog: 0 30px 80px -20px rgb(0 0 0 / 0.45);
@@ -78,21 +112,22 @@
   --spacing-case-section: clamp(3.5rem, 7vw, 6rem);
   --spacing-case-end: clamp(5rem, 9vw, 8.75rem);
 
-  /* Type scale, taken from the prototype, whose text all inherits its 1.55 body line
-     height (case prose, at 1.65, is the exception). Fixed steps: chip 0.72rem, label
-     0.75rem, meta 0.78rem, small 0.8125rem, base 1rem, UI small 0.875rem (14px, header),
-     UI base 0.9375rem (15px), case prose 1.0625rem (17px) and card (decision card title,
-     18px). Fluid clamp() steps above that: lead (home lede and About), outcome (a case
-     outcome title), dek (a case's summary), heading (case h2, 24-30px), display (case h1),
-     next ("Next project"), intro (home h1) and mail (contact address). */
-  --text-label: 0.75rem;
-  --text-label--line-height: 1.55;
+  /*
+   * Type scale. Two families, two jobs: Geist (sans) carries everything that is read or pressed;
+   * Geist Mono is for data and code only (figure captions, the text inside diagrams, inline
+   * code). Hierarchy comes from size, weight and the three text colors, never from a label.
+   *
+   * Fixed steps: caption 0.75rem (the one mono size), small 0.8125rem (tertiary UI: footer,
+   * index, status lines), UI small 0.875rem (header, row metadata), UI base 0.9375rem, base
+   * 1rem (list titles), case prose 1.0625rem and card 1.125rem (a decision's title). Fluid
+   * clamp() steps above that: lead (home lede and About), outcome (a case outcome title), dek
+   * (a case's summary), section (a home section heading), heading (case h2), next ("Next: …"),
+   * display (case h1), intro (home h1) and mail (contact address).
+   */
+  --text-caption: 0.75rem; /* mono: figure captions */
+  --text-caption--line-height: 1.55;
   --text-small: 0.8125rem;
   --text-small--line-height: 1.55;
-  --text-meta: 0.78rem; /* mono metadata: years, numbers, status, header meta */
-  --text-meta--line-height: 1.55;
-  --text-chip: 0.72rem; /* context chip on a project row */
-  --text-chip--line-height: 1.55;
   --text-base: 1rem; /* list titles, contact line */
   --text-base--line-height: 1.55;
   --text-ui-sm: 0.875rem;
@@ -114,6 +149,9 @@
   --text-dek: clamp(1.0625rem, 0.95rem + 0.55vw, 1.4375rem);
   --text-dek--line-height: 1.4;
   --text-dek--letter-spacing: -0.015em;
+  --text-section: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem); /* home section headings */
+  --text-section--line-height: 1.2;
+  --text-section--letter-spacing: -0.02em;
   --text-heading: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
   --text-heading--line-height: 1.15;
   --text-heading--letter-spacing: -0.025em;
@@ -121,10 +159,10 @@
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.04em;
   --text-next: clamp(1.5rem, 1rem + 2vw, 2.5rem);
-  --text-next--line-height: 1.55;
+  --text-next--line-height: 1.2;
   --text-next--letter-spacing: -0.035em;
-  --text-intro: clamp(1.5rem, 1rem + 1.6vw, 2.375rem); /* home h1 */
-  --text-intro--line-height: 1.12;
+  --text-intro: clamp(1.625rem, 0.95rem + 2vw, 2.75rem); /* home h1 */
+  --text-intro--line-height: 1.1;
   --text-intro--letter-spacing: -0.035em;
   --text-mail: clamp(1.5rem, 1rem + 2.6vw, 3.5rem); /* the contact address */
   --text-mail--letter-spacing: -0.04em;
@@ -226,17 +264,6 @@
   grid-template-columns: repeat(12, minmax(0, 1fr));
   /* 11 gaps must always fit the box (at 200% text the rem gap alone is wider than a 320 px screen). */
   column-gap: min(var(--spacing-grid-gap), calc(100% / 24));
-}
-
-/*
- * Project viewer crossfade: the image's opacity settles in the medium step, its
- * zoom (scale 1.03 to 1) takes the slow one. Tailwind's `scale-*` sets the
- * individual `scale` property, so that is what transitions, not `transform`.
- */
-@utility crossfade {
-  transition-property: opacity, scale;
-  transition-duration: var(--transition-duration-medium), var(--transition-duration-slow);
-  transition-timing-function: var(--ease-out-soft);
 }
 
 /*

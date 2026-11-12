@@ -30,11 +30,9 @@ const products: Media = {
 export const bakeryConcept: CaseStudy = {
   slug: 'bakery-concept',
   dek: 'A self-initiated site concept for a local sourdough bakery, which I’m presenting to its owners. An exercise in art direction, scroll motion and an image pipeline. Here the bakery’s name and logo are replaced with a placeholder, “Horno Lento”.',
-  facts: [
-    { label: 'Role', value: 'Design and build' },
-    { label: 'Status', value: 'Concept, being presented to the bakery' },
-    { label: 'Stack', value: 'React, TypeScript, Vite, GSAP ScrollTrigger, sharp' },
-    { label: 'Scope', value: 'Art direction, scroll scenes, content model, image pipeline' },
+  meta: [
+    'Design and build: art direction, scroll scenes, content model, image pipeline. A concept, being presented to the bakery.',
+    'React, TypeScript, Vite, GSAP ScrollTrigger, sharp.',
   ],
   hero: {
     image: projectSummary('bakery-concept').image,
@@ -71,13 +69,11 @@ export const bakeryConcept: CaseStudy = {
             name="bakery-scroll"
             alt="Screen recording: the headline and product cutouts animate in, then the page scrolls into the manifesto section"
             caption="Motion: entrance and scroll into the manifesto"
-            note="placeholder name, recorded"
           />
           <Gallery>
             <Figure
               image={directions}
               caption="A editorial · B immersive · C grid"
-              note="placeholder name"
               sizes={GALLERY_SIZES.wide}
               wide
               zoom
@@ -85,7 +81,6 @@ export const bakeryConcept: CaseStudy = {
             <Figure
               image={cutouts}
               caption="Current direction: cutouts over the type"
-              note="placeholder name"
               sizes={GALLERY_SIZES.wide}
               wide
               zoom
@@ -153,7 +148,6 @@ export const bakeryConcept: CaseStudy = {
           <Figure
             image={products}
             caption="Product showcase with filters"
-            note="placeholder name"
             sizes={GALLERY_SIZES.wide}
             wide
             zoom

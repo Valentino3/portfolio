@@ -1,6 +1,7 @@
 import { SectionHead } from './section-head';
 
-const EXPERIENCE = [
+/** `when` is a date range and nothing else: a row without one leaves the column empty. */
+const EXPERIENCE: { when?: string; role: string; org: string; summary: string }[] = [
   {
     when: 'Jun 2022 – now',
     role: 'Lead UI Developer',
@@ -29,9 +30,8 @@ const EXPERIENCE = [
     summary: 'Applications and websites for several clients, in C#, ASP.NET and Node.js.',
   },
   {
-    when: 'Internship',
     role: 'Developer Intern',
-    org: 'Forensic Informatics',
+    org: 'Forensic Informatics (internship)',
     summary: 'Computer-vision tooling for video evidence: face detection and object measurement.',
   },
 ];
@@ -53,14 +53,15 @@ export function ExperienceAbout() {
         <ul>
           {EXPERIENCE.map(({ when, role, org, summary }) => (
             <li
-              key={when}
-              className="grid grid-cols-[9.5rem_minmax(0,1fr)] gap-x-4 gap-y-1 border-b border-rule py-4 max-sm:grid-cols-1"
+              key={role}
+              className="grid grid-cols-[9.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 border-b border-rule py-4 max-sm:grid-cols-1"
             >
-              <span className="pt-0.75 font-mono text-meta text-text-3">{when}</span>
+              <span className={`text-ui-sm text-text-3 tabular-nums ${when ? '' : 'max-sm:hidden'}`}>{when}</span>
               <span>
-                <b className="font-medium">{role}</b> <span className="text-text-2">· {org}</span>
+                <b className="font-medium">{role}</b>
+                <span className="text-text-2">, {org}</span>
               </span>
-              <p className="col-start-2 mt-1 text-ui-sm text-text-2 max-sm:col-start-1">{summary}</p>
+              <p className="col-start-2 text-ui-sm text-text-2 max-sm:col-start-1">{summary}</p>
             </li>
           ))}
         </ul>
@@ -72,8 +73,7 @@ export function ExperienceAbout() {
           report that only shows a client its own numbers, a table that doesn’t jump while it loads.
         </p>
         <p className="mt-4 max-w-[52ch] text-lead leading-body text-text-2">
-          Before I call something done, I prove it works, with tests and measurements. I use AI assistants mainly for
-          testing.
+          Before I call something done, I prove it works, with tests and measurements.
         </p>
       </div>
     </section>

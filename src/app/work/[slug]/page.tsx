@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { CaseCta } from '@/components/case/case-cta';
-import { CaseHeader } from '@/components/case/case-header';
-import { Facts } from '@/components/case/facts';
+import { CaseHeader, CaseMeta } from '@/components/case/case-header';
 import { Figure } from '@/components/case/figure';
 import { NextProject } from '@/components/case/next-project';
 import { Outcomes } from '@/components/case/outcomes';
@@ -46,8 +45,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * The case study template (spec 4.3): back link, kicker, title and dek, facts, hero, outcomes,
- * then the numbered sections beside their index, the contact block and "Next project". The
+ * The case study template: back link, title and dek, the facts as two short paragraphs, hero,
+ * outcomes, then the sections beside their index, the contact block and the next case. The
  * footer comes from the layout. The zoom provider holds the page's one dialog for every figure
  * that can be enlarged. The hero is the likely LCP element: eager and high priority. React also
  * puts a preload link for it in the head (it does for any img that is not lazy, high priority
@@ -63,7 +62,7 @@ export default async function CasePage({ params }: Props) {
       <ZoomProvider>
         <main>
           <CaseHeader project={project} dek={study.dek} />
-          <Facts facts={study.facts} />
+          <CaseMeta project={project} meta={study.meta} />
           <div className="mt-case-block">
             <Figure
               image={study.hero.image}
@@ -88,11 +87,8 @@ export default async function CasePage({ params }: Props) {
                   tabIndex={-1}
                   className={`scroll-mt-8 focus:outline-none ${i === 0 ? '' : 'mt-case-section'}`}
                 >
-                  <h2 id={`${id}-h`} className="mb-3.5 flex items-baseline gap-3.5 text-heading font-medium">
-                    <span aria-hidden="true" className="font-mono text-meta font-normal text-text-3">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <span className="min-w-0 wrap-anywhere">{title}</span>
+                  <h2 id={`${id}-h`} className="mb-3.5 text-heading font-medium wrap-anywhere">
+                    {title}
                   </h2>
                   {body}
                 </section>

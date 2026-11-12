@@ -2,7 +2,8 @@ import { EMAIL } from '@/lib/site';
 
 /**
  * The contact block at the end of a case, where the header's "Contact" link lands. A plain
- * mailto, as in the prototype: the copy button belongs to the home's contact section.
+ * mailto: the copy button belongs to the home's contact section. As on the home, the heading is
+ * for assistive tech only.
  */
 export function CaseCta() {
   return (
@@ -11,9 +12,9 @@ export function CaseCta() {
       id="contact"
       aria-labelledby="cta-h"
       tabIndex={-1}
-      className="mt-case-end border-t border-rule pt-5 focus:outline-none"
+      className="mt-case-end border-t border-rule pt-6 focus:outline-none"
     >
-      <h2 id="cta-h" className="mb-2 font-mono text-label font-normal text-text-3">
+      <h2 id="cta-h" className="sr">
         Contact
       </h2>
       <p className="text-base text-text-2">Open to design engineering and full-stack roles, in Buenos Aires or remote.</p>

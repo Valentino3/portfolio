@@ -17,7 +17,8 @@ function useHydrated(): boolean {
  * A short screen recording that plays only while it is on screen, and always has a Play/Pause
  * button. It starts paused for a visitor who prefers reduced motion, and once the visitor has
  * paused it, it stays paused however often it scrolls out and back. Until the page's script runs
- * (or without it) it is its poster, with no button that would do nothing.
+ * (or without it) it is its poster, with no button that would do nothing. The button sits in the
+ * caption row, so it never covers the recording.
  *
  * Files: `/media/{name}.webm` and `/media/{name}-poster.webp`, both 1280x800. `alt` describes
  * what happens in the recording, for assistive tech.
@@ -75,8 +76,24 @@ export function Clip({
   };
 
   return (
-    // The 18px above matches the other blocks of a section (cards, gallery, diagram).
-    <FigureFrame caption={caption} note={note} className="mt-4.5">
+    <FigureFrame
+      caption={caption}
+      note={note}
+      className="mt-6"
+      action={
+        hydrated && (
+          // The label is the state's counterpart (Play while paused, Pause while playing), so there is
+          // no aria-pressed. It gives under the press and springs back.
+          <button
+            type="button"
+            onClick={toggle}
+            className="-mt-1 min-w-16 shrink-0 cursor-pointer rounded-full border border-rule-strong px-3 py-1 text-small text-ink transition-[border-color,scale] duration-pop ease-spring-pop hover:border-ink active:scale-95"
+          >
+            {playing ? 'Pause' : 'Play'}
+          </button>
+        )
+      }
+    >
       <video
         ref={video}
         muted
@@ -94,17 +111,6 @@ export function Clip({
       >
         <source src={`/media/${name}.webm`} type="video/webm" />
       </video>
-      {hydrated && (
-        // The label is the state's counterpart (Play while paused, Pause while playing), so there is no
-        // aria-pressed. Text size only: like the caption, the line height is the surrounding text's.
-        <button
-          type="button"
-          onClick={toggle}
-          className="absolute right-3 bottom-3 cursor-pointer rounded-full border border-paper/28 bg-ink/72 px-3 py-1.5 font-mono text-(length:--text-label) text-bg hover:bg-ink/90 focus-visible:outline-bg focus-visible:outline-offset-2"
-        >
-          {playing ? 'Pause' : 'Play'}
-        </button>
-      )}
     </FigureFrame>
   );
 }

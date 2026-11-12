@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Ref } from 'react';
 import type { NumberedProject } from '@/content/types';
 
 type ProjectListProps = {
@@ -12,40 +13,54 @@ type ProjectListProps = {
   onListLeave?: () => void;
   /** A row's link lost focus. */
   onBlur?: () => void;
+  /** The list element, for a parent that measures its rows. */
+  listRef?: Ref<HTMLOListElement>;
+  /** The one bar that marks the active row, for a parent that moves it. */
+  indicatorRef?: Ref<HTMLSpanElement>;
+  /** The parent has placed the shared bar: rows stop drawing their own. */
+  indicatorReady?: boolean;
 };
 
 /**
- * Without a viewer a row is a plain list item: ink title, visible arrow, thumbnail.
- * Under `viewer:` it is dimmed until `data-active` (set by the parent that drives
- * the viewer) brings in the ink title, the arrow and a bar in the left margin.
+ * A row is title, kind and years on one line and the description under it. Under `viewer:` the
+ * thumbnail is hidden and the active row (`data-active`, set by the parent that drives the
+ * viewer) shows its arrow. Until a parent has placed the shared bar (and without script) the
+ * active row draws a bar of its own in the left margin, so there is never more than one.
  */
-const ROW = [
-  'group/row relative grid grid-cols-[2.75rem_minmax(0,1fr)_auto] items-baseline border-b border-rule pt-3.5 pb-3.75',
-  'before:absolute before:top-3.5 before:bottom-3.75 before:-left-3.5 before:hidden before:w-0.5 before:scale-y-0 before:bg-ink',
-  'before:transition-transform before:duration-medium viewer:before:block viewer:data-active:before:scale-y-100',
-  'forced-colors:before:bg-[CanvasText]',
+const ROW =
+  'group/row relative grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 border-b border-rule py-4 viewer:py-3.5';
+const OWN_BAR = [
+  'before:absolute before:top-3.5 before:bottom-3.5 before:-left-3.5 before:hidden before:w-0.5 before:bg-ink',
+  'viewer:data-active:before:block forced-colors:before:bg-[CanvasText]',
 ].join(' ');
 // The title is the only link. Its ::after covers the whole row, thumbnail included.
-const TITLE = [
-  'text-base font-medium text-ink transition-colors after:absolute after:inset-0 after:z-1',
-  'viewer:text-text-2 viewer:group-data-active/row:text-ink viewer:focus-visible:text-ink',
-].join(' ');
+const TITLE = 'text-base font-medium text-ink after:absolute after:inset-0 after:z-1';
+// A small thing that answers the pointer: it may overshoot.
 const ARROW = [
-  'ml-2 inline-block text-text-3 transition duration-medium',
-  'viewer:-translate-x-2 viewer:text-inherit viewer:opacity-0',
+  'ml-1.5 inline-block text-text-3 transition-[translate,opacity] duration-pop ease-spring-pop',
+  'viewer:-translate-x-2 viewer:text-ink viewer:opacity-0',
   'viewer:group-data-active/row:translate-x-0 viewer:group-data-active/row:opacity-100',
+].join(' ');
+const BAR = [
+  'pointer-events-none absolute top-0 -left-3.5 hidden h-px w-0.5 origin-top bg-ink will-change-transform',
+  'forced-colors:bg-[CanvasText]',
 ].join(' ');
 
 /**
- * "Selected work". Server-safe on purpose: with no callbacks it ships no
- * script, and a client parent can pass them in. The title is the row's only
- * link and its ::after stretches over the whole row, thumbnail included, so
- * clicking anywhere opens the case.
- *
- * Under the `viewer` variant the thumbnails are hidden and the active row is
- * marked by `data-active`; otherwise every row shows its own 16:10 image.
+ * "Selected work". Server-safe on purpose: with no callbacks it ships no script, and a client
+ * parent can pass them in. The title is the row's only link and its ::after stretches over the
+ * whole row, thumbnail included, so clicking anywhere opens the case.
  */
-export function ProjectList({ projects, activeIndex, onActivate, onListLeave, onBlur }: ProjectListProps) {
+export function ProjectList({
+  projects,
+  activeIndex,
+  onActivate,
+  onListLeave,
+  onBlur,
+  listRef,
+  indicatorRef,
+  indicatorReady,
+}: ProjectListProps) {
   return (
     // tabIndex -1: an in-page link moves focus here (see InPageLink), without an outline.
     <section
@@ -57,71 +72,70 @@ export function ProjectList({ projects, activeIndex, onActivate, onListLeave, on
       <h2 id="work-h" className="sr">
         Selected work
       </h2>
-      <ol onMouseLeave={onListLeave} className="mt-list-top border-t border-rule">
-        {projects.map((p, i) => {
-          // Spoken, not typeset: a screen reader would say "plus" for "Design + build".
-          const spoken = `${p.role.replace(' + ', ' and ')}. ${p.stack.join(', ')}.`;
-          return (
-            <li
-              key={p.slug}
-              data-active={i === activeIndex ? '' : undefined}
-              onMouseEnter={onActivate && (() => onActivate(i, 'hover'))}
-              className={ROW}
-            >
-              <span className="font-mono text-meta text-text-3" aria-hidden="true">
-                {p.number}
-              </span>
-              <span className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-                <Link
-                  href={`/work/${p.slug}`}
-                  aria-describedby={`desc-${p.slug} meta-${p.slug}`}
-                  onFocus={onActivate && (() => onActivate(i, 'focus'))}
-                  onBlur={onBlur}
-                  className={TITLE}
-                >
-                  {p.title}
-                  <span aria-hidden="true" className={ARROW}>
-                    →
-                  </span>
-                </Link>
-                <span className="rounded-full border border-rule-strong px-2 py-px font-mono text-chip text-text-3">
-                  {p.context}
+      <div className="relative mt-list-top">
+        <ol ref={listRef} onMouseLeave={onListLeave} className="border-t border-rule">
+          {projects.map((p, i) => {
+            // Spoken, not typeset: a screen reader would say "plus" for "Design + build".
+            const spoken = `${p.role.replace(' + ', ' and ')}. ${p.stack.join(', ')}.`;
+            return (
+              <li
+                key={p.slug}
+                data-active={i === activeIndex ? '' : undefined}
+                onMouseEnter={onActivate && (() => onActivate(i, 'hover'))}
+                className={indicatorReady ? ROW : `${ROW} ${OWN_BAR}`}
+              >
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                  <Link
+                    href={`/work/${p.slug}`}
+                    aria-describedby={`desc-${p.slug} meta-${p.slug}`}
+                    onFocus={onActivate && (() => onActivate(i, 'focus'))}
+                    onBlur={onBlur}
+                    className={TITLE}
+                  >
+                    {p.title}
+                    <span aria-hidden="true" className={ARROW}>
+                      →
+                    </span>
+                  </Link>
+                  <span className="text-ui-sm text-text-3">{p.context}</span>
                 </span>
-              </span>
-              <span className="pl-4 text-right font-mono text-meta whitespace-nowrap text-text-3">{p.years}</span>
-              <p id={`desc-${p.slug}`} className="col-span-2 col-start-2 mt-1 text-ui-sm text-text-3">
-                {p.description}
-              </p>
-              <span id={`meta-${p.slug}`} className="sr">
-                {spoken}
-              </span>
-              <figure className="col-span-full mt-3.5 viewer:hidden">
-                <div className="aspect-16/10 overflow-hidden rounded-base bg-tint ring-1 ring-rule">
-                  <Image
-                    src={p.image.src}
-                    width={p.image.width}
-                    height={p.image.height}
-                    sizes="100vw"
-                    // The first thumbnail is what a phone paints first, so it must not wait for the lazy
-                    // loader. Where the viewer hides it the browser still fetches it (about 30 KB).
-                    loading={i === 0 ? 'eager' : undefined}
-                    fetchPriority={i === 0 ? 'high' : undefined}
-                    alt=""
-                    className="size-full object-cover object-top"
-                  />
-                </div>
-                <figcaption
-                  aria-hidden="true"
-                  className="mt-2.5 flex flex-wrap justify-between gap-x-4 gap-y-1 font-mono text-label text-text-3"
-                >
-                  <span>{p.role}</span>
-                  <span>{p.stack.join(' · ')}</span>
-                </figcaption>
-              </figure>
-            </li>
-          );
-        })}
-      </ol>
+                <span className="text-right text-ui-sm whitespace-nowrap text-text-3 tabular-nums">{p.years}</span>
+                <p id={`desc-${p.slug}`} className="col-span-full mt-1 max-w-[62ch] text-ui-sm text-text-2">
+                  {p.description}
+                </p>
+                <span id={`meta-${p.slug}`} className="sr">
+                  {spoken}
+                </span>
+                <figure className="col-span-full mt-3.5 viewer:hidden">
+                  <div className="aspect-16/10 overflow-hidden rounded-base bg-tint ring-1 ring-rule">
+                    <Image
+                      src={p.image.src}
+                      width={p.image.width}
+                      height={p.image.height}
+                      sizes="100vw"
+                      // The first thumbnail is what a phone paints first, so it must not wait for the lazy
+                      // loader. Where the viewer hides it the browser still fetches it (about 30 KB).
+                      loading={i === 0 ? 'eager' : undefined}
+                      fetchPriority={i === 0 ? 'high' : undefined}
+                      alt=""
+                      className="size-full object-cover object-top"
+                    />
+                  </div>
+                  <figcaption aria-hidden="true" className="mt-2 text-small text-text-3">
+                    {p.role}
+                  </figcaption>
+                </figure>
+              </li>
+            );
+          })}
+        </ol>
+        <span
+          ref={indicatorRef}
+          data-indicator=""
+          aria-hidden="true"
+          className={indicatorReady ? `${BAR} viewer:block` : BAR}
+        />
+      </div>
     </section>
   );
 }

@@ -5,7 +5,7 @@ import { InPageLink } from '@/components/site/in-page-link';
 export function TocMobile({ sections }: { sections: Pick<CaseSection, 'id' | 'title'>[] }) {
   return (
     <details className="mb-10 rounded-panel border border-rule px-4 py-3 text-ui leading-(--text-prose--line-height) lg:hidden">
-      <summary className="cursor-pointer py-1.5 font-mono text-meta text-text-2">On this page</summary>
+      <summary className="cursor-pointer py-1.5 text-ui-sm text-text-2">On this page</summary>
       <ol className="mt-2 mb-1 list-decimal pl-5">
         {sections.map(({ id, title }) => (
           <li key={id}>

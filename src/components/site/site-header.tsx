@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { InPageLink } from './in-page-link';
-import { LocalTime } from './local-time';
 
 type Variant = 'home' | 'case' | 'other';
 
@@ -32,14 +31,15 @@ const TARGET = 'py-1.5 pointer-coarse:py-2.75';
 /**
  * Rendered by each page, not by the layout: only the page knows its variant.
  * The `id="top"` + `tabIndex={-1}` pair is what "Back to top" lands on, so
- * focus moves with the scroll.
+ * focus moves with the scroll. On a phone the strip is the availability line
+ * alone; the location moves to the footer.
  */
 export function SiteHeader({ variant }: { variant: Variant }) {
   return (
     <header
       id="top"
       tabIndex={-1}
-      className="flex flex-wrap items-center gap-x-7 gap-y-2 pt-header-top text-ui-sm focus:outline-none"
+      className="flex flex-wrap items-baseline gap-x-7 gap-y-1 pt-header-top text-ui-sm focus:outline-none"
     >
       <Link href="/" className={`${TARGET} font-semibold`}>
         Valentino Rota
@@ -51,23 +51,13 @@ export function SiteHeader({ variant }: { variant: Variant }) {
           </InPageLink>
         ))}
       </nav>
-      <div className="ml-auto flex flex-wrap items-center gap-x-5.5 gap-y-1 font-mono text-meta text-text-3 max-sm:ml-0 max-sm:w-full max-sm:justify-between">
-        <span>
-          Mar del Plata, Argentina
-          {variant === 'home' && (
-            <>
-              {' · '}
-              <span>
-                local time <LocalTime />
-              </span>
-            </>
-          )}
-        </span>
-        <span className="inline-flex items-center gap-2 text-ink">
+      <p className="ml-auto flex flex-wrap items-baseline gap-x-5.5 max-sm:ml-0 max-sm:w-full">
+        <span className="text-text-3 max-sm:hidden">Mar del Plata, Argentina</span>
+        <span className="inline-flex items-baseline gap-2 text-ink">
           <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-available animate-availability" />
           Open to roles in Buenos Aires or remote
         </span>
-      </div>
+      </p>
     </header>
   );
 }

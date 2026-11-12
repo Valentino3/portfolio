@@ -1,4 +1,4 @@
-import { DecisionCard, DecisionCards } from '@/components/case/decision-card';
+import { Decision, Decisions, Result } from '@/components/case/decision-card';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES } from '@/components/case/gallery';
@@ -23,28 +23,18 @@ const kpis: Media = {
 export const stockTienda: CaseStudy = {
   slug: 'stock-tienda',
   dek: 'Software for small stores to sell at the counter, keep their stock and close the cash register. I built it alone, end to end. Three stores pay for it and have used it for about three months.',
-  facts: [
-    { label: 'Role', value: 'Solo: product, design, code and operations' },
-    { label: 'Users', value: 'Three paying stores, in production for about three months' },
-    {
-      label: 'Stack',
-      value:
-        'Next.js, TypeScript, Tailwind CSS 4, shadcn/Radix, PostgreSQL (Neon), Drizzle, Vitest, Playwright, fast-check',
-    },
-    {
-      label: 'Links',
-      value: (
-        <>
-          <ExternalLink href="https://github.com/Valentino3/stock-tienda">Repository (public)</ExternalLink>. Screens
-          come from a test store with demo data.
-        </>
-      ),
-    },
+  meta: [
+    'Solo: product, design, code and operations. Three paying stores, in production for about three months.',
+    <>
+      Next.js, TypeScript, Tailwind CSS 4, shadcn/Radix, PostgreSQL (Neon), Drizzle, Vitest, Playwright, fast-check.{' '}
+      <ExternalLink href="https://github.com/Valentino3/stock-tienda">Repository (public)</ExternalLink>. Screens come
+      from a test store with demo data.
+    </>,
   ],
   hero: {
     image: projectSummary('stock-tienda').image,
     caption: 'Reports: period total, low stock and cash closings',
-    note: 'test store · demo data',
+    note: 'test store, demo data',
   },
   outcomes: [
     {
@@ -101,60 +91,48 @@ export const stockTienda: CaseStudy = {
             ledger you can trust at a glance. The tokens and rules are written down in the repository, so every new
             screen follows them.
           </p>
-          <DecisionCards>
-            <DecisionCard
+          <Decisions>
+            <Decision
               title="Every figure in tabular mono"
-              rows={[
-                [
-                  'Why',
-                  <>
-                    Columns of money only read when digits line up. Fonts load with <code>display: optional</code>;
-                    with the default <code>swap</code>, every figure changes width when the font arrives and the whole
-                    table jumps.
-                  </>,
-                ],
-              ]}
               figure={
                 <Figure
                   image={table}
                   caption="Product table: figures aligned in columns"
-                  note="demo data"
                   sizes={GALLERY_SIZES.wide}
                   zoom
                 />
               }
-            />
-            <DecisionCard
+            >
+              <p>
+                Columns of money only read when digits line up. Fonts load with <code>display: optional</code>; with
+                the default <code>swap</code>, every figure changes width when the font arrives and the whole table
+                jumps.
+              </p>
+            </Decision>
+            <Decision
               title="Color only when there’s something to look at"
-              rows={[
-                [
-                  'Why',
-                  'A green zero makes you look up to read that nothing happened. Here the only color is the red 7 for low stock; the zero closings with a difference stay black. Negative amounts go in parentheses, like a bank statement.',
-                ],
-              ]}
-              figure={
-                <Figure image={kpis} caption="Report figures" note="demo data" sizes={GALLERY_SIZES.wide} zoom />
-              }
-            />
-            <DecisionCard
-              title="Borders, not shadows"
-              rows={[
-                [
-                  'Why',
-                  'Two grey borders give the density: one separates, one structures. Shadows are reserved for the paper documents on screen, like the delivery note, which is what makes them look like paper.',
-                ],
-              ]}
-            />
-            <DecisionCard
-              title="Two kinds of empty"
-              rows={[
-                [
-                  'Why',
-                  '“No customers yet” (dotted border) is not the same as “no results for this filter” (solid border, with a way to clear it). Saying “nothing here” when 400 products are hidden by a filter is the worst case.',
-                ],
-              ]}
-            />
-          </DecisionCards>
+              figure={<Figure image={kpis} caption="Report figures" sizes={GALLERY_SIZES.wide} zoom />}
+            >
+              <p>
+                A green zero makes you look up to read that nothing happened. Here the only color is the red 7 for
+                low stock; the zero closings with a difference stay black. Negative amounts go in parentheses, like a
+                bank statement.
+              </p>
+            </Decision>
+            <Decision title="Borders, not shadows">
+              <p>
+                Two grey borders give the density: one separates, one structures. Shadows are reserved for the paper
+                documents on screen, like the delivery note, which is what makes them look like paper.
+              </p>
+            </Decision>
+            <Decision title="Two kinds of empty">
+              <p>
+                “No customers yet” (dotted border) is not the same as “no results for this filter” (solid border,
+                with a way to clear it). Saying “nothing here” when 400 products are hidden by a filter is the worst
+                case.
+              </p>
+            </Decision>
+          </Decisions>
         </>
       ),
     },
@@ -163,53 +141,44 @@ export const stockTienda: CaseStudy = {
       title: 'Engineering decisions',
       body: (
         <>
-          <DecisionCards>
-            <DecisionCard
-              title="Offline sales: record first, flag later"
-              rows={[
-                ['Instead of', 'Rejecting an offline sale when stock ran out.'],
-                [
-                  'Why',
-                  'By the time the sale syncs, the goods have left the store and the money is in the drawer. Rejecting it doesn’t bring the units back; it only loses the record.',
-                ],
-                [
-                  'Result',
-                  'The sale is recorded, stock may go negative and an alert is raised. It lands in the cash session that was open when it happened, even if that session is closed now. Device clocks are bounded: a date more than 30 days old or 5 minutes ahead is replaced with the sync time.',
-                ],
-              ]}
-            />
-            <DecisionCard
-              title="Permissions checked on the server, always"
-              rows={[
-                ['Why', 'Hiding a button is not a permission.'],
-                [
-                  'Result',
-                  'Every action is authorized server-side, per store and per role. I found and closed a privilege-escalation bug in the replay endpoint, and added CI in the same change.',
-                ],
-              ]}
-            />
-            <DecisionCard
-              title="Property-based tests for the money math"
-              rows={[
-                ['Instead of', 'Only example tests, plus a manual test sale after each deploy.'],
-                [
-                  'Why',
-                  'Totals, prices, cash counts and tax amounts have rules that must hold for any input, and a handful of examples misses edge cases.',
-                ],
-                [
-                  'Result',
-                  'Property tests for totals, prices, cash counts, accounts and tax amounts, alongside example and end-to-end tests, and a production check that replaced the manual sale.',
-                ],
-              ]}
-            />
-            <DecisionCard
-              title="A test store in production"
-              rows={[
-                ['Why', 'To exercise the real production setup without issuing real invoices.'],
-                ['Result', 'A store in production where real invoicing is blocked.'],
-              ]}
-            />
-          </DecisionCards>
+          <Decisions>
+            <Decision title="Offline sales: record first, flag later">
+              <Result>
+                Instead of rejecting an offline sale when stock ran out, the sale is recorded, stock may go negative
+                and an alert is raised. It lands in the cash session that was open when it happened, even if that
+                session is closed now. Device clocks are bounded: a date more than 30 days old or 5 minutes ahead is
+                replaced with the sync time.
+              </Result>
+              <p>
+                By the time the sale syncs, the goods have left the store and the money is in the drawer. Rejecting it
+                doesn’t bring the units back; it only loses the record.
+              </p>
+            </Decision>
+            <Decision title="Permissions checked on the server, always">
+              <p>Hiding a button is not a permission.</p>
+              <Result>
+                Every action is authorized server-side, per store and per role. I found and closed a
+                privilege-escalation bug in the replay endpoint, and added CI in the same change.
+              </Result>
+            </Decision>
+            <Decision title="Property-based tests for the money math">
+              <Result>
+                Instead of only example tests, plus a manual test sale after each deploy: property tests for totals,
+                prices, cash counts, accounts and tax amounts, alongside example and end-to-end tests, and a
+                production check that replaced the manual sale.
+              </Result>
+              <p>
+                Totals, prices, cash counts and tax amounts have rules that must hold for any input, and a handful of
+                examples misses edge cases.
+              </p>
+            </Decision>
+            <Decision title="A test store in production">
+              <p>
+                <Result inline>A store in production where real invoicing is blocked,</Result> to exercise the real
+                production setup without issuing real invoices.
+              </p>
+            </Decision>
+          </Decisions>
           <Diagram
             label="Diagram: the counter app keeps a local catalogue and queues sales while offline; when the connection returns it replays them, each with a key; the server checks permissions and records stock in one transaction in PostgreSQL, and invoices go through ARCA."
             rows={[

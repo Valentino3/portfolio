@@ -55,7 +55,7 @@ export function ZoomProvider({ children }: { children: ReactNode }) {
         <form method="dialog" className="flex justify-end p-2">
           <button
             type="submit"
-            className="cursor-pointer rounded-full border border-rule-strong px-3 py-1.5 font-mono text-small text-ink"
+            className="cursor-pointer rounded-full border border-rule-strong px-3 py-1.5 text-small text-ink transition-[border-color,scale] duration-pop ease-spring-pop hover:border-ink active:scale-95"
           >
             Close
           </button>

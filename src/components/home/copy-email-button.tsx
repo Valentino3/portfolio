@@ -23,6 +23,8 @@ function selectAddress() {
 /**
  * "Copy email" button and its status line. The label never changes: the
  * outcome goes to a visible `role="status"` line that clears after 6 seconds.
+ * The button gives under the press and springs back; the confirmation rises
+ * into place and its check mark pops (both once, neither with reduced motion).
  * If the Clipboard API is missing or refuses, the address is selected instead
  * and the message depends on the pointer: touch has no Ctrl+C.
  *
@@ -62,17 +64,34 @@ export function CopyEmailButton({ email }: { email: string }) {
       <button
         type="button"
         onClick={copy}
-        className="cursor-pointer rounded-full border border-rule-strong px-3.5 py-2 font-mono text-small text-ink transition-colors hover:border-ink"
+        className="cursor-pointer rounded-full border border-rule-strong px-3.5 py-2 text-ui-sm text-ink transition-[border-color,scale] duration-pop ease-spring-pop hover:border-ink active:scale-95"
       >
         Copy email
       </button>
       <p
         role="status"
-        className={`min-h-[1.5em] basis-full font-mono text-small ${
-          status?.kind === 'done' ? 'text-ok' : status?.kind === 'fail' ? 'text-error' : 'text-text-2'
-        }`}
+        className={`min-h-[1.55em] basis-full text-small ${status?.kind === 'fail' ? 'text-error' : 'text-ok'}`}
       >
-        {status && <span key={status.count}>{status.text}</span>}
+        {status && (
+          // Keyed by the count: a new text node is announced again and replays the entrance.
+          <span key={status.count} className="inline-flex animate-confirm items-baseline gap-1.5">
+            {status.kind === 'done' && (
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 12 12"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="size-3 shrink-0 translate-y-px animate-check"
+              >
+                <path d="M2 6.5 4.75 9.25 10 3.25" />
+              </svg>
+            )}
+            {status.text}
+          </span>
+        )}
       </p>
     </>
   );

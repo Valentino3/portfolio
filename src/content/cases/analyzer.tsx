@@ -22,19 +22,14 @@ const propensity: Media = {
 export const analyzer: CaseStudy = {
   slug: 'analyzer',
   dek: 'An AI service that scores websites by the emotions their pages evoke, so ads can be placed where the mood fits. DSP2 uses those scores for site selection. I’m its main contributor: I took it from no authentication to Keycloak, and I ran the study that measured whether its scores could be trusted.',
-  facts: [
-    { label: 'Role', value: 'Main contributor, including all of the authentication work' },
-    { label: 'Scope', value: 'Authentication, access model, LLM evaluation, client UI' },
-    {
-      label: 'Stack',
-      value: 'React 19, Vite, MUI, oidc-client-ts, Python API, MySQL, Keycloak, Nginx, Docker Compose',
-    },
-    { label: 'Evidence', value: 'Private codebase. Screens are Reset GUI components in Storybook, with mock data.' },
+  meta: [
+    'Main contributor, including all of the authentication work. Authentication, access model, LLM evaluation, client UI.',
+    'React 19, Vite, MUI, oidc-client-ts, Python API, MySQL, Keycloak, Nginx, Docker Compose. Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
   ],
   hero: {
     image: projectSummary('analyzer').image,
     caption: 'Websites ranked by propensity score, with their emotional profile',
-    note: 'Storybook · mock data',
+    note: 'Storybook, mock data',
   },
   outcomes: [
     {
@@ -159,14 +154,12 @@ export const analyzer: CaseStudy = {
           <Figure
             image={radar}
             caption="Emotional profile of a site"
-            note="mock data"
             sizes={GALLERY_SIZES.half}
             zoom
           />
           <Figure
             image={propensity}
             caption="Propensity threshold filter"
-            note="mock data"
             sizes={GALLERY_SIZES.half}
             zoom
           />

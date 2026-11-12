@@ -24,8 +24,7 @@ function useHorizontalFit(ref: RefObject<HTMLElement | null>): Fit {
  * screen the drawing keeps a minimum width and scrolls sideways, so a keyboard must be able to
  * reach it: the panel is in the tab order from the server on (before the script runs, and without
  * it), and leaves it once the script has measured that the drawing fits. The "Swipe" hint above it
- * shows only once an overflow is measured. On a wide screen the panel may reach 26% past the text
- * column, like the prototype.
+ * shows only once an overflow is measured. Its right edge is the text column's, like every figure.
  */
 export function DiagramFrame({ label, children }: { label: string; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -35,7 +34,7 @@ export function DiagramFrame({ label, children }: { label: string; children: Rea
       <p
         aria-hidden="true"
         hidden={fit !== 'overflows'}
-        className="mt-4.5 -mb-2 font-mono text-label leading-(--text-prose--line-height) text-text-3"
+        className="mt-6 -mb-3.5 text-small text-text-3"
       >
         Swipe to see the whole diagram →
       </p>
@@ -44,7 +43,7 @@ export function DiagramFrame({ label, children }: { label: string; children: Rea
         role="img"
         aria-label={label}
         tabIndex={fit === 'fits' ? undefined : 0}
-        className="diagram mt-4.5 overflow-x-auto rounded-panel border border-rule bg-surface p-5.5 lg:-mr-[26%]"
+        className="diagram mt-6 overflow-x-auto rounded-panel border border-rule bg-surface p-5"
       >
         {children}
       </div>
