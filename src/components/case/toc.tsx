@@ -90,6 +90,7 @@ export function Toc({ sections }: { sections: Pick<CaseSection, 'id' | 'title'>[
         </ol>
         <span
           ref={marker}
+          data-toc-marker=""
           aria-hidden="true"
           className="pointer-events-none absolute top-0 -left-px h-px w-px origin-top bg-ink opacity-0 transition-opacity duration-fast forced-colors:bg-[CanvasText]"
         />

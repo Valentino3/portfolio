@@ -28,9 +28,9 @@ type ProjectListProps = {
  * without script) the active row draws a bar of its own, so there is never more than one.
  */
 const ROW =
-  'relative grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 border-b border-rule py-4 viewer:py-3.5';
+  'relative grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 border-b border-rule py-4 viewer:py-3';
 const OWN_BAR = [
-  'before:absolute before:top-3.5 before:bottom-3.5 before:-left-3.5 before:hidden before:w-0.5 before:bg-ink',
+  'before:absolute before:top-3 before:bottom-3 before:-left-3.5 before:hidden before:w-0.5 before:bg-ink',
   'viewer:data-active:before:block forced-colors:before:bg-[CanvasText]',
 ].join(' ');
 // The title is the only link. Its ::after covers the whole row, thumbnail included.

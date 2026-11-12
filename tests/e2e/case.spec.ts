@@ -1,15 +1,18 @@
 import { expect, test } from '@playwright/test';
-import { kicker, publishedProjects } from '@/content/projects';
+import { publishedProjects } from '@/content/projects';
 import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
 // In-page links are clicked only once the page is hydrated: earlier, a click is a native jump,
 // the very thing the Back test below guards against.
 const TOC = 'nav[aria-label="On this page"]';
 
-test('case renders kicker, toc and cycles to next project', async ({ page }) => {
+const NEXT = /^Next: /;
+
+test('the next case is one line, "Next: Title"', async ({ page }) => {
   await page.goto('/work/stock-tienda');
-  await expect(page.locator('[data-kicker]')).toHaveText('01 · Own product · 2026 – now');
-  await expect(page.getByRole('link', { name: /Next project/ })).toHaveAttribute('href', '/work/conosur');
+  const next = page.getByRole('link', { name: NEXT });
+  await expect(next).toHaveAttribute('href', '/work/conosur');
+  await expect(next).toHaveAccessibleName('Next: Conosur');
 });
 
 test('every published case is generated, and the last one cycles back to the first', async ({ page }) => {
@@ -17,9 +20,10 @@ test('every published case is generated, and the last one cycles back to the fir
   for (const project of cases) {
     await page.goto(`/work/${project.slug}`);
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(project.title);
-    await expect(page.locator('[data-kicker]')).toHaveText(kicker(project));
+    // The facts open with whose work it was and when, as a sentence.
+    await expect(page.locator('[data-case-meta] p').first()).toContainText(`${project.context}, ${project.years}.`);
   }
-  await expect(page.getByRole('link', { name: /Next project/ })).toHaveAttribute('href', `/work/${cases[0].slug}`);
+  await expect(page.getByRole('link', { name: NEXT })).toHaveAttribute('href', `/work/${cases[0].slug}`);
 });
 
 test('the template follows the prototype: back link, facts, hero, outcomes, sections, contact', async ({ page }) => {
@@ -33,7 +37,8 @@ test('the template follows the prototype: back link, facts, hero, outcomes, sect
   await expect(main.getByRole('link', { name: 'All work' })).toHaveAttribute('href', '/#work');
   await expect(main.getByRole('heading', { level: 1 })).toHaveText('Stock Tienda');
   await expect(main).toContainText('Software for small stores to sell at the counter');
-  await expect(main.locator('dl').first().locator('dt')).toHaveText(['Role', 'Users', 'Stack', 'Links']);
+  // The facts are sentences: no label-over-value grid anywhere in the case.
+  await expect(main.locator('dl')).toHaveCount(0);
   await expect(main.getByRole('link', { name: 'Repository (public) (opens in a new tab)' })).toHaveAttribute(
     'href',
     'https://github.com/Valentino3/stock-tienda',
@@ -44,7 +49,7 @@ test('the template follows the prototype: back link, facts, hero, outcomes, sect
   await expect(hero.locator('img')).toHaveAttribute('fetchpriority', 'high');
   await expect(hero.locator('img')).toHaveAttribute('alt', /^Reports screen/);
   await expect(hero.locator('figcaption')).toContainText('Reports: period total, low stock and cash closings');
-  await expect(hero.locator('figcaption')).toContainText('test store · demo data');
+  await expect(hero.locator('figcaption')).toContainText('test store, demo data');
 
   const outcomes = main.getByRole('list', { name: 'Outcomes' });
   await expect(outcomes.locator('li b')).toHaveText([
@@ -53,10 +58,12 @@ test('the template follows the prototype: back link, facts, hero, outcomes, sect
     'Electronic invoicing with ARCA',
   ]);
 
-  // Section numbers are decoration: hidden from the accessible name of each heading.
-  for (const name of ['Context', 'Engineering decisions', 'Contact'])
+  // No numbering: a section heading is its name and nothing else.
+  for (const name of ['Context', 'Engineering decisions'])
     await expect(main.getByRole('heading', { level: 2, name, exact: true })).toBeVisible();
-  await expect(main.locator('#context h2 [aria-hidden="true"]')).toHaveText('01');
+  await expect(main.locator('#context h2')).toHaveText('Context');
+  // Contact names its section for assistive tech only: the address is the visible heading.
+  await expect(main.getByRole('heading', { level: 2, name: 'Contact', exact: true })).toHaveClass(/\bsr\b/);
   await expect(main.locator('#contact a[href="mailto:valentino.rota3@gmail.com"]')).toBeVisible();
 });
 
@@ -102,7 +109,7 @@ test('an in-page link, then another case, then Back restores the first case', as
   await index.getByRole('link', { name: 'Engineering decisions' }).click();
   await expect(page).toHaveURL(/\/work\/stock-tienda#engineering$/);
 
-  await page.getByRole('link', { name: /Next project/ }).click();
+  await page.getByRole('link', { name: NEXT }).click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Conosur');
 
   await page.goBack();

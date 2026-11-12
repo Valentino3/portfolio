@@ -8,19 +8,20 @@ import { VIEWER_QUERY } from '@/lib/viewer-state';
 
 /*
  * The viewer takes columns 7-12 beside the list and is as tall as the list: the grid stretches
- * it, the picture takes what the caption leaves. Where the list grows much taller than a
- * screenshot can be cropped (a narrow desktop window) the picture stops at 5:4 and the block
- * sticks while the list scrolls. `cqw` is 1% of this column's width.
+ * it, the picture takes what the caption (1.875rem) leaves. The screenshots are 16:10; the box
+ * may be a little taller, never more than 1:1.52, so at most 5% of a screenshot's right edge is
+ * cut. If the list is taller still, the block stops there and sticks while the list scrolls.
+ * `cqw` is 1% of this column's width.
  */
 const PLACEMENT = 'hidden viewer:block viewer:col-span-6 viewer:col-start-7 viewer:mt-list-top @container';
-const BLOCK = 'sticky top-6 flex h-[min(100%,calc(80cqw+1.875rem))] flex-col';
+const BLOCK = 'sticky top-6 flex h-[min(100%,calc(100cqw/1.52+1.875rem))] flex-col';
 const FRAME =
   'relative block min-h-0 flex-1 overflow-hidden rounded-image bg-tint ring-1 ring-rule forced-colors:border forced-colors:border-[CanvasText]';
 // Top left, not top center: a taller box crops a screenshot's right edge and keeps its navigation.
 const IMAGE = 'absolute inset-0 size-full object-cover object-left-top will-change-[opacity,scale]';
-// 6 of the 12 columns of the page grid: about 580px once the 1312px container stops growing, 44-45vw below that.
-// The box is taller than 16:10, so the picture is laid out wider than its column: about 5:4 at most.
-const SIZES = '(min-width: 1312px) 740px, 56vw';
+// 6 of the 12 columns of the page grid: about 576px once the 1312px container stops growing, 44-45vw
+// below that. A box up to 5% taller than 16:10 lays the picture out up to 5% wider than its column.
+const SIZES = '(min-width: 1312px) 610px, 47vw';
 
 /** Critically damped: a picture this size settles, it does not bounce. */
 const SWAP_SPRING = { response: 0.28, damping: 1 };

@@ -33,7 +33,10 @@ export function CaseHeader({ project, dek }: { project: ProjectSummary; dek: str
  */
 export function CaseMeta({ project, meta }: { project: ProjectSummary; meta: [ReactNode, ReactNode] }) {
   return (
-    <div className="mt-5 max-w-[70ch] space-y-1.5 text-ui text-text-3 [&_a]:text-text-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-ink">
+    <div
+      data-case-meta=""
+      className="mt-5 max-w-[70ch] space-y-1.5 text-ui text-text-3 [&_a]:text-text-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-ink"
+    >
       <p>
         <span className="tabular-nums">
           {project.context}, {project.years}.

@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest';
 import {
   activeIndex,
-  CAPTION_SWAP_MS,
   HOVER_INTENT_MS,
   INITIAL_VIEWER_STATE,
   viewerReducer,
@@ -19,9 +18,8 @@ test('index 0 is a valid hovered or focused row, not "nothing"', () => {
   expect(activeIndex({ hovered: null, focused: 0, selected: 2 })).toBe(0);
 });
 
-test('timings come from the prototype: 110 ms hover intent, 150 ms caption swap', () => {
-  expect(HOVER_INTENT_MS).toBe(110);
-  expect(CAPTION_SWAP_MS).toBe(150);
+test('the viewer waits 60 ms of rest on a row before it follows the pointer', () => {
+  expect(HOVER_INTENT_MS).toBe(60);
 });
 
 test('the viewer starts on the first project with nothing hovered or focused', () => {

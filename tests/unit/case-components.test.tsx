@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, test } from 'vitest';
 import { CaseHeader } from '@/components/case/case-header';
 import { CodeToken } from '@/components/case/code-token';
-import { DecisionCard } from '@/components/case/decision-card';
+import { Decision, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { getCase } from '@/content/cases';
 import { projectBySlug, publishedProjects } from '@/content/projects';
@@ -13,36 +13,44 @@ function texts(html: string, tag: string): string[] {
   return [...html.matchAll(new RegExp(`<${tag}\\b[^>]*>(.*?)</${tag}>`, 'g'))].map((m) => m[1]);
 }
 
-test('the kicker reads number · context · years, and the back link goes to the home list', () => {
+test('the case header is the back link, the title and the dek: nothing set above the title', () => {
   const html = renderToStaticMarkup(<CaseHeader project={projectBySlug('dsp2')!} dek="A dek." />);
-  expect(html).toMatch(/<span data-kicker=""[^>]*>03 · Reset Digital · 2024 – now<\/span>/);
+  // Between the back link and the h1 there is only the wrapper that holds the title and the dek.
+  expect(html).toMatch(/All work<\/a><div[^>]*><h1/);
   expect(html).toMatch(/<a [^>]*href="\/#work"[^>]*><span aria-hidden="true"[^>]*>←<\/span> All work<\/a>/);
   expect(texts(html, 'h1')).toEqual(['DSP2 + Reset GUI']);
   expect(texts(html, 'p')).toEqual(['A dek.']);
 });
 
-test('a decision card keeps the rows it is given, in order, and leaves out the rest', () => {
+test('a decision is a title and prose, with no labels and no box', () => {
   const html = renderToStaticMarkup(
-    <DecisionCard
-      title="Offline sales: record first, flag later"
-      rows={[
-        ['Instead of', 'Rejecting an offline sale.'],
-        ['Result', <>The sale is <code>recorded</code>.</>],
-      ]}
-    />,
+    <Decision title="Offline sales: record first, flag later">
+      <p>Rejecting it loses the record.</p>
+      <Result>
+        The sale is <code>recorded</code>.
+      </Result>
+    </Decision>,
   );
   expect(html).toMatch(/^<article\b/);
   expect(texts(html, 'h3')).toEqual(['Offline sales: record first, flag later']);
-  expect(texts(html, 'dt')).toEqual(['Instead of', 'Result']);
-  expect(texts(html, 'dd')).toEqual(['Rejecting an offline sale.', 'The sale is <code>recorded</code>.']);
+  expect(html).not.toMatch(/<(dl|dt|dd)\b/);
+  expect(html).not.toMatch(/\b(rounded-panel|bg-surface)\b/);
+  expect(texts(html, 'p')).toEqual(['Rejecting it loses the record.', 'The sale is <code>recorded</code>.']);
   expect(html).not.toContain('<figure');
 });
 
-test('a decision card shows its figure after the rows', () => {
+test('a result is set apart by weight and ink, as a paragraph or the end of one', () => {
+  expect(renderToStaticMarkup(<Result>Done.</Result>)).toBe('<p class="font-book text-ink">Done.</p>');
+  expect(renderToStaticMarkup(<Result inline>done</Result>)).toBe('<span class="font-book text-ink">done</span>');
+});
+
+test('a decision shows its figure after its prose', () => {
   const html = renderToStaticMarkup(
-    <DecisionCard title="Every figure in tabular mono" rows={[['Why', 'Digits line up.']]} figure={<figure>F</figure>} />,
+    <Decision title="Every figure in tabular mono" figure={<figure>F</figure>}>
+      <p>Digits line up.</p>
+    </Decision>,
   );
-  expect(html.indexOf('</dl>')).toBeLessThan(html.indexOf('<figure>F</figure>'));
+  expect(html.indexOf('Digits line up.')).toBeLessThan(html.indexOf('<figure>F</figure>'));
   expect(html).toMatch(/<\/article>$/);
 });
 

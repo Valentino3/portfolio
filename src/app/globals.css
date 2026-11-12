@@ -4,8 +4,10 @@
  * The home shows a sticky project viewer only where hover is real: a wide
  * screen with a fine pointer that can hover. Everything else (touch, a tablet in
  * landscape, a narrow window) gets inline thumbnails. One query, one name.
+ * From 1280px up half the grid is wide enough for a screenshot as tall as the
+ * list; below that the list outgrows it and the viewer would leave a gap.
  */
-@custom-variant viewer (@media (min-width: 1024px) and (hover: hover) and (pointer: fine));
+@custom-variant viewer (@media (min-width: 1280px) and (hover: hover) and (pointer: fine));
 
 /*
  * Single token layer. Components use these utilities (bg-bg, text-ink,
@@ -231,6 +233,11 @@
       margin-bottom: calc(var(--spacing) * 4);
       max-width: 64ch;
       color: var(--color-text-2);
+    }
+
+    /* Text that goes on after a diagram or a figure keeps its distance from it. */
+    & :is(.diagram, figure) + p {
+      margin-top: calc(var(--spacing) * 6);
     }
 
     & ul {

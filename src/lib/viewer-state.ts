@@ -22,7 +22,7 @@ export const INITIAL_VIEWER_STATE: ViewerState = { hovered: null, focused: null,
 export const HOVER_INTENT_MS = 60;
 
 /** Mirror of the `viewer` variant in globals.css: a wide screen with a fine pointer that can hover. */
-export const VIEWER_QUERY = '(min-width: 1024px) and (hover: hover) and (pointer: fine)';
+export const VIEWER_QUERY = '(min-width: 1280px) and (hover: hover) and (pointer: fine)';
 
 /** Hovered beats focused beats selected. Row 0 is a row, not "nothing", hence `??` and not `||`. */
 export function activeIndex(s: ViewerState): number {

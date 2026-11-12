@@ -129,9 +129,7 @@ export const conosur: CaseStudy = {
               ],
             ]}
           />
-          <p className="mt-6">
-            Deploys run on GitHub Actions, which builds the site and ships it over SSH to a server behind Nginx.
-          </p>
+          <p>Deploys run on GitHub Actions, which builds the site and ships it over SSH to a server behind Nginx.</p>
         </>
       ),
     },
