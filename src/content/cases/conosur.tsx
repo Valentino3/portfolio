@@ -116,8 +116,8 @@ export const conosur: CaseStudy = {
           </Decisions>
           <Clip
             name="conosur-releases"
-            alt="Screen recording: the home scrolls into the releases section, then two releases are selected and the cover and player change"
-            caption="Motion: scrolling into releases and switching between them"
+            alt="Screen recording of the releases section: the cursor picks ‘ICGE & A LOVE STORY’ and then ‘VISIONS’ from the release strip, and the large cover, the title and the embedded Spotify player switch each time, before it returns to ‘self-title’."
+            caption="Releases: picking a release swaps the cover, the title and the Spotify player in place."
           />
           <Diagram
             label="Diagram: the releases section loads the Spotify embed; if it hasn’t loaded after ten seconds, it retries twice, and then the same release plays in a YouTube player."

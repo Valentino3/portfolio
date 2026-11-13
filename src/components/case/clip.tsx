@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { CLIPS, type ClipName } from '@/content/clips';
+import { CLIPS, isNarrowClip, type ClipName } from '@/content/clips';
 import { FigureFrame } from './figure-frame';
 
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
@@ -22,7 +22,9 @@ function useHydrated(): boolean {
  * caption row, so it never covers the recording.
  *
  * Files and size come from the `CLIPS` registry, so the box is reserved at the clip's own
- * proportions. `alt` describes what happens in the recording, for assistive tech.
+ * proportions. A near-square or portrait clip is capped at 32rem (`max-w-lg`), aligned with the
+ * text: at the column's full width it would be taller than the screen. `alt` describes what
+ * happens in the recording, for assistive tech.
  */
 export function Clip({
   name,
@@ -77,7 +79,7 @@ export function Clip({
   return (
     <FigureFrame
       caption={caption}
-      className="mt-6"
+      className={isNarrowClip(name) ? 'mt-6 max-w-lg' : 'mt-6'}
       action={
         hydrated && (
           // The label is the state's counterpart (Play while paused, Pause while playing), so there is
