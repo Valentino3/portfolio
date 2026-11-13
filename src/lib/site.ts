@@ -1,8 +1,9 @@
 /**
- * Canonical origin, used for metadataBase and later for OG, sitemap and robots.
+ * Canonical origin, used for metadataBase, OG images, sitemap and robots.
+ * Read on the server only (never imported by a client component), so the variable needs no public prefix.
  * `||`, not `??`: an env var set to an empty string must fall back too, or `new URL('')` throws.
  */
-export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://valentinorota.vercel.app';
+export const SITE_URL = process.env.NEXT_SITE_URL || 'https://valentinorota.vercel.app';
 
 export const NAME = 'Valentino Rota';
 /** Open Graph fields every page repeats: a page's own `openGraph` replaces the layout's, it is not merged. */
