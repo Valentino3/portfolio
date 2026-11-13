@@ -74,8 +74,8 @@ test('before the page script runs a clip is its poster: no autoplay, no controls
     expect(video.toLowerCase()).toContain(attribute);
   }
   expect(video).toContain('poster="/media/bakery-scroll-poster.webp"');
-  expect(video).toContain('width="1280"');
-  expect(video).toContain('height="800"');
+  expect(video).toContain('width="2560"');
+  expect(video).toContain('height="1600"');
   expect(video).toContain('aria-label="The page scrolls"');
   expect(video).not.toMatch(/\b(autoplay|controls)\b/i);
   expect(html).toContain('<source src="/media/bakery-scroll.webm" type="video/webm"/>');

@@ -362,6 +362,22 @@ test('the new conosur clip keeps its own proportions', async ({ page }) => {
   expect(box.width / box.height).toBeCloseTo(2304 / 1720, 1);
 });
 
+test('the re-recorded bakery clip: its own size, its caption and what it shows', async ({ page }) => {
+  await page.goto('/work/bakery-concept');
+  const figure = page.locator('figure:has(video[data-clip])');
+  const v = figure.locator('video');
+  await expect(v).toHaveAttribute('width', '2560');
+  await expect(v).toHaveAttribute('height', '1600');
+  await expect(v).toHaveAttribute('poster', '/media/bakery-scroll-poster.webp');
+  await expect(figure.locator('figcaption')).toHaveText(
+    'Bakery concept: the hero enters, the buttons answer the pointer, and the scroll carries the cutouts into the manifesto.',
+  );
+  await expect(v).toHaveAttribute('aria-label', /into the manifesto ‘El buen pan se hace con tiempo\.’$/);
+  await v.scrollIntoViewIfNeeded();
+  const box = (await v.boundingBox())!;
+  expect(box.width / box.height).toBeCloseTo(2560 / 1600, 1);
+});
+
 test('before/after pairs: side by side on a desktop, stacked on a phone, each opening its own zoom', async ({
   page,
 }, testInfo) => {

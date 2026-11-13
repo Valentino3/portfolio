@@ -91,8 +91,8 @@ export const bakeryConcept: CaseStudy = {
           </p>
           <Clip
             name="bakery-scroll"
-            alt="Screen recording: the headline and product cutouts animate in, then the page scrolls into the manifesto section"
-            caption="Motion: entrance and scroll into the manifesto"
+            alt="Screen recording of the Horno Lento concept site: the hero title and bread cutouts animate in, the cursor hovers ‘Ver productos’ and ‘Consultar por WhatsApp’, then the page scrolls with parallax into the manifesto ‘El buen pan se hace con tiempo.’"
+            caption="Bakery concept: the hero enters, the buttons answer the pointer, and the scroll carries the cutouts into the manifesto."
           />
           <Gallery columns={3}>
             {directions.map(({ image, caption }) => (

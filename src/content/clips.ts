@@ -6,7 +6,7 @@
 export const CLIPS = {
   'stock-counter': { width: 1952, height: 1226 },
   'conosur-releases': { width: 2304, height: 1720 },
-  'bakery-scroll': { width: 1280, height: 800 },
+  'bakery-scroll': { width: 2560, height: 1600 },
   'dsp2-weights': { width: 1764, height: 2013 },
 } as const;
 
