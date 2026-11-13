@@ -4,6 +4,7 @@ import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
+import { Subhead } from '@/components/case/subhead';
 import type { CaseStudy } from '../case-types';
 import { projectSummary } from '../projects';
 import type { Media } from '../types';
@@ -39,11 +40,6 @@ function shot(topic: string, side: 'before' | 'after', table: boolean, alt: stri
 /** On a phone the tables show only the columns that changed (see Figure), the rest in the zoom. */
 const BADGE_COLUMN = { x: 0.385, width: 0.335 };
 const WEBSITE_COLUMN = { x: 0, width: 0.38 };
-
-/** An h3 inside a section's prose, set like a decision's title. */
-function Subhead({ children }: { children: string }) {
-  return <h3 className="mt-10 mb-1.5 text-card font-medium">{children}</h3>;
-}
 
 export const dsp2: CaseStudy = {
   slug: 'dsp2',
