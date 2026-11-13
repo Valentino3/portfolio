@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import type { CSSProperties } from 'react';
 import type { Media } from '@/content/types';
 import { FigureFrame } from './figure-frame';
 import { ZoomLink } from './zoom-dialog';
@@ -8,7 +9,18 @@ import { ZoomLink } from './zoom-dialog';
  * for a copy that fits (see GALLERY_SIZES for the gallery slots). `priority` is for the one
  * likely to be the first thing painted: it skips the lazy loader. `zoom` wraps it in a link to
  * the large image, which the page's ZoomProvider opens in a dialog.
+ *
+ * `crop` is for a wide screenshot whose text would be too small on a phone: below 640px the box
+ * shows only a vertical strip of it (from `x` to `x + width`, as shares of the image's width), at
+ * the full height and so at a larger scale. From 640px up, and in the zoom, it is whole.
  */
+export type Crop = { x: number; width: number };
+
+/** `sizes` for a cropped picture on a phone: it is laid out 1/width times as wide as the screen. */
+export function cropSizes(crop: Crop): string {
+  return `${Math.ceil(100 / crop.width)}vw`;
+}
+
 export function Figure({
   image,
   caption,
@@ -17,6 +29,7 @@ export function Figure({
   sizes,
   priority,
   zoom,
+  crop,
 }: {
   image: Media;
   caption: string;
@@ -25,6 +38,7 @@ export function Figure({
   sizes: string;
   priority?: boolean;
   zoom?: boolean;
+  crop?: Crop;
 }) {
   const picture = (
     <Image
@@ -35,7 +49,12 @@ export function Figure({
       loading={priority ? 'eager' : undefined}
       fetchPriority={priority ? 'high' : undefined}
       alt={image.alt}
-      className="block h-auto w-full"
+      className={
+        crop
+          ? 'block h-auto w-full max-sm:w-[calc(100%/var(--crop-width))] max-sm:max-w-none max-sm:translate-x-[calc(-100%*var(--crop-x))]'
+          : 'block h-auto w-full'
+      }
+      style={crop ? ({ '--crop-x': crop.x, '--crop-width': crop.width } as CSSProperties) : undefined}
     />
   );
   return (
