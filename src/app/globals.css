@@ -1,0 +1,320 @@
+@import "tailwindcss";
+
+/*
+ * The home shows a sticky project viewer only where hover is real: a wide
+ * screen with a fine pointer that can hover. Everything else (touch, a tablet in
+ * landscape, a narrow window) gets inline thumbnails. One query, one name.
+ * From 1280px up half the grid is wide enough for a screenshot as tall as the
+ * list; below that the list outgrows it and the viewer would leave a gap.
+ */
+@custom-variant viewer (@media (min-width: 1280px) and (hover: hover) and (pointer: fine));
+
+/*
+ * Single token layer. Components use these utilities (bg-bg, text-ink,
+ * duration-fast, ease-out-soft, rounded-base...) and never loose values.
+ */
+@theme {
+  /* Color. Every text color clears 4.5:1 on --color-bg. */
+  --color-bg: #f7f7f5;
+  --color-surface: #fbfbf9;
+  --color-tint: #ecece8;
+  --color-ink: #141414; /* 17.2:1 */
+  --color-text-2: #4a4a47; /* 8.3:1 */
+  --color-text-3: #63635f; /* 5.6:1 */
+  --color-rule: #e3e3df; /* decorative only, never text */
+  --color-rule-strong: #cfcfca;
+  --color-ok: #1f6b34; /* 6.3:1 */
+  --color-error: #8a2c0d; /* 8.0:1, the "couldn't copy" message */
+  --color-available: #2f9e44; /* availability dot, decorative only, next to text */
+  --color-paper: #ffffff; /* diagram boxes, and the labels on a dark (ink) box */
+  --color-paper-dim: #d4d4cf; /* second label on a dark box, 12.4:1 on ink */
+
+  /* Motion */
+  --transition-duration-fast: 180ms; /* hover and focus */
+  --transition-duration-medium: 300ms; /* underline wipes */
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /*
+   * One-shot springs for things that answer the pointer (arrows, button presses, the copy
+   * confirmation). Each curve is a damped spring sampled into linear(), and only makes sense
+   * with its own duration: `duration-spring ease-spring`, `duration-pop ease-spring-pop`.
+   * spring: critically damped (no overshoot). pop: damping ratio 0.5, about 16% overshoot, for
+   * elements under 24px only. Anything that can change direction mid-flight (row indicator,
+   * viewer, index marker) uses the script spring in src/lib/spring.ts instead.
+   */
+  --transition-duration-spring: 420ms;
+  --ease-spring: linear(
+    0, 0.079, 0.236, 0.403, 0.551, 0.671, 0.764, 0.833, 0.883, 0.919, 0.945, 0.962, 0.974, 0.983, 0.988, 0.992,
+    0.995, 0.997, 0.998, 0.998, 1
+  );
+  --transition-duration-pop: 600ms;
+  --ease-spring-pop: linear(
+    0, 0.065, 0.223, 0.425, 0.633, 0.819, 0.967, 1.072, 1.135, 1.161, 1.159, 1.138, 1.107, 1.073, 1.041, 1.014,
+    0.994, 0.981, 0.975, 0.973, 0.976, 0.98, 0.986, 0.991, 0.996, 1, 1.002, 1.004, 1
+  );
+  /* A bare `transition-*` utility follows the tokens instead of Tailwind's 150ms. */
+  --default-transition-duration: var(--transition-duration-fast);
+  --default-transition-timing-function: var(--ease-out-soft);
+  /* The copy confirmation: the line rises into place, its check mark pops. Both play once. */
+  --animate-confirm: confirm-in var(--transition-duration-spring) var(--ease-spring) both;
+  --animate-check: check-pop var(--transition-duration-pop) var(--ease-spring-pop) both;
+  @keyframes confirm-in {
+    from {
+      opacity: 0;
+      translate: 0 0.25rem;
+    }
+  }
+  @keyframes check-pop {
+    from {
+      scale: 0.4;
+    }
+  }
+  /* Availability dot: a ripple that plays 3 times and stops (spec 4.2). */
+  --animate-availability: availability-pulse 2.4s var(--ease-out-soft) 3;
+  @keyframes availability-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-available) 45%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 0.5625rem transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  /* Between regular and medium: the result of a decision, set apart from its reasoning. */
+  --font-weight-book: 450;
+
+  /* Radius: one base, other radii are multiples of it */
+  --radius-base: 8px;
+  --radius-image: calc(var(--radius-base) * 1.25); /* 10px */
+  --radius-panel: var(--radius-image); /* diagrams and the mobile index match the images */
+
+  /* Elevation: only the zoom dialog floats above the page. */
+  --shadow-dialog: 0 30px 80px -20px rgb(0 0 0 / 0.45);
+
+  /* Layout: max content width 1312px, fluid side gutter 16-64px (spec 4.1) and the
+     fluid space above the header and between content and footer. */
+  --container-site: 82rem;
+  --spacing-gutter: clamp(1rem, 4.5vw, 4rem);
+  --spacing-header-top: clamp(1.25rem, 3.4vw, 2.75rem);
+  --spacing-footer-top: clamp(4rem, 7vw, 6.25rem);
+  /* Home rhythm: column gap of the 12-column grid, and the fluid space above each block. */
+  --spacing-grid-gap: clamp(1rem, 2.2vw, 2rem);
+  --spacing-hero-top: clamp(2.5rem, 5vw, 4.5rem);
+  --spacing-list-top: clamp(2rem, 4vw, 3.25rem);
+  --spacing-section: clamp(4.5rem, 9vw, 8rem);
+  /* Case study rhythm, top to bottom: the back link, the facts and the hero, the outcomes, the
+     body, between two sections, and the contact block at the end. */
+  --spacing-back-top: clamp(2.25rem, 5vw, 4rem);
+  --spacing-case-block: clamp(2rem, 4vw, 3.25rem);
+  --spacing-outcomes-top: clamp(3rem, 6vw, 5.5rem);
+  --spacing-case-body-top: clamp(4rem, 8vw, 7.5rem);
+  --spacing-case-section: clamp(3.5rem, 7vw, 6rem);
+  --spacing-case-end: clamp(5rem, 9vw, 8.75rem);
+
+  /*
+   * Type scale. Two families, two jobs: Geist (sans) carries everything that is read or pressed;
+   * Geist Mono is for data and code only (figure captions, the text inside diagrams, inline
+   * code). Hierarchy comes from size, weight and the three text colors, never from a label.
+   *
+   * Fixed steps: caption 0.75rem (the one mono size), small 0.8125rem (tertiary UI: footer,
+   * index, status lines), UI small 0.875rem (header, row metadata), UI base 0.9375rem, base
+   * 1rem (list titles), case prose 1.0625rem and card 1.125rem (a decision's title). Fluid
+   * clamp() steps above that: lead (home lede and About), outcome (a case outcome title), dek
+   * (a case's summary), section (a home section heading), heading (case h2), next ("Next: …"),
+   * display (case h1), intro (home h1) and mail (contact address).
+   */
+  --text-caption: 0.75rem; /* mono: figure captions */
+  --text-caption--line-height: 1.55;
+  --text-small: 0.8125rem;
+  --text-small--line-height: 1.55;
+  --text-base: 1rem; /* list titles, contact line */
+  --text-base--line-height: 1.55;
+  --text-ui-sm: 0.875rem;
+  --text-ui-sm--line-height: 1.55;
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.55;
+  --text-prose: 1.0625rem;
+  --text-prose--line-height: 1.65;
+  --text-card: 1.125rem;
+  --text-card--line-height: 1.65; /* it sits in the prose */
+  --text-card--letter-spacing: -0.015em;
+  --text-lead: clamp(1rem, 0.9rem + 0.35vw, 1.1875rem);
+  --text-lead--line-height: 1.5;
+  /* The prototype's body line height, for text set in a step that brings its own (About, in lead). */
+  --leading-body: 1.55;
+  --text-outcome: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  --text-outcome--line-height: 1.25;
+  --text-outcome--letter-spacing: -0.02em;
+  --text-dek: clamp(1.0625rem, 0.95rem + 0.55vw, 1.4375rem);
+  --text-dek--line-height: 1.4;
+  --text-dek--letter-spacing: -0.015em;
+  --text-section: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem); /* home section headings */
+  --text-section--line-height: 1.2;
+  --text-section--letter-spacing: -0.02em;
+  --text-heading: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: -0.025em;
+  --text-display: clamp(2rem, 1.2rem + 3vw, 3.5rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.04em;
+  --text-next: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  --text-next--line-height: 1.2;
+  --text-next--letter-spacing: -0.035em;
+  --text-intro: clamp(1.625rem, 0.95rem + 2vw, 2.75rem); /* home h1 */
+  --text-intro--line-height: 1.1;
+  --text-intro--letter-spacing: -0.035em;
+  --text-mail: clamp(1.5rem, 1rem + 2.6vw, 3.5rem); /* the contact address */
+  --text-mail--letter-spacing: -0.04em;
+}
+
+/* Font variables are set on <html> by next/font at runtime, hence inline. */
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-bg text-ui font-sans text-ink antialiased;
+  }
+
+  p,
+  li,
+  dd {
+    text-wrap: pretty;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+}
+
+/* Visually hidden, still read by assistive tech. Same as the prototype. */
+@layer components {
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/*
+ * Case study body copy. Content files write plain p, ul, li, b and code; this gives them the
+ * prototype's reading rhythm (17px, 1.65 line height, lines of up to 64 characters). It is in
+ * the components layer, so a utility on any of those elements still wins.
+ */
+@layer components {
+  .prose {
+    font-size: var(--text-prose);
+    line-height: var(--text-prose--line-height);
+
+    & p,
+    & ul {
+      margin-bottom: calc(var(--spacing) * 4);
+      max-width: 64ch;
+      color: var(--color-text-2);
+    }
+
+    /* Text that goes on after a diagram or a figure keeps its distance from it. */
+    & :is(.diagram, figure) + p {
+      margin-top: calc(var(--spacing) * 6);
+    }
+
+    & ul {
+      padding-left: calc(var(--spacing) * 4.5);
+      list-style: disc;
+    }
+
+    & li {
+      margin-bottom: calc(var(--spacing) * 1.5);
+    }
+
+    & li b {
+      color: var(--color-ink);
+      font-weight: var(--font-weight-medium);
+    }
+
+    & code {
+      border-radius: calc(var(--radius-base) / 2);
+      background: var(--color-tint);
+      padding: 1px calc(var(--spacing) * 1.25);
+      font-family: var(--font-mono);
+      font-size: 0.86em;
+    }
+  }
+}
+
+/* The 12-column page grid (spec 4.1). Items place themselves with col-span-* / col-start-*. */
+@utility grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  /* 11 gaps must always fit the box (at 200% text the rem gap alone is wider than a 320 px screen). */
+  column-gap: min(var(--spacing-grid-gap), calc(100% / 24));
+}
+
+/*
+ * Text link with an underline that wipes in on hover and focus. A utility (not
+ * a component class) so its hover color wins over a text-* color on the link.
+ */
+@utility link-u {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: calc(var(--spacing) * 0.75);
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--transition-duration-medium) var(--ease-out-soft);
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: var(--color-ink);
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* !important on purpose: it must beat any utility that sets motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
