@@ -4,6 +4,14 @@ import type { Media } from '@/content/types';
 import { FigureFrame } from './figure-frame';
 import { ZoomLink } from './zoom-dialog';
 
+/** A vertical strip of a picture, as shares of its width: where it starts and how wide it is. */
+export type Crop = { x: number; width: number };
+
+/** `sizes` for a cropped picture on a phone: it is laid out 1/width times as wide as the screen. */
+export function cropSizes(crop: Crop): string {
+  return `${Math.ceil(100 / crop.width)}vw`;
+}
+
 /**
  * A picture with its caption. `sizes` says how wide the picture is laid out, so the browser asks
  * for a copy that fits (see GALLERY_SIZES for the gallery slots). `priority` is for the one
@@ -14,13 +22,6 @@ import { ZoomLink } from './zoom-dialog';
  * shows only a vertical strip of it (from `x` to `x + width`, as shares of the image's width), at
  * the full height and so at a larger scale. From 640px up, and in the zoom, it is whole.
  */
-export type Crop = { x: number; width: number };
-
-/** `sizes` for a cropped picture on a phone: it is laid out 1/width times as wide as the screen. */
-export function cropSizes(crop: Crop): string {
-  return `${Math.ceil(100 / crop.width)}vw`;
-}
-
 export function Figure({
   image,
   caption,
