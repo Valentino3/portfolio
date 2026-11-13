@@ -143,6 +143,27 @@ test('a before/after pair is two captioned figures, side by side from 640px, eac
   expect(html.indexOf('<figure>')).toBe(html.indexOf('>') + 1);
 });
 
+test('a stacked pair is one above the other at every width, each asking for the full column', () => {
+  const html = renderToStaticMarkup(
+    <BeforeAfter
+      layout="stack"
+      before={{ image: before, caption: 'Before: colour only' }}
+      after={{ image: after, caption: 'After: the score on the badge' }}
+    />,
+  );
+  const grid = html.match(/^<div class="([^"]*)" data-before-after="stack">/)![1].split(' ');
+  expect(grid).toContain('grid-cols-1');
+  expect(grid.filter((c) => c.includes('grid-cols-2'))).toEqual([]);
+  expect(html.match(/<figure>/g)).toHaveLength(2);
+  expect(html.match(/<a [^>]*href="\/img\/dsp2-badges-(before|after)\.webp"/g)).toHaveLength(2);
+  expect(html).toContain('sizes="(min-width: 1024px) 660px, (min-width: 640px) 100vw, 100vw"');
+  // The default is side by side.
+  const side = renderToStaticMarkup(
+    <BeforeAfter before={{ image: before, caption: 'B' }} after={{ image: after, caption: 'A' }} />,
+  );
+  expect(side).toMatch(/^<div class="[^"]*" data-before-after="side">/);
+});
+
 test('a cropped pair shows the same strip of both pictures on a phone, larger, and whole from 640px up', () => {
   const html = renderToStaticMarkup(
     <BeforeAfter

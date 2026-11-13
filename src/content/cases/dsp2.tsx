@@ -37,9 +37,13 @@ function shot(topic: string, side: 'before' | 'after', table: boolean, alt: stri
   };
 }
 
-/** On a phone the tables show only the columns that changed (see Figure), the rest in the zoom. */
+/**
+ * On a phone a table shows only the part that changed (see Figure), the rest in the zoom: the
+ * badge column, and for the sort, everything from the Website header (rank 1) to the Propensity
+ * Score header (rank 2) at the far right, which only drops the row-gauge column.
+ */
 const BADGE_COLUMN = { x: 0.385, width: 0.335 };
-const WEBSITE_COLUMN = { x: 0, width: 0.38 };
+const SORT_HEADERS = { x: 0.095, width: 0.905 };
 
 export const dsp2: CaseStudy = {
   slug: 'dsp2',
@@ -186,6 +190,7 @@ export const dsp2: CaseStudy = {
             makes the colour self-explanatory and needs no legend.
           </p>
           <BeforeAfter
+            layout="stack"
             crop={BADGE_COLUMN}
             before={{
               image: shot(
@@ -213,7 +218,8 @@ export const dsp2: CaseStudy = {
             columns applied. A header now shows its position in the sort once more than one column takes part.
           </p>
           <BeforeAfter
-            crop={WEBSITE_COLUMN}
+            layout="stack"
+            crop={SORT_HEADERS}
             before={{
               image: shot(
                 'sort',

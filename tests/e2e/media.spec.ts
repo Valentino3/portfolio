@@ -378,23 +378,29 @@ test('the re-recorded bakery clip: its own size, its caption and what it shows',
   expect(box.width / box.height).toBeCloseTo(2560 / 1600, 1);
 });
 
-test('before/after pairs: side by side on a desktop, stacked on a phone, each opening its own zoom', async ({
+test('before/after pairs: the tables one above the other at every width, the charts side by side from 640px, each opening its own zoom', async ({
   page,
 }, testInfo) => {
   await page.goto('/work/dsp2');
   await hydrated(page);
   const pairs = page.locator('#interface [data-before-after]');
   await expect(pairs).toHaveCount(4);
+  const column = (await page.locator('#interface').boundingBox())!;
   for (let i = 0; i < 4; i++) {
     const figures = pairs.nth(i).locator('figure');
     const [before, after] = [(await figures.nth(0).boundingBox())!, (await figures.nth(1).boundingBox())!];
-    if (testInfo.project.name === 'desktop') {
+    const table = i < 2;
+    await expect(pairs.nth(i)).toHaveAttribute('data-before-after', table ? 'stack' : 'side');
+    if (table || testInfo.project.name !== 'desktop') {
+      // Before above after, each the column's full width.
+      expect(before.y + before.height).toBeLessThan(after.y);
+      expect(before.x).toBeCloseTo(after.x, 0);
+      expect(before.width).toBeCloseTo(column.width, 0);
+      expect(after.width).toBeCloseTo(column.width, 0);
+    } else {
       expect(Math.round(before.y)).toBe(Math.round(after.y));
       expect(before.x).toBeLessThan(after.x);
       expect(before.width).toBeCloseTo(after.width, 0);
-    } else {
-      expect(before.y + before.height).toBeLessThan(after.y);
-      expect(before.x).toBeCloseTo(after.x, 0);
     }
   }
   const dialog = page.getByRole('dialog', { name: 'Enlarged image' });
@@ -412,29 +418,47 @@ test('before/after pairs: side by side on a desktop, stacked on a phone, each op
   }
 });
 
-test('on a phone a table pair shows a readable strip of the table; from 640px the whole picture', async ({
+/** How a table picture is laid out against its frame: its scale, and which share of it shows. */
+async function tableLayout(page: Page, src: string) {
+  const img = page.locator(`#interface [data-before-after] img[src*="${src}"]`).first();
+  await img.scrollIntoViewIfNeeded();
+  return img.evaluate((el: HTMLImageElement) => {
+    const frame = el.closest('figure')!.firstElementChild!.getBoundingClientRect();
+    const picture = el.getBoundingClientRect();
+    return {
+      // The tables were captured at device scale 2: half the file's width is their size in the product.
+      scale: picture.width / (Number(el.getAttribute('width')) / 2),
+      from: (frame.left - picture.left) / picture.width,
+      to: (frame.right - picture.left) / picture.width,
+      // The strip keeps the table's full height.
+      tall: Math.abs(frame.height - picture.height) <= 1,
+    };
+  });
+}
+
+test('table pairs: whole and at the column width on a desktop; on a phone the strip that holds what changed', async ({
   page,
 }, testInfo) => {
   await page.goto('/work/dsp2');
-  // The tables were captured at device scale 2: half the file's width is their size on screen in the product.
-  const tables = page.locator('#interface [data-before-after] img[src*="badges"], #interface [data-before-after] img[src*="sort"]');
-  await expect(tables).toHaveCount(4);
-  for (const img of await tables.all()) {
-    await img.scrollIntoViewIfNeeded();
-    const { scale, inside, tall } = await img.evaluate((el: HTMLImageElement) => {
-      const frame = el.closest('figure')!.firstElementChild!.getBoundingClientRect();
-      const picture = el.getBoundingClientRect();
-      return {
-        scale: picture.width / (Number(el.getAttribute('width')) / 2),
-        // The visible box never runs past the picture: what shows is a strip of it, no empty edge.
-        inside: picture.left <= frame.left + 0.5 && picture.right >= frame.right - 0.5,
-        // And the strip keeps the table's full height.
-        tall: Math.abs(frame.height - picture.height) <= 1,
-      };
-    });
-    expect(inside).toBe(true);
-    expect(tall).toBe(true);
-    if (testInfo.project.name === 'desktop') expect(scale).toBeLessThan(0.5);
-    else expect(scale, 'text at 90% or more of its size in the product').toBeGreaterThanOrEqual(0.9);
+  for (const src of ['badges-before', 'badges-after', 'sort-before', 'sort-after']) {
+    const { scale, from, to, tall } = await tableLayout(page, src);
+    expect(tall, src).toBe(true);
+    expect(from, src).toBeGreaterThanOrEqual(-0.001);
+    expect(to, src).toBeLessThanOrEqual(1.001);
+    if (testInfo.project.name === 'desktop') {
+      // The whole table, at about 70% of its size in the product: the badge scores and rank digits read.
+      expect(from, src).toBeCloseTo(0, 2);
+      expect(to, src).toBeCloseTo(1, 2);
+      expect(scale, src).toBeGreaterThanOrEqual(0.65);
+    } else if (src.startsWith('badges')) {
+      // The badge column alone, at its size in the product or larger.
+      expect(scale, src).toBeGreaterThanOrEqual(0.9);
+      expect(from, src).toBeLessThanOrEqual(0.39);
+      expect(to, src).toBeGreaterThanOrEqual(0.7);
+    } else {
+      // Both ranked headers: Website (its 1 at about 0.19 of the width) to the Propensity arrow (0.98).
+      expect(from, src).toBeLessThanOrEqual(0.1);
+      expect(to, src).toBeGreaterThanOrEqual(0.995);
+    }
   }
 });
