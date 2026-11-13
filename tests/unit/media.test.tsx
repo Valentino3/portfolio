@@ -1,5 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, test } from 'vitest';
+import { BeforeAfter } from '@/components/case/before-after';
 import { Clip } from '@/components/case/clip';
 import { Figure } from '@/components/case/figure';
 import { GALLERY_SIZES, Gallery } from '@/components/case/gallery';
@@ -101,4 +102,66 @@ test('a three-column gallery stacks on a phone', () => {
     </Gallery>,
   );
   expect(html).toMatch(/^<div class="[^"]*\bgrid-cols-3\b[^"]*\bmax-sm:grid-cols-1\b/);
+});
+
+test('a narrow clip (near square or portrait) is capped and aligned with the text; a wide one is not', () => {
+  const narrow = renderToStaticMarkup(<Clip name="dsp2-weights" alt="Sliders move" caption="Weights" />);
+  expect(narrow).toMatch(/^<figure class="mt-6 max-w-lg">/);
+  expect(narrow).not.toContain('mx-auto');
+  const wide = renderToStaticMarkup(<Clip name="conosur-releases" alt="Releases" caption="Releases" />);
+  expect(wide).toMatch(/^<figure class="mt-6">/);
+});
+
+const before: Media = { src: '/img/dsp2-badges-before.webp', width: 1876, height: 790, alt: 'Badges, names only' };
+const after: Media = { src: '/img/dsp2-badges-after.webp', width: 1876, height: 790, alt: 'Badges with scores' };
+
+test('a before/after pair is two captioned figures, side by side from 640px, each opening its own zoom', () => {
+  const html = renderToStaticMarkup(
+    <BeforeAfter
+      before={{ image: before, caption: 'Before: colour only' }}
+      after={{ image: after, caption: 'After: the score on the badge' }}
+    />,
+  );
+  expect(html).toMatch(/^<div class="[^"]*\bgrid-cols-2\b[^"]*\bmax-sm:grid-cols-1\b/);
+  expect(html.match(/<figure>/g)).toHaveLength(2);
+  expect([...html.matchAll(/<figcaption[^>]*>(.*?)<\/figcaption>/g)].map((m) => m[1])).toEqual([
+    '<span>Before: colour only</span>',
+    '<span>After: the score on the badge</span>',
+  ]);
+  const links = [...html.matchAll(/<a [^>]*>/g)].map((m) => m[0]);
+  expect(links).toHaveLength(2);
+  expect(links[0]).toContain('href="/img/dsp2-badges-before.webp"');
+  expect(links[0]).toContain('aria-label="Enlarge: Before: colour only"');
+  expect(links[1]).toContain('href="/img/dsp2-badges-after.webp"');
+  expect(html).toMatch(/<img [^>]*alt="Badges, names only"/);
+  expect(html).toMatch(/<img [^>]*alt="Badges with scores"/);
+  expect(html.match(/<img [^>]*width="1876"[^>]*height="790"/g)).toHaveLength(2);
+  // Half the column from 640px up, the whole screen below; no crop unless asked for.
+  expect(html).toContain('sizes="(min-width: 1024px) 330px, (min-width: 640px) 50vw, 100vw"');
+  expect(html).not.toContain('--crop');
+  // Nothing set above the pictures: the captions say which is which.
+  expect(html.indexOf('<figure>')).toBe(html.indexOf('>') + 1);
+});
+
+test('a cropped pair shows the same strip of both pictures on a phone, larger, and whole from 640px up', () => {
+  const html = renderToStaticMarkup(
+    <BeforeAfter
+      crop={{ x: 0.4, width: 0.25 }}
+      before={{ image: before, caption: 'Before' }}
+      after={{ image: after, caption: 'After' }}
+    />,
+  );
+  const images = [...html.matchAll(/<img [^>]*>/g)].map((m) => m[0]);
+  expect(images).toHaveLength(2);
+  for (const img of images) {
+    expect(img).toMatch(/style="[^"]*--crop-x:0.4;--crop-width:0.25/);
+    // Every crop rule is behind max-sm: from 640px up the picture is whole.
+    for (const rule of ['w-[calc(100%/var(--crop-width))]', 'max-w-none', 'translate-x-[calc(-100%*var(--crop-x))]'])
+      expect(img).toContain(`max-sm:${rule}`);
+    expect(img).toContain('class="block h-auto w-full ');
+    // On a phone it is laid out four times the screen's width, so it asks for a copy that wide.
+    expect(img).toContain('sizes="(min-width: 1024px) 330px, (min-width: 640px) 50vw, 400vw"');
+  }
+  // The zoom still opens the whole file.
+  expect(html).toContain('href="/img/dsp2-badges-before.webp"');
 });

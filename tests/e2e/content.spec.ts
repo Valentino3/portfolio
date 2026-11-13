@@ -114,8 +114,9 @@ const expected: Record<Slug, Expected> = {
       ],
     },
     diagrams: 2,
-    clips: 0,
-    pictures: { interface: 3 },
+    clips: 1,
+    // Four before/after pairs (eight pictures), then the gallery's three.
+    pictures: { interface: 11 },
   },
   analyzer: {
     h1: 'Analyzer',
@@ -318,4 +319,62 @@ test('dsp2 opens its decisions with the rollout, and has no hardening section', 
   await expect(rollout).toBeVisible();
   const [diagram, card] = await Promise.all([rollout.boundingBox(), decisions.locator('article').first().boundingBox()]);
   expect(diagram!.y).toBeLessThan(card!.y);
+});
+
+test('dsp2 interface: who designed what, then three changes, each with its before and after, then the clip', async ({
+  page,
+}) => {
+  await page.goto('/work/dsp2');
+  const section = page.locator('#interface');
+  await expect(section.locator('> p').first()).toHaveText(
+    'I designed and built these screens; the colour and type theme is the team’s.',
+  );
+  const headings = ['The score, printed on the badge', 'Sorting by two columns, made visible', 'Colour that carries data'];
+  await expect(section.locator('h3')).toHaveText(headings);
+  // Each heading has prose after it, then its pairs; the third has two.
+  const pairs = section.locator('[data-before-after]');
+  await expect(pairs).toHaveCount(4);
+  await expect(pairs.locator('figure')).toHaveCount(8);
+  await expect(pairs.locator('figcaption')).toHaveText([
+    'Before: colour only',
+    'After: the score on the badge',
+    'Before: no sign of a second sort column',
+    'After: rank beside each arrow',
+    'Before: flat blue',
+    'After: tone by CTR',
+    'Before: flat blue',
+    'After: bands by strength',
+  ]);
+  const order = await section.evaluate((s) =>
+    [...s.children].map((el) =>
+      el.matches('[data-before-after]')
+        ? 'pair'
+        : el.querySelector('video[data-clip]')
+          ? 'clip'
+          : el.tagName.toLowerCase(),
+    ),
+  );
+  expect(order.slice(0, 13)).toEqual(['h2', 'p', 'h3', 'p', 'pair', 'h3', 'p', 'pair', 'h3', 'p', 'pair', 'pair', 'clip']);
+  // What the section held before follows: the server-side tables sentence and the three-figure gallery.
+  expect(order.slice(13)).toEqual(['p', 'div']);
+  await expect(section.locator('figure:has(video[data-clip]) figcaption')).toHaveText(
+    'Scoring weights: the sentence and the formula rewrite themselves as the sliders move.',
+  );
+  await expect(section.locator('video[data-clip]')).toHaveAttribute(
+    'aria-label',
+    /^Screen recording of the Scoring Weights control: the cursor drags the Alpha \(Quality\) slider from 75% to 40%/,
+  );
+  // The provenance is said once, on the hero.
+  for (const caption of await section.locator('figcaption').allInnerTexts())
+    expect(caption).not.toMatch(/Storybook|mock data/);
+});
+
+test('conosur: the releases clip is captioned for what it shows', async ({ page }) => {
+  await page.goto('/work/conosur');
+  const figure = page.locator('figure:has(video[data-clip])');
+  await expect(figure.locator('figcaption')).toHaveText(
+    'Releases: picking a release swaps the cover, the title and the Spotify player in place.',
+  );
+  await expect(figure.locator('video')).toHaveAttribute('aria-label', /picks ‘ICGE & A LOVE STORY’ and then ‘VISIONS’/);
+  await expect(page.locator('main')).not.toContainText('scrolling into releases');
 });

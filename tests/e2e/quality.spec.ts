@@ -108,6 +108,53 @@ test('with text at 200% on 320 px, the mail and "Next: …" stay inside the view
   }
 });
 
+test('the dsp2 pairs and clip and the conosur clip stay inside the viewport at 320-1920, also with 200% text', async ({
+  browser,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  test.setTimeout(120_000);
+  for (const [width, text] of [
+    [320, '200%'],
+    [375, '200%'],
+    [375, '100%'],
+    [640, '100%'],
+    [1024, '100%'],
+    [1440, '100%'],
+    [1920, '100%'],
+  ] as const) {
+    const context = await browser.newContext({ viewport: { width, height: 900 } });
+    try {
+      for (const p of ['/work/dsp2', '/work/conosur']) {
+        const page = await context.newPage();
+        await page.goto(p);
+        await page.addStyleTag({ content: `html{font-size:${text}}` });
+        const media = page.locator('main [data-before-after] figure, main figure:has(video[data-clip])');
+        expect(await media.count(), p).toBeGreaterThan(0);
+        const outside = await media.evaluateAll((figures) =>
+          figures
+            .map((f) => f.getBoundingClientRect())
+            .filter((r) => r.left < 0 || r.right > document.documentElement.clientWidth + 0.5)
+            .map((r) => `${Math.round(r.left)}-${Math.round(r.right)}`),
+        );
+        expect(outside, `${p} at ${width}px, text ${text}`).toEqual([]);
+        await expectNoHorizontalScroll(page);
+        await page.close();
+      }
+    } finally {
+      await context.close();
+    }
+  }
+});
+
+test('axe is clean on dsp2 and conosur with every picture and clip loaded', async ({ page }) => {
+  for (const p of ['/work/dsp2', '/work/conosur']) {
+    await page.goto(p);
+    expect(await expectVisibleImagesLoaded(page.locator('main img'))).toBeGreaterThan(0);
+    await page.locator('video[data-clip]').scrollIntoViewIfNeeded();
+    await expectNoAxeViolations(page);
+  }
+});
+
 test('open graph uses absolute urls and images render', async ({ page, request }) => {
   await page.goto('/work/conosur');
   const og = await page.locator('meta[property="og:image"]').getAttribute('content');
