@@ -73,7 +73,8 @@ test('before the page script runs a clip is its poster: no autoplay, no controls
   for (const attribute of ['muted=""', 'loop=""', 'playsinline=""', 'preload="none"', 'data-clip=""']) {
     expect(video.toLowerCase()).toContain(attribute);
   }
-  expect(video).toContain('poster="/media/bakery-scroll-poster.webp"');
+  // The poster is not the video's: that attribute is fetched while the page parses, below the fold too.
+  expect(video).not.toMatch(/\bposter\b/i);
   expect(video).toContain('width="2560"');
   expect(video).toContain('height="1600"');
   expect(video).toContain('aria-label="The page scrolls"');
@@ -85,12 +86,50 @@ test('before the page script runs a clip is its poster: no autoplay, no controls
   expect(html).toMatch(/^<figure class="mt-6">/);
 });
 
+test('a clip’s poster is a decorative img with no src until the clip is near, and the video starts invisible', () => {
+  const html = renderToStaticMarkup(<Clip name="bakery-scroll" alt="The page scrolls" caption="Scroll" />);
+  const [img, scripted] = html.match(/<img [^>]*>/g)!;
+  // No src in the markup the server sends and the client first renders: a src here would be fetched
+  // while the page parses, below the fold too. The page's script gives it one when the clip is near.
+  expect(img).not.toMatch(/ src=/);
+  expect(img).toContain('width="2560"');
+  expect(img).toContain('height="1600"');
+  // The video already carries the text alternative; the frame is the same picture.
+  expect(img).toContain('alt=""');
+  expect(img).toContain('loading="lazy"');
+  expect(img).toContain('decoding="async"');
+  expect(img).toContain('data-clip-poster=""');
+  expect(img).not.toMatch(/fetchpriority/i);
+  // Without script there is nothing to give it a src, so the poster is also inside a noscript.
+  expect(html).toMatch(/<noscript><img [^>]*><\/noscript>/);
+  expect(scripted).toContain('src="/media/bakery-scroll-poster.webp"');
+  expect(scripted).toContain('width="2560"');
+  expect(scripted).toContain('alt=""');
+  expect(html.match(/<img /g)).toHaveLength(2);
+  // Under the video, filling the same box; the box has the clip's proportions, so nothing shifts.
+  expect(html).toContain('<div class="relative" style="aspect-ratio:2560 / 1600">');
+  for (const element of [img, scripted]) expect(element).toContain('class="absolute inset-0 block h-full w-full"');
+  expect(html.indexOf('<img')).toBeLessThan(html.indexOf('<video'));
+  expect(html.indexOf('</noscript>')).toBeLessThan(html.indexOf('<video'));
+  const video = html.match(/<video [^>]*>/)![0];
+  expect(video).toMatch(/class="[^"]*\babsolute\b[^"]*\binset-0\b/);
+  // Hidden in the markup the server sends and the client first renders; only a `playing` event shows it.
+  expect(video).toMatch(/class="[^"]*\bopacity-0\b/);
+  expect(video).not.toMatch(/\bopacity-100\b/);
+  // The fade is a transition on opacity alone, on the existing duration token.
+  expect(video).toMatch(/class="[^"]*\btransition-opacity\b[^"]*\bduration-medium\b/);
+});
+
 test('a clip reserves its own size from the registry, not an assumed 1280x800', () => {
   for (const [name, { width, height }] of Object.entries(CLIPS)) {
     const html = renderToStaticMarkup(<Clip name={name as ClipName} alt="A clip" caption="Clip" />);
     const video = html.match(/<video [^>]*>/)![0];
-    expect(video, name).toContain(`width="${width}"`);
-    expect(video, name).toContain(`height="${height}"`);
+    for (const element of [video, ...html.match(/<img [^>]*>/g)!]) {
+      expect(element, name).toContain(`width="${width}"`);
+      expect(element, name).toContain(`height="${height}"`);
+    }
+    expect(html, name).toContain(`style="aspect-ratio:${width} / ${height}"`);
+    expect(html, name).toContain(`<noscript><img src="/media/${name}-poster.webp"`);
   }
   expect(CLIPS['stock-counter']).toEqual({ width: 1952, height: 1226 });
 });

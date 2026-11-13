@@ -7,6 +7,12 @@ import { FigureFrame } from './figure-frame';
 const REDUCED_MOTION = '(prefers-reduced-motion: reduce)';
 /** The share of the video that has to be on screen for it to play. */
 const VISIBLE = 0.4;
+/**
+ * How far past the screen's top and bottom a clip's poster starts to load: about a fling of the
+ * page, so it is there before the clip is. Native `loading="lazy"` cannot be told this: Chromium
+ * loads anything within roughly 2500px, which takes in clips that are several screens away.
+ */
+const POSTER_MARGIN = '500px 0px';
 
 const subscribeNever = () => () => {};
 /** False on the server and while hydrating, true after: for what only makes sense with script. */
@@ -21,10 +27,19 @@ function useHydrated(): boolean {
  * (or without it) it is its poster, with no button that would do nothing. The button sits in the
  * caption row, so it never covers the recording.
  *
+ * The poster is an `<img>` under the video, not the video's `poster` attribute: that one is
+ * fetched while the page is parsed, even far below the fold, and competes with the hero for the
+ * first paint. The `<img>` gets its `src` only when the clip is within `POSTER_MARGIN` of the
+ * screen, and a `<noscript>` copy gives a visitor without script the poster at once. The video
+ * lies over it, in the same box, invisible until its first `playing` event and then faded in;
+ * after that it stays shown, so a clip the visitor pauses keeps its paused frame. The markup is
+ * the same on the server and on the first client render (no `src`, video hidden): only the
+ * observers change it. The frame's own tint is what shows if the poster has not arrived yet.
+ *
  * Files and size come from the `CLIPS` registry, so the box is reserved at the clip's own
  * proportions. A near-square or portrait clip is capped at 32rem (`max-w-lg`), aligned with the
  * text: at the column's full width it would be taller than the screen. `alt` describes what
- * happens in the recording, for assistive tech.
+ * happens in the recording, for assistive tech (the poster is decorative: it is that same frame).
  */
 export function Clip({
   name,
@@ -39,7 +54,13 @@ export function Clip({
   // Set by the visitor's Pause, and from the start under reduced motion: scrolling must not undo it.
   const stayPaused = useRef(false);
   const [playing, setPlaying] = useState(false);
+  // True from the first frame on and never back: a paused clip keeps showing the frame it stopped at.
+  const [shown, setShown] = useState(false);
+  // True once the clip has come within POSTER_MARGIN of the screen, and never back.
+  const [near, setNear] = useState(false);
   const hydrated = useHydrated();
+  const { width, height } = CLIPS[name];
+  const poster = `/media/${name}-poster.webp`;
 
   useEffect(() => {
     const element = video.current;
@@ -52,6 +73,15 @@ export function Clip({
       element.pause();
     };
     reduced.addEventListener('change', onPreference);
+    const approach = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        setNear(true);
+        approach.disconnect();
+      },
+      { rootMargin: POSTER_MARGIN },
+    );
+    approach.observe(element);
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries[entries.length - 1].isIntersecting;
@@ -63,6 +93,7 @@ export function Clip({
     );
     observer.observe(element);
     return () => {
+      approach.disconnect();
       observer.disconnect();
       reduced.removeEventListener('change', onPreference);
     };
@@ -94,23 +125,42 @@ export function Clip({
         )
       }
     >
-      <video
-        ref={video}
-        muted
-        loop
-        playsInline
-        preload="none"
-        poster={`/media/${name}-poster.webp`}
-        width={CLIPS[name].width}
-        height={CLIPS[name].height}
-        aria-label={alt}
-        data-clip=""
-        onPlay={() => setPlaying(true)}
-        onPause={() => setPlaying(false)}
-        className="block h-auto w-full bg-ink"
-      >
-        <source src={`/media/${name}.webm`} type="video/webm" />
-      </video>
+      {/* The box has the clip's proportions whatever has loaded; the poster and the video fill it. */}
+      <div className="relative" style={{ aspectRatio: `${width} / ${height}` }}>
+        {/* Plain imgs: the file is already a small WebP, and next/image would not add anything here. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={near ? poster : undefined}
+          width={width}
+          height={height}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          data-clip-poster=""
+          className="absolute inset-0 block h-full w-full"
+        />
+        <noscript>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={poster} width={width} height={height} alt="" className="absolute inset-0 block h-full w-full" />
+        </noscript>
+        <video
+          ref={video}
+          muted
+          loop
+          playsInline
+          preload="none"
+          width={width}
+          height={height}
+          aria-label={alt}
+          data-clip=""
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onPlaying={() => setShown(true)}
+          className={`absolute inset-0 block h-full w-full transition-opacity duration-medium ${shown ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <source src={`/media/${name}.webm`} type="video/webm" />
+        </video>
+      </div>
     </FigureFrame>
   );
 }

@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { CLIPS, type ClipName } from '@/content/clips';
 import { expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
 
 // Zoom links are clicked only once the page is hydrated: earlier, a click just follows the link to
@@ -10,6 +11,34 @@ const GALLERY = '#interface > div.grid:not([data-before-after])';
 /** Instant, whatever the page's smooth-scroll setting says. */
 async function scrollToY(page: Page, top: number) {
   await page.evaluate((y) => window.scrollTo({ top: y, behavior: 'instant' }), top);
+}
+
+/**
+ * A clip's poster is an `<img>` under the video, at the size the registry gives: not the video's
+ * own `poster` attribute, which the browser fetches while it parses the page, below the fold too.
+ * Its `src` comes only when the clip is near the screen (see `expectPosterLoaded`).
+ */
+async function expectPosterImage(figure: Locator, name: ClipName) {
+  const { width, height } = CLIPS[name];
+  const img = figure.locator('img[data-clip-poster]');
+  await expect(img).toHaveCount(1);
+  await expect(img).toHaveAttribute('width', String(width));
+  await expect(img).toHaveAttribute('height', String(height));
+  await expect(img).toHaveAttribute('loading', 'lazy');
+  // The video carries the text alternative; the poster is the same frame.
+  await expect(img).toHaveAttribute('alt', '');
+  await expect(figure.locator('video')).not.toHaveAttribute('poster', /.*/);
+}
+
+/** The image has been fetched and decoded. */
+const decoded = (img: Locator) => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0);
+
+/** Scrolls the clip into view: its poster gets its `src`, and loads. */
+async function expectPosterLoaded(figure: Locator, name: ClipName) {
+  const img = figure.locator('img[data-clip-poster]');
+  await figure.locator('video').scrollIntoViewIfNeeded();
+  await expect(img).toHaveAttribute('src', `/media/${name}-poster.webp`);
+  await expect.poll(() => decoded(img), { message: name }).toBe(true);
 }
 
 test('zoom opens a dialog, Escape closes it and focus returns', async ({ page }) => {
@@ -84,10 +113,21 @@ test('without JS a clip shows its poster and no dead Play button', async ({ brow
   const context = await browser.newContext({ javaScriptEnabled: false });
   const page = await context.newPage();
   await page.goto('/work/conosur');
-  const video = page.locator('video[data-clip]');
-  const poster = await video.getAttribute('poster');
-  expect(poster).toBe('/media/conosur-releases-poster.webp');
-  expect((await page.request.get(poster!)).status()).toBe(200);
+  const figure = page.locator('figure:has(video[data-clip])');
+  // Nothing gives the poster img a src without script, so the page carries it in a noscript too.
+  const poster = figure.locator('img[src="/media/conosur-releases-poster.webp"]');
+  await expect(poster).toHaveCount(1);
+  await expect(poster).toHaveAttribute('width', String(CLIPS['conosur-releases'].width));
+  await expect(poster).toHaveAttribute('height', String(CLIPS['conosur-releases'].height));
+  expect((await page.request.get('/media/conosur-releases-poster.webp')).status()).toBe(200);
+  await poster.scrollIntoViewIfNeeded();
+  await expect.poll(() => decoded(poster)).toBe(true);
+  await expect(poster).toBeVisible();
+  // The poster fills the clip's box, and the video is there but never shown over it.
+  const [frame, shown] = await Promise.all([figure.locator('video').boundingBox(), poster.boundingBox()]);
+  expect(shown).toEqual(frame);
+  await expect(figure.locator('video')).not.toHaveAttribute('poster', /.*/);
+  await expect(figure.locator('video')).toHaveCSS('opacity', '0');
   await expect(page.getByRole('button', { name: /^(Play|Pause)$/ })).toHaveCount(0);
   await context.close();
 });
@@ -99,9 +139,13 @@ test('clip plays when visible and can be paused', async ({ page }) => {
   const paused = () => v.evaluate((e: HTMLVideoElement) => e.paused);
   await v.scrollIntoViewIfNeeded();
   await expect.poll(paused).toBe(false);
+  // Invisible until it is really playing, then it fades in over the poster.
+  await expect(v).toHaveCSS('opacity', '1');
   await page.getByRole('button', { name: 'Pause' }).click();
   expect(await paused()).toBe(true);
   await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
+  // A paused clip keeps the frame it stopped at on screen.
+  await expect(v).toHaveCSS('opacity', '1');
 });
 
 test('a clip has a text alternative and a visible caption, and the button never claims a pressed state', async ({
@@ -110,7 +154,7 @@ test('a clip has a text alternative and a visible caption, and the button never 
   await page.goto('/work/conosur');
   const figure = page.locator('figure', { has: page.locator('video[data-clip]') });
   await expect(figure.locator('video')).toHaveAttribute('aria-label', /^Screen recording of the releases section: the cursor picks/);
-  await expect(figure.locator('video')).toHaveAttribute('poster', '/media/conosur-releases-poster.webp');
+  await expectPosterImage(figure, 'conosur-releases');
   await expect(figure.locator('video')).toHaveAttribute('preload', 'none');
   await expect(figure.locator('source')).toHaveAttribute('src', '/media/conosur-releases.webm');
   await expect(figure.locator('figcaption')).toContainText('Releases: picking a release swaps the cover, the title and the Spotify player in place.');
@@ -157,7 +201,7 @@ test('the stock tienda counter clip plays in view, pauses out of it, at its own 
   await page.goto('/work/stock-tienda');
   await hydrated(page);
   const v = page.locator('#design video[data-clip]');
-  await expect(v).toHaveAttribute('poster', '/media/stock-counter-poster.webp');
+  await expectPosterImage(page.locator('#design figure:has(video[data-clip])'), 'stock-counter');
   await expect(v).toHaveAttribute('width', '1952');
   await expect(v).toHaveAttribute('height', '1226');
   // It comes after the section's intro, before the first decision.
@@ -227,14 +271,22 @@ test('reduced motion: clip does not autoplay', async ({ browser }, testInfo) => 
   // Hydrated first, so the wait below gives the clip a real chance to start.
   await hydrated(page);
   const v = page.locator('video[data-clip]');
-  await v.scrollIntoViewIfNeeded();
+  const poster = page.locator('img[data-clip-poster]');
+  await expectPosterLoaded(page.locator('figure:has(video[data-clip])'), 'conosur-releases');
   await page.waitForTimeout(800);
   expect(await v.evaluate((e: HTMLVideoElement) => e.paused)).toBe(true);
   await expect(page.getByRole('button', { name: 'Play' })).toBeVisible();
-  // It still plays when the visitor asks.
+  // What shows is the poster: loaded, in view, with the video still invisible over it.
+  await expect(poster).toBeInViewport();
+  await expect(v).toHaveCSS('opacity', '0');
+  // It still plays when the visitor asks, and then the video is what shows.
   await page.getByRole('button', { name: 'Play' }).click();
   expect(await v.evaluate((e: HTMLVideoElement) => e.paused)).toBe(false);
   await expect(page.getByRole('button', { name: 'Pause' })).toBeVisible();
+  await expect(v).toHaveCSS('opacity', '1');
+  // Paused again, it stays shown.
+  await page.getByRole('button', { name: 'Pause' }).click();
+  await expect(v).toHaveCSS('opacity', '1');
   await context.close();
 });
 
@@ -299,7 +351,7 @@ test('the dsp2 weights clip plays in view, pauses out of it, and is shown narrow
   await page.goto('/work/dsp2');
   await hydrated(page);
   const v = page.locator('#interface video[data-clip]');
-  await expect(v).toHaveAttribute('poster', '/media/dsp2-weights-poster.webp');
+  await expectPosterImage(page.locator('#interface figure:has(video[data-clip])'), 'dsp2-weights');
   await expect(v).toHaveAttribute('width', '1764');
   await expect(v).toHaveAttribute('height', '2013');
   const figure = page.locator('#interface figure:has(video[data-clip])');
@@ -333,23 +385,92 @@ test('reduced motion: the dsp2 and the new conosur clip stay paused until Play',
   test.skip(testInfo.project.name !== 'desktop');
   const context = await browser.newContext({ reducedMotion: 'reduce' });
   const page = await context.newPage();
-  for (const [slug, poster] of [
-    ['dsp2', '/media/dsp2-weights-poster.webp'],
-    ['conosur', '/media/conosur-releases-poster.webp'],
-  ]) {
+  for (const [slug, name] of [
+    ['dsp2', 'dsp2-weights'],
+    ['conosur', 'conosur-releases'],
+  ] as const) {
     await page.goto(`/work/${slug}`);
     await hydrated(page);
     const v = page.locator('video[data-clip]');
-    await expect(v).toHaveAttribute('poster', poster);
-    await v.scrollIntoViewIfNeeded();
+    const figure = page.locator('figure:has(video[data-clip])');
+    await expectPosterImage(figure, name);
+    await expectPosterLoaded(figure, name);
     await page.waitForTimeout(800);
     expect(await v.evaluate((e: HTMLVideoElement) => e.paused), slug).toBe(true);
-    const figure = page.locator('figure:has(video[data-clip])');
+    await expect(figure.locator('img[data-clip-poster]'), slug).toBeInViewport();
+    await expect(v, slug).toHaveCSS('opacity', '0');
     await figure.getByRole('button', { name: 'Play' }).click();
     expect(await v.evaluate((e: HTMLVideoElement) => e.paused), slug).toBe(false);
     await expect(figure.getByRole('button', { name: 'Pause' })).toBeVisible();
   }
   await context.close();
+});
+
+/** Paths of the poster files the page asks for, from now on. */
+function watchPosterRequests(page: Page): string[] {
+  const requested: string[] = [];
+  page.on('request', (request) => {
+    const { pathname } = new URL(request.url());
+    if (pathname.startsWith('/media/') && pathname.endsWith('-poster.webp')) requested.push(pathname);
+  });
+  return requested;
+}
+
+test('clip posters are not fetched with the page: only when their clip comes near the screen', async ({ page }) => {
+  // The browser's own lazy loading would not do: Chromium loads images up to about 2500px below the
+  // screen, and on the bakery page the clip is under one screen down, so its poster came with the
+  // page, in competition with the hero.
+  const requested = watchPosterRequests(page);
+  for (const [slug, name] of [
+    ['bakery-concept', 'bakery-scroll'],
+    ['stock-tienda', 'stock-counter'],
+    ['conosur', 'conosur-releases'],
+    ['dsp2', 'dsp2-weights'],
+  ] as const) {
+    requested.length = 0;
+    await page.goto(`/work/${slug}`);
+    await hydrated(page);
+    await page.waitForLoadState('networkidle');
+    expect(await page.evaluate(() => window.scrollY), slug).toBe(0);
+    expect(requested, `${slug}: poster requests before scrolling`).toEqual([]);
+
+    // Near the clip, the poster is fetched, and only that one.
+    await expectPosterLoaded(page.locator('figure:has(video[data-clip])'), name);
+    expect(requested, slug).toEqual([`/media/${name}-poster.webp`]);
+  }
+});
+
+test('a poster is ready before its clip comes into view', async ({ page }) => {
+  const requested = watchPosterRequests(page);
+  await page.goto('/work/bakery-concept');
+  await hydrated(page);
+  const poster = page.locator('img[data-clip-poster]');
+  const clip = page.locator('video[data-clip]');
+  // The clip is 300px below the bottom of the screen: not in view, but its poster is on its way.
+  await clip.evaluate((el) => {
+    const gap = el.getBoundingClientRect().top - window.innerHeight;
+    window.scrollTo({ top: window.scrollY + gap - 300, behavior: 'instant' });
+  });
+  await expect(clip).not.toBeInViewport();
+  await expect.poll(() => decoded(poster)).toBe(true);
+  expect(requested).toEqual(['/media/bakery-scroll-poster.webp']);
+  // The clip does not play until it is in view: the poster is what comes first.
+  expect(await clip.evaluate((e: HTMLVideoElement) => e.paused)).toBe(true);
+});
+
+test('the clip pages hydrate without console errors', async ({ page }) => {
+  const problems: string[] = [];
+  page.on('console', (message) => {
+    if (message.type() === 'error') problems.push(message.text());
+  });
+  page.on('pageerror', (error) => problems.push(error.message));
+  for (const slug of ['bakery-concept', 'stock-tienda', 'conosur', 'dsp2']) {
+    await page.goto(`/work/${slug}`);
+    await hydrated(page);
+    await page.locator('video[data-clip]').scrollIntoViewIfNeeded();
+    await expect(page.locator('img[data-clip-poster]')).toHaveAttribute('src', /-poster[.]webp$/);
+  }
+  expect(problems).toEqual([]);
 });
 
 test('the new conosur clip keeps its own proportions', async ({ page }) => {
@@ -368,7 +489,7 @@ test('the re-recorded bakery clip: its own size, its caption and what it shows',
   const v = figure.locator('video');
   await expect(v).toHaveAttribute('width', '2560');
   await expect(v).toHaveAttribute('height', '1600');
-  await expect(v).toHaveAttribute('poster', '/media/bakery-scroll-poster.webp');
+  await expectPosterImage(figure, 'bakery-scroll');
   await expect(figure.locator('figcaption')).toHaveText(
     'Bakery concept: the hero enters, the buttons answer the pointer, and the scroll carries the cutouts into the manifesto.',
   );

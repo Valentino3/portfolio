@@ -258,7 +258,8 @@ for (const { slug } of publishedProjects()) {
       for (const [id] of e.sections) {
         const pictures = e.pictures[id] ?? 0;
         const clips = await page.locator(`#${id} video[data-clip]`).count();
-        await expect(page.locator(`#${id} img`)).toHaveCount(pictures);
+        // A clip's poster is an img too, but not a picture: no zoom, no size to check against a file.
+        await expect(page.locator(`#${id} img:not([data-clip-poster])`)).toHaveCount(pictures);
         // Every picture can be enlarged, and every picture and clip has a caption.
         await expect(page.locator(`#${id} figure a[href^="/img/"]`)).toHaveCount(pictures);
         await expect(page.locator(`#${id} figure figcaption`)).toHaveCount(pictures + clips);
@@ -267,7 +268,7 @@ for (const { slug } of publishedProjects()) {
 
     test('every picture loads, and declares the size of its file', async ({ page }) => {
       await page.goto(`/work/${slug}`);
-      for (const image of await page.locator('main figure img').all()) {
+      for (const image of await page.locator('main figure img:not([data-clip-poster])').all()) {
         await image.scrollIntoViewIfNeeded();
         await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
         // A wrong width or height in the content would reserve the wrong space and shift the layout.
