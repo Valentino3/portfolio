@@ -1,10 +1,11 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, test } from 'vitest';
-import { CaseHeader } from '@/components/case/case-header';
+import { CaseHeader, CaseMeta } from '@/components/case/case-header';
 import { CodeToken } from '@/components/case/code-token';
 import { Decision, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
+import { Outcomes } from '@/components/case/outcomes';
 import { getCase } from '@/content/cases';
 import { projectBySlug, publishedProjects } from '@/content/projects';
 
@@ -20,6 +21,23 @@ test('the case header is the back link, the title and the dek: nothing set above
   expect(html).toMatch(/<a [^>]*href="\/#work"[^>]*><span aria-hidden="true"[^>]*>←<\/span> All work<\/a>/);
   expect(texts(html, 'h1')).toEqual(['DSP2 + Reset GUI']);
   expect(texts(html, 'p')).toEqual(['A dek.']);
+});
+
+test('the role is in the body color; the stack and the sources stay quiet', () => {
+  const html = renderToStaticMarkup(<CaseMeta project={projectBySlug('dsp2')!} meta={['Lead.', 'Next.js.']} />);
+  expect(html).toMatch(/<div data-case-meta=""[^>]*\btext-text-3\b[^>]*><p class="text-text-2">/);
+  expect(texts(html, 'p')[1]).toBe('Next.js.');
+});
+
+// Heading navigation must reach the results: a section named by an h2, each result an h3.
+test('the outcomes are a list under an Outcomes heading, each title an h3', () => {
+  const outcomes = getCase('dsp2').outcomes;
+  const html = renderToStaticMarkup(<Outcomes outcomes={outcomes} />);
+  expect(html).toMatch(/^<section aria-labelledby="outcomes-h"[^>]*><h2 id="outcomes-h" class="sr">Outcomes<\/h2>/);
+  expect(html).toContain('<ul aria-labelledby="outcomes-h"');
+  expect(texts(html, 'h3')).toEqual(outcomes.map((o) => o.title));
+  expect(html.match(/<li\b/g)).toHaveLength(3);
+  expect(html).not.toContain('<b');
 });
 
 test('a decision is a title and prose, with no labels and no box', () => {
@@ -62,7 +80,7 @@ test('section ids are unique in a case and never take an id the template uses', 
   for (const p of publishedProjects()) {
     const ids = getCase(p.slug).sections.map((s) => s.id);
     expect(new Set(ids).size, p.slug).toBe(ids.length);
-    for (const id of ids) expect(['top', 'contact', 'cta'], p.slug).not.toContain(id);
+    for (const id of ids) expect(['top', 'contact', 'cta', 'outcomes', 'main'], p.slug).not.toContain(id);
   }
 });
 

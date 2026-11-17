@@ -10,6 +10,13 @@
 @custom-variant viewer (@media (min-width: 1280px) and (hover: hover) and (pointer: fine));
 
 /*
+ * Inline thumbnails on a screen of 1024px or more, where there is no viewer (a window under
+ * 1280px, a tablet in landscape): a full-width screenshot per row would make the list several
+ * screens tall, so each row puts its text and its thumbnail side by side instead.
+ */
+@custom-variant side-thumb (@media (min-width: 1024px) and (not ((min-width: 1280px) and (hover: hover) and (pointer: fine))));
+
+/*
  * Single token layer. Components use these utilities (bg-bg, text-ink,
  * duration-fast, ease-out-soft, rounded-base...) and never loose values.
  */
@@ -68,19 +75,6 @@
       scale: 0.4;
     }
   }
-  /* Availability dot: a ripple that plays 3 times and stops (spec 4.2). */
-  --animate-availability: availability-pulse 2.4s var(--ease-out-soft) 3;
-  @keyframes availability-pulse {
-    0% {
-      box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-available) 45%, transparent);
-    }
-    70% {
-      box-shadow: 0 0 0 0.5625rem transparent;
-    }
-    100% {
-      box-shadow: 0 0 0 0 transparent;
-    }
-  }
 
   /* Between regular and medium: the result of a decision, set apart from its reasoning. */
   --font-weight-book: 450;
@@ -93,6 +87,9 @@
   /* Elevation: only the zoom dialog floats above the page. */
   --shadow-dialog: 0 30px 80px -20px rgb(0 0 0 / 0.45);
 
+  /* The smallest phones (320-359px): the header tightens its gaps there (`max-xs:`). */
+  --breakpoint-xs: 22.5rem;
+
   /* Layout: max content width 1312px, fluid side gutter 16-64px (spec 4.1) and the
      fluid space above the header and between content and footer. */
   --container-site: 82rem;
@@ -104,14 +101,21 @@
   --spacing-hero-top: clamp(2.5rem, 5vw, 4.5rem);
   --spacing-list-top: clamp(2rem, 4vw, 3.25rem);
   --spacing-section: clamp(4.5rem, 9vw, 8rem);
+  /* Between two short sections of one block when they stack (About under Experience, Stack under
+     Open source): a step under --spacing-section, so a two-line section does not get the gap of a
+     long one. */
+  --spacing-subsection: clamp(2.5rem, 6vw, 3.5rem);
   /* Case study rhythm, top to bottom: the back link, the facts and the hero, the outcomes, the
      body, between two sections, and the contact block at the end. */
   --spacing-back-top: clamp(2.25rem, 5vw, 4rem);
   --spacing-case-block: clamp(2rem, 4vw, 3.25rem);
-  --spacing-outcomes-top: clamp(3rem, 6vw, 5.5rem);
   --spacing-case-body-top: clamp(4rem, 8vw, 7.5rem);
   --spacing-case-section: clamp(3.5rem, 7vw, 6rem);
   --spacing-case-end: clamp(5rem, 9vw, 8.75rem);
+  /* The CV sheet (/cv): an A4 page, and the margins inside it, the same on screen and on paper. */
+  --container-sheet: 210mm;
+  --spacing-sheet-x: 15mm;
+  --spacing-sheet-y: 10mm;
 
   /*
    * Type scale. Two families, two jobs: Geist (sans) carries everything that is read or pressed;
@@ -119,11 +123,15 @@
    * code). Hierarchy comes from size, weight and the three text colors, never from a label.
    *
    * Fixed steps: caption 0.75rem (the one mono size), small 0.8125rem (tertiary UI: footer,
-   * index, status lines), UI small 0.875rem (header, row metadata), UI base 0.9375rem, base
-   * 1rem (list titles), case prose 1.0625rem and card 1.125rem (a decision's title). Fluid
-   * clamp() steps above that: lead (home lede and About), outcome (a case outcome title), dek
-   * (a case's summary), section (a home section heading), heading (case h2), next ("Next: …"),
-   * display (case h1), intro (home h1) and mail (contact address).
+   * index, status lines), UI small 0.875rem (header, captions), UI base 0.9375rem (metadata:
+   * a row's context, years and dates), base 1rem (home body: descriptions, summaries, stack),
+   * case prose 1.0625rem and card 1.125rem (a project title on the home, a decision's title).
+   * Fluid clamp() steps above that: lead (home lede and About), outcome (a case outcome title),
+   * dek (a case's summary), section (a home section heading), heading (case h2), next
+   * ("Next: …"), display (case h1), intro (home h1) and mail (contact address).
+   *
+   * On the home the roles are one step apart each: section 24-32px, item title 18px, body 16px,
+   * metadata 15px; the quietest color (text-3) is kept for captions and the header strip.
    */
   --text-caption: 0.75rem; /* mono: figure captions */
   --text-caption--line-height: 1.55;
@@ -144,15 +152,16 @@
   --text-lead--line-height: 1.5;
   /* The prototype's body line height, for text set in a step that brings its own (About, in lead). */
   --leading-body: 1.55;
-  --text-outcome: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
-  --text-outcome--line-height: 1.25;
+  /* Between the dek and a case h2: the results lead the skim without outshouting the dek above. */
+  --text-outcome: clamp(1.25rem, 1.05rem + 0.6vw, 1.5rem);
+  --text-outcome--line-height: 1.2;
   --text-outcome--letter-spacing: -0.02em;
   --text-dek: clamp(1.0625rem, 0.95rem + 0.55vw, 1.4375rem);
   --text-dek--line-height: 1.4;
   --text-dek--letter-spacing: -0.015em;
-  --text-section: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem); /* home section headings */
-  --text-section--line-height: 1.2;
-  --text-section--letter-spacing: -0.02em;
+  --text-section: clamp(1.5rem, 1.15rem + 0.95vw, 2rem); /* home section headings */
+  --text-section--line-height: 1.15;
+  --text-section--letter-spacing: -0.025em;
   --text-heading: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
   --text-heading--line-height: 1.15;
   --text-heading--letter-spacing: -0.025em;
@@ -165,8 +174,15 @@
   --text-intro: clamp(1.625rem, 0.95rem + 2vw, 2.75rem); /* home h1 */
   --text-intro--line-height: 1.1;
   --text-intro--letter-spacing: -0.035em;
-  --text-mail: clamp(1.5rem, 1rem + 2.6vw, 3.5rem); /* the contact address */
+  /* The contact address: confident, a step under the home h1, never a banner. */
+  --text-mail: clamp(1.375rem, 1.05rem + 1.4vw, 2.25rem);
   --text-mail--letter-spacing: -0.04em;
+  /* The CV: the name at a fixed size (a sheet does not scale with a viewport), and a denser
+     line height for its text, set in the small step. */
+  --text-cv-name: 1.625rem;
+  --text-cv-name--line-height: 1.15;
+  --text-cv-name--letter-spacing: -0.03em;
+  --leading-cv: 1.45;
 }
 
 /* Font variables are set on <html> by next/font at runtime, hence inline. */
@@ -300,6 +316,61 @@
   &:focus-visible::after {
     transform: scaleX(1);
     transform-origin: left;
+  }
+}
+
+/*
+ * A short link ("CV", "Email") is narrower than a finger. On a coarse pointer an invisible
+ * ::before, centered on the link, makes its hit area at least 44px square without moving the
+ * text. Needs a positioned element (link-u is one); ::after stays free for the underline.
+ */
+@utility touch-target {
+  @media (pointer: coarse) {
+    &::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: max(100%, 2.75rem);
+      height: max(100%, 2.75rem);
+      translate: -50% -50%;
+    }
+  }
+}
+
+/*
+ * The CV (/cv) prints as its sheet alone, on one A4 page: no site header (the page hides it), no
+ * footer, no gutter, white paper. The sheet carries its own margins, so the page has none, and
+ * the browser has no room left to print its own header and footer (date, URL) either.
+ */
+/* No "fi"/"fl" ligatures on the CV: a PDF reader or an applicant tracking system copies a
+   ligature as one odd character, and "ﬁrst" no longer matches "first". */
+[data-cv-sheet] {
+  font-variant-ligatures: no-common-ligatures;
+}
+
+@page cv {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  body:has([data-cv]) {
+    background: var(--color-paper);
+
+    /* The layout's wrapper: its max width and its gutter. */
+    & > div {
+      max-width: none;
+      padding: 0;
+    }
+  }
+
+  [data-cv] {
+    page: cv;
+
+    & ~ footer {
+      display: none;
+    }
   }
 }
 

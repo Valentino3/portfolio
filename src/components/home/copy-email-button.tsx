@@ -61,10 +61,11 @@ export function CopyEmailButton({ email }: { email: string }) {
 
   return (
     <>
+      {/* 40px tall for a mouse; on a coarse pointer it grows to the 44px a finger needs. */}
       <button
         type="button"
         onClick={copy}
-        className="cursor-pointer rounded-full border border-rule-strong px-3.5 py-2 text-ui-sm text-ink transition-[border-color,scale] duration-pop ease-spring-pop hover:border-ink active:scale-95"
+        className="cursor-pointer rounded-full border border-rule-strong px-3.5 py-2 text-ui-sm pointer-coarse:min-h-11 text-ink transition-[border-color,scale] duration-pop ease-spring-pop hover:border-ink active:scale-95"
       >
         Copy email
       </button>

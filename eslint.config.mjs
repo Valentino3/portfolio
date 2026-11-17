@@ -5,9 +5,9 @@ import nextTs from "eslint-config-next/typescript";
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
-  // Lint the project's own files only: src, tests and the config files at the root. Everything
-  // else at the root (build output, reports, dependencies, local folders) is ignored.
-  globalIgnores(["*", "!src/", "!tests/", "!*.ts", "!*.mts", "!*.mjs", "next-env.d.ts"]),
+  // Lint the project's own files only: src, tests, scripts and the config files at the root.
+  // Everything else at the root (build output, reports, dependencies, local folders) is ignored.
+  globalIgnores(["*", "!src/", "!tests/", "!scripts/", "!*.ts", "!*.mts", "!*.mjs", "next-env.d.ts"]),
 ]);
 
 export default eslintConfig;

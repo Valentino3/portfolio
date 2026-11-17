@@ -6,8 +6,10 @@ const projects = publishedProjects();
 const pages = ['/', ...projects.map(({ slug }) => `/work/${slug}`)];
 /** A case that does not exist (or is not published) and a URL the site never had: both get the 404 page. */
 const notFound = ['/work/not-a-project', '/does-not-exist'];
+/** Every page that must reflow: the CV is a page of the site too. */
+const reflowPages = [...pages, '/cv'];
 
-for (const p of [...pages, ...notFound]) {
+for (const p of [...reflowPages, ...notFound]) {
   test(`axe + no h-scroll ${p}`, async ({ page }) => {
     const response = await page.goto(p);
     expect(response?.status()).toBe(notFound.includes(p) ? 404 : 200);
@@ -20,7 +22,7 @@ for (const p of [...pages, ...notFound]) {
  * Mono has one job: data and code. On every page, any element that sets text in the mono face
  * must sit in a figure caption, a diagram or a code element. The failure names the offending text.
  */
-for (const p of [...pages, notFound[0]]) {
+for (const p of [...pages, '/cv', notFound[0]]) {
   test(`mono only in captions, diagrams and code on ${p}`, async ({ page }) => {
     await page.goto(p);
     await page.evaluate(() => document.fonts.ready);
@@ -72,7 +74,7 @@ test('no horizontal scroll from 320 to 1920, also with 200% text at 320', async 
   for (const width of [320, 768, 1024, 1180, 1280, 1920]) {
     const context = await browser.newContext({ viewport: { width, height: 900 } });
     try {
-      for (const p of [...pages, ...notFound]) {
+      for (const p of [...reflowPages, ...notFound]) {
         const page = await context.newPage();
         await page.goto(p);
         if (width === 320) await page.addStyleTag({ content: 'html{font-size:200%}' });

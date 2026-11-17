@@ -131,7 +131,7 @@ export function ProjectViewer({ projects, activeIndex }: { projects: ProjectSumm
             ))}
           </Link>
           <p data-cap="" className="mt-2.5 text-small text-text-3">
-            {projects[activeIndex].role}
+            {`${projects[activeIndex].title} · ${projects[activeIndex].role}`}
           </p>
         </div>
       )}

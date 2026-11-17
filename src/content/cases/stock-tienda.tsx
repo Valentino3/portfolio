@@ -23,7 +23,7 @@ const kpis: Media = {
 
 export const stockTienda: CaseStudy = {
   slug: 'stock-tienda',
-  dek: 'Software for small stores to sell at the counter, keep their stock and close the cash register. I built it alone, end to end. Three stores pay for it and have used it for about three months.',
+  dek: 'Software for small stores to sell at the counter, keep their stock and close the cash register. I built it alone, end to end.',
   meta: [
     'Product, design, code and operations.',
     <>
@@ -44,7 +44,7 @@ export const stockTienda: CaseStudy = {
     },
     {
       title: 'It keeps selling offline',
-      body: 'A local catalogue and a queue of sales on the counter. When the connection returns, sales replay without being counted twice.',
+      body: 'A local catalog and a queue of sales on the counter. When the connection returns, sales replay without being counted twice.',
     },
     {
       title: 'Electronic invoicing with ARCA',
@@ -77,7 +77,7 @@ export const stockTienda: CaseStudy = {
       body: (
         <p>
           All of it: scope, design, code, tests and production. Each store’s data is isolated from the others, with
-          owner and employee roles. Stores load their catalogue from a spreadsheet, or from a photo or PDF of a
+          owner and employee roles. Stores load their catalog from a spreadsheet, or from a photo or PDF of a
           supplier invoice read with AI.
         </p>
       ),
@@ -127,7 +127,7 @@ export const stockTienda: CaseStudy = {
             </Decision>
             <Decision title="Borders, not shadows">
               <p>
-                Two grey borders give the density: one separates, one structures. Shadows are reserved for the paper
+                Two gray borders give the density: one separates, one structures. Shadows are reserved for the paper
                 documents on screen, like the delivery note, which is what makes them look like paper.
               </p>
             </Decision>
@@ -150,8 +150,8 @@ export const stockTienda: CaseStudy = {
           <Decisions>
             <Decision title="Offline sales: record first, flag later">
               <Result>
-                Instead of rejecting an offline sale when stock ran out, the sale is recorded, stock may go negative
-                and an alert is raised. It lands in the cash session that was open when it happened, even if that
+                When stock has run out, an offline sale is still recorded: stock may go negative and an alert is
+                raised. It lands in the cash session that was open when it happened, even if that
                 session is closed now. Device clocks are bounded: a date more than 30 days old or 5 minutes ahead is
                 replaced with the sync time.
               </Result>
@@ -169,9 +169,9 @@ export const stockTienda: CaseStudy = {
             </Decision>
             <Decision title="Property-based tests for the money math">
               <Result>
-                Instead of only example tests, plus a manual test sale after each deploy: property tests for totals,
-                prices, cash counts, accounts and tax amounts, alongside example and end-to-end tests, and a
-                production check that replaced the manual sale.
+                Property tests for totals, prices, cash counts, accounts and tax amounts now run alongside example
+                and end-to-end tests, and a production check replaced the manual test sale after each deploy. Before,
+                there were only example tests.
               </Result>
               <p>
                 Totals, prices, cash counts and tax amounts have rules that must hold for any input, and a handful of
@@ -186,10 +186,10 @@ export const stockTienda: CaseStudy = {
             </Decision>
           </Decisions>
           <Diagram
-            label="Diagram: the counter app keeps a local catalogue and queues sales while offline; when the connection returns it replays them, each with a key; the server checks permissions and records stock in one transaction in PostgreSQL, and invoices go through ARCA."
+            label="Diagram: the counter app keeps a local catalog and queues sales while offline; when the connection returns it replays them, each with a key; the server checks permissions and records stock in one transaction in PostgreSQL, and invoices go through ARCA."
             rows={[
               [
-                { l1: 'Counter app', l2: 'local catalogue' },
+                { l1: 'Counter app', l2: 'local catalog' },
                 { l1: 'Offline queue', l2: 'sales + keys', edge: 'replay' },
                 { l1: 'Server', l2: 'permissions, one tx', dark: true },
                 { l1: 'PostgreSQL', l2: 'Neon' },

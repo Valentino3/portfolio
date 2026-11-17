@@ -3,10 +3,11 @@ import { EMAIL } from '@/lib/site';
 import { CopyEmailButton } from './copy-email-button';
 
 /**
- * The address is a mailto link, large, with the copy button next to it (it wraps under the
- * address on a narrow screen) and its status line under both. No visible heading: an address
- * that size names the section by itself, so the h2 is for assistive tech only. The address text
- * is in `[data-mail-text]` so a failed copy can select it.
+ * The address is a mailto link, a step under the h1, with the copy button next to it (it wraps
+ * under the address on a narrow screen) and its status line under both. No visible heading: the
+ * address names the section by itself, so the h2 is for assistive tech only. The address text
+ * is in `[data-mail-text]` so a failed copy can select it. On a coarse pointer the address's
+ * hit area grows to 44px (touch-target): one line of it is shorter than that on a phone.
  */
 export function Contact() {
   return (
@@ -24,7 +25,7 @@ export function Contact() {
       <div className="mt-3 flex flex-wrap items-baseline gap-x-6 gap-y-2.5">
         <a
           href={`mailto:${EMAIL}`}
-          className="text-mail font-medium wrap-anywhere underline-offset-6 hover:underline hover:decoration-2 focus-visible:underline focus-visible:decoration-2"
+          className="touch-target relative text-mail font-medium wrap-anywhere underline-offset-6 hover:underline hover:decoration-2 focus-visible:underline focus-visible:decoration-2"
         >
           <span data-mail-text>{EMAIL}</span>
         </a>

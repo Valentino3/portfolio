@@ -9,7 +9,7 @@ export function TocMobile({ sections }: { sections: Pick<CaseSection, 'id' | 'ti
       <ol className="mt-2 mb-1 list-decimal pl-5">
         {sections.map(({ id, title }) => (
           <li key={id}>
-            <InPageLink href={`#${id}`} className="inline-block py-1.5 underline underline-offset-3">
+            <InPageLink href={`#${id}`} className="inline-block py-1.5 pointer-coarse:py-2.5 underline underline-offset-3">
               {title}
             </InPageLink>
           </li>

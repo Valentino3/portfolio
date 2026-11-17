@@ -26,7 +26,7 @@ test('every published case is generated, and the last one cycles back to the fir
   await expect(page.getByRole('link', { name: NEXT })).toHaveAttribute('href', `/work/${cases[0].slug}`);
 });
 
-test('the template follows the prototype: back link, facts, hero, outcomes, sections, contact', async ({ page }) => {
+test('the template follows the prototype: back link, facts, outcomes, hero, sections, contact', async ({ page }) => {
   await page.goto('/work/stock-tienda');
   await expect(page).toHaveTitle('Stock Tienda — Valentino Rota');
   await expect(page.locator('meta[name="description"]')).toHaveAttribute(
@@ -51,8 +51,15 @@ test('the template follows the prototype: back link, facts, hero, outcomes, sect
   await expect(hero.locator('figcaption')).toContainText('Reports: period total, low stock and cash closings');
   await expect(hero.locator('figcaption')).toContainText('test store, demo data');
 
+  // Facts, then the outcomes, then the hero: the results come before the picture.
+  const tops = await main.evaluate((m) => {
+    const top = (el: Element | null) => el!.getBoundingClientRect().top;
+    return [top(m.querySelector('h1')), top(m.querySelector('section[aria-labelledby="outcomes-h"]')), top(m.querySelector('figure'))];
+  });
+  expect(tops).toEqual([...tops].sort((a, b) => a - b));
+  await expect(main.locator('section[aria-labelledby="outcomes-h"] h2')).toHaveText('Outcomes');
   const outcomes = main.getByRole('list', { name: 'Outcomes' });
-  await expect(outcomes.locator('li b')).toHaveText([
+  await expect(outcomes.locator('li h3')).toHaveText([
     'Three stores pay for it',
     'It keeps selling offline',
     'Electronic invoicing with ARCA',
@@ -65,6 +72,13 @@ test('the template follows the prototype: back link, facts, hero, outcomes, sect
   // Contact names its section for assistive tech only: the address is the visible heading.
   await expect(main.getByRole('heading', { level: 2, name: 'Contact', exact: true })).toHaveClass(/\bsr\b/);
   await expect(main.locator('#contact a[href="mailto:valentino.rota3@gmail.com"]')).toBeVisible();
+  // Shorter than the home's block: one line, then the address and the CV. The roles and the time
+  // zone are the home's; the copy button too.
+  const contact = main.locator('#contact');
+  await expect(contact).toContainText('Questions about this project, or a role to talk about? Write to me.');
+  await expect(contact.getByRole('link', { name: 'CV', exact: true })).toHaveAttribute('href', '/cv');
+  await expect(contact).not.toContainText('Open to design engineering');
+  await expect(contact.getByRole('button', { name: 'Copy email' })).toHaveCount(0);
 });
 
 test('desktop toc marks the section in view', async ({ page, isMobile }) => {

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { AVAILABILITY } from '@/content/profile';
 import { publishedProjects } from '@/content/projects';
 import { HOVER_INTENT_MS } from '@/lib/viewer-state';
 import { expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
@@ -144,11 +145,11 @@ test.describe('project viewer', () => {
     await page.goto('/');
     const viewer = page.locator('[data-viewer]');
     const cap = viewer.locator('[data-cap]');
-    // One sans line: the role, nothing else.
-    await expect(cap).toHaveText('Solo, end to end');
+    // One sans line: the project's name, then its role.
+    await expect(cap).toHaveText(`${projects[0].title} · Solo, end to end`);
 
     await page.locator('#work li').nth(3).hover();
-    await expect(cap).toHaveText('Main contributor');
+    await expect(cap).toHaveText(`${projects[3].title} · Main contributor`);
 
     await expect(viewer).toHaveAttribute('aria-hidden', 'true');
     await expect(viewer.locator('a')).toHaveAttribute('tabindex', '-1');
@@ -368,7 +369,7 @@ test('no axe violations or horizontal scroll with the viewer mounted and a failu
 // Review Focus 5: a visitor who lands on a case from a shared link, never having seen the home.
 test('a case opened from a shared link shows availability and contact', async ({ page }) => {
   await page.goto('/work/conosur');
-  await expect(page.getByText('Open to roles in Buenos Aires or remote')).toBeVisible();
+  await expect(page.getByText(AVAILABILITY)).toBeVisible();
   await expect(page.locator('#contact a[href^="mailto:"]')).toBeVisible();
   await expect(page.getByRole('link', { name: /All work/ })).toHaveAttribute('href', '/#work');
 });

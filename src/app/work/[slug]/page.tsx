@@ -45,9 +45,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /**
- * The case study template: back link, title and dek, the facts as two short paragraphs, hero,
- * outcomes, then the sections beside their index, the contact block and the next case. The
- * footer comes from the layout. The zoom provider holds the page's one dialog for every figure
+ * The case study template: back link, title and dek, the facts as two short paragraphs, the
+ * outcomes, hero, then the sections beside their index, the contact block and the next case. The
+ * outcomes come before the hero so that a reader who only skims the first screen still gets the
+ * results; the picture backs them up below. The footer comes from the layout. `id="main"` is
+ * where the skip link lands. The zoom provider holds the page's one dialog for every figure
  * that can be enlarged. The hero is the likely LCP element: eager and high priority. React also
  * puts a preload link for it in the head (it does for any img that is not lazy, high priority
  * first), with the same srcset and sizes as the img, so the browser still fetches it once.
@@ -60,9 +62,10 @@ export default async function CasePage({ params }: Props) {
       <ReadingProgress />
       <SiteHeader variant="case" />
       <ZoomProvider>
-        <main>
+        <main id="main">
           <CaseHeader project={project} dek={study.dek} />
           <CaseMeta project={project} meta={study.meta} />
+          <Outcomes outcomes={study.outcomes} />
           <div className="mt-case-block">
             <Figure
               image={study.hero.image}
@@ -73,7 +76,6 @@ export default async function CasePage({ params }: Props) {
               zoom
             />
           </div>
-          <Outcomes outcomes={study.outcomes} />
           <div className="grid-12 mt-case-body-top">
             <Toc sections={index} />
             <div className="prose col-span-full lg:col-span-7 lg:col-start-4">

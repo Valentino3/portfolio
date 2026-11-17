@@ -87,30 +87,28 @@ const expected: Record<Slug, Expected> = {
   dsp2: {
     h1: 'DSP2 + Reset GUI',
     meta: [
-      'Reset Digital, 2024 – now.',
-      'Lead UI Developer (promoted). I lead one engineer and review their pull requests.',
-      'Product UI, authorization, Reset GUI.',
+      'Reset Digital, 2024 – now. UI Developer, promoted to Lead in 2025. Product UI, authorization, Reset GUI.',
       'Next.js 14 (App Router), TypeScript, MUI, TanStack Table, Prisma, MySQL, next-auth, Storybook.',
       'Private codebase. Screens are Reset GUI components in Storybook, with mock data.',
     ],
     outcomes: [
       'The first outside client, onboarded safely',
+      'Tables you can scan without hovering',
       'Tested over real logins',
-      'One authorization layer, platform-wide',
     ],
+    // The interface comes before the security decisions and the architecture that explains them.
     sections: [
       ['context', 'Context'],
       ['role', 'My role'],
-      ['decisions', 'Decisions'],
-      ['architecture', 'Architecture'],
       ['interface', 'Interface'],
+      ['decisions', 'Security decisions'],
+      ['architecture', 'Architecture'],
     ],
     cards: {
       decisions: [
         'Ship the hardening in two batches, by risk',
         'No database migrations in the first batch',
         'Authorization in one layer, not per route',
-        'One component library for two apps',
       ],
     },
     diagrams: 2,
@@ -211,8 +209,8 @@ async function unpublishedTerms(page: Page): Promise<string[]> {
   return findForbiddenTerms(`${html}\n${text}`);
 }
 
-test('the home and the not-found page publish no unpublished terms', async ({ page }) => {
-  for (const path of ['/', '/work/not-a-project']) {
+test('the home, the CV and the not-found page publish no unpublished terms', async ({ page }) => {
+  for (const path of ['/', '/cv', '/work/not-a-project']) {
     await page.goto(path);
     expect(await unpublishedTerms(page), path).toEqual([]);
   }
@@ -272,10 +270,12 @@ for (const { slug } of publishedProjects()) {
         await image.scrollIntoViewIfNeeded();
         await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
         // A wrong width or height in the content would reserve the wrong space and shift the layout.
-        // The zoom link points at the file itself, whose size is the truth.
+        // The file the picture shows is the truth. Read it from the optimizer URL, not the zoom
+        // link: a close-up's zoom link opens the whole screenshot, a different file.
         const { declared, file } = await image.evaluate(async (img: HTMLImageElement) => {
+          const shown = new URL(img.getAttribute('src')!, location.href);
           const original = new Image();
-          original.src = img.closest('a')!.getAttribute('href')!;
+          original.src = shown.searchParams.get('url') ?? shown.pathname;
           await original.decode();
           return {
             declared: [Number(img.getAttribute('width')), Number(img.getAttribute('height'))],
@@ -299,7 +299,9 @@ for (const { slug } of publishedProjects()) {
 
 test('stock tienda: the metadata does not repeat the users and months the dek already gives', async ({ page }) => {
   await page.goto('/work/stock-tienda');
-  await expect(page.locator('h1 + p')).toContainText('about three months');
+  // The dek is short now; the three months are outcome 1's, and only there.
+  await expect(page.locator('h1 + p')).not.toContainText('three months');
+  await expect(page.getByRole('list', { name: 'Outcomes' }).locator('li').first()).toContainText('about three months');
   await expect(page.locator('[data-case-meta]')).not.toContainText('three months');
   await expect(page.locator('[data-case-meta]')).not.toContainText('paying stores');
 });
@@ -309,6 +311,13 @@ test('stock tienda shows design decisions before engineering decisions', async (
   const ids = await page.locator('main section[id]').evaluateAll((s) => s.map((x) => x.id));
   expect(ids.indexOf('design')).toBeGreaterThan(-1);
   expect(ids.indexOf('design')).toBeLessThan(ids.indexOf('engineering'));
+});
+
+test('dsp2 dek says what the owner designed and built, and the security work that let a client in', async ({ page }) => {
+  await page.goto('/work/dsp2');
+  await expect(page.getByRole('main')).toContainText(
+    'Software that buys and sells ad space automatically, and its design system. I designed and built the screens shown here and led the security hardening.',
+  );
 });
 
 test('dsp2 opens its decisions with the rollout, and has no hardening section', async ({ page }) => {
@@ -322,27 +331,53 @@ test('dsp2 opens its decisions with the rollout, and has no hardening section', 
   expect(diagram!.y).toBeLessThan(card!.y);
 });
 
-test('dsp2 interface: who designed what, then three changes, each with its before and after, then the clip', async ({
+test('dsp2 copy: "promoted" once on the page, and no decision opens with "Instead of"', async ({ page }) => {
+  await page.goto('/work/dsp2');
+  const text = await page.locator('main').innerText();
+  expect(text.match(/promoted/gi)).toHaveLength(1);
+  expect(text).not.toMatch(/instead of/i);
+  // The facts the old phrasing carried are still there.
+  const decisions = page.locator('#decisions');
+  await expect(decisions).toContainText('neither bundled everything into one release nor moved the launch');
+  await expect(decisions).toContainText('whichever route a request hits, the checks are the same');
+  // The component-library decision is prose in the interface now, not a card among the security decisions.
+  await expect(decisions).not.toContainText('neither app keeps its own');
+  await expect(page.locator('#interface')).toContainText('neither app keeps its own');
+});
+
+test('dsp2 says "no incidents, no rollbacks" once, in its first outcome, and has an interface outcome', async ({
+  page,
+}) => {
+  await page.goto('/work/dsp2');
+  const outcomes = page.getByRole('list', { name: 'Outcomes' }).locator('li');
+  await expect(outcomes.first()).toContainText('no security incidents and no rollbacks');
+  await expect(outcomes.nth(1)).toContainText('print the score only a hover tooltip showed');
+  // Diagram labels are SVG text, which innerText leaves out: read the whole text content.
+  const text = (await page.locator('main').textContent()) ?? '';
+  expect(text.match(/incidents/gi)).toHaveLength(1);
+  expect(text.match(/no rollbacks|rollback was never needed/gi)).toHaveLength(1);
+});
+
+test('dsp2 interface: the shared library, who designed what, then three changes, each with its before and after, then the clip', async ({
   page,
 }) => {
   await page.goto('/work/dsp2');
   const section = page.locator('#interface');
-  await expect(section.locator('> p').first()).toHaveText(
-    'I designed and built these screens; the colour and type theme is the team’s.',
-  );
-  const headings = ['The score, printed on the badge', 'Sorting by two columns, made visible', 'Colour that carries data'];
+  await expect(section.locator('> p').first()).toContainText('one component library for two apps');
+  await expect(section.locator('> p').nth(1)).toHaveText('The color and type theme of the screens below is the team’s.');
+  const headings = ['The score, printed on the badge', 'Sorting by two columns, made visible', 'Color that carries data'];
   await expect(section.locator('h3')).toHaveText(headings);
   // Each heading has prose after it, then its pairs; the third has two.
   const pairs = section.locator('[data-before-after]');
   await expect(pairs).toHaveCount(4);
   await expect(pairs.locator('figure')).toHaveCount(8);
   await expect(pairs.locator('figcaption')).toHaveText([
-    'Before: colour only',
+    'Before: color only',
     'After: the score on the badge',
     'Before: no sign of a second sort column',
     'After: rank beside each arrow',
     'Before: flat blue',
-    'After: tone by CTR',
+    'After: tone by CTR. Anxious is shorter than Angry but darker: its CTR is higher.',
     'Before: flat blue',
     'After: bands by strength',
   ]);
@@ -355,9 +390,9 @@ test('dsp2 interface: who designed what, then three changes, each with its befor
           : el.tagName.toLowerCase(),
     ),
   );
-  expect(order.slice(0, 13)).toEqual(['h2', 'p', 'h3', 'p', 'pair', 'h3', 'p', 'pair', 'h3', 'p', 'pair', 'pair', 'clip']);
+  expect(order.slice(0, 14)).toEqual(['h2', 'p', 'p', 'h3', 'p', 'pair', 'h3', 'p', 'pair', 'h3', 'p', 'pair', 'pair', 'clip']);
   // What the section held before follows: the server-side tables sentence and the three-figure gallery.
-  expect(order.slice(13)).toEqual(['p', 'div']);
+  expect(order.slice(14)).toEqual(['p', 'div']);
   await expect(section.locator('figure:has(video[data-clip]) figcaption')).toHaveText(
     'Scoring weights: the sentence and the formula rewrite themselves as the sliders move.',
   );

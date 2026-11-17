@@ -28,7 +28,7 @@ const videos: Media = {
 
 export const conosur: CaseStudy = {
   slug: 'conosur',
-  dek: 'The website of CONOSUR, a music artist: releases with a Spotify player that falls back to YouTube, a directory of 22 collaborators, and videos, in Spanish and English. Client work: I designed and built it, and I’ve deployed and maintained it since July 2025.',
+  dek: 'The website of CONOSUR, a music artist: releases, a directory of 22 collaborators, and videos. I designed, built and deployed it.',
   meta: [
     null,
     <>
@@ -85,8 +85,8 @@ export const conosur: CaseStudy = {
           <Decisions>
             <Decision title="Spotify first, YouTube as a fallback">
               <Result>
-                Instead of a single embed: if the Spotify embed hasn’t loaded after ten seconds, it retries twice;
-                after that, the same release plays in a YouTube player.
+                A fallback chain, not a single embed: if the Spotify embed hasn’t loaded after ten seconds, it retries
+                twice; after that, the same release plays in a YouTube player.
               </Result>
               <p>
                 Embeds fail: access tokens expire and players get blocked. A release page with a broken player is a
@@ -105,8 +105,8 @@ export const conosur: CaseStudy = {
             </Decision>
             <Decision title="A store, decided with the client">
               <p>
-                The artist wanted to sell merch. Before writing code, I wrote a decision document with five options,
-                their monthly costs, fees and build times, instead of picking a platform and building.
+                The artist wanted to sell merch. Before picking a platform or writing code, I wrote a decision
+                document: five options, with their monthly costs, fees and build times.
               </p>
               <Result>
                 A recommendation (a custom storefront inside the site, on top of Shopify), plus an early warning:

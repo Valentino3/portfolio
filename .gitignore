@@ -41,3 +41,6 @@ next-env.d.ts
 
 # lighthouse ci reports
 .lighthouseci/
+
+# loose PDFs at the repo root (e.g. a personal CV draft); the published one lives in public/
+/*.pdf
