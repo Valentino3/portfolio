@@ -104,18 +104,16 @@ test('each Selected work title links to its case, by absolute address so the PDF
   await expect(links).toHaveText(projects.map(({ title }) => title));
 });
 
-test('on a phone the CV contact and pull request links are at least 44px tall; print is unchanged', async ({
+test('on a phone every CV link is at least 44px tall; print is unchanged', async ({
   page,
   isMobile,
 }) => {
   test.skip(!isMobile, 'the taller links are for phones');
   await page.goto('/cv');
   const sheet = page.locator('[data-cv-sheet]');
-  // The pull request numbers, not the printed addresses beside them: those are paper's copy of the link.
-  const contact = sheet.getByRole('list', { name: 'Contact' }).getByRole('link');
-  const numbers = sheet.locator('section[aria-labelledby="cv-oss"] a').filter({ hasText: /^#\d+$/ });
-  const targets = [...(await contact.all()), ...(await numbers.all())];
-  expect(targets).toHaveLength(5);
+  // Every link on the sheet: contact, site address, project titles, PR numbers and their printed addresses.
+  const targets = await sheet.getByRole('link').all();
+  expect(targets.length).toBeGreaterThanOrEqual(13);
   for (const link of targets) {
     const hit = await link.evaluate((el) =>
       Math.max(el.getBoundingClientRect().height, parseFloat(getComputedStyle(el, '::before').height) || 0),

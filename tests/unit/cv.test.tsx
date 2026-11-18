@@ -130,8 +130,13 @@ test('each selected project title links to its case study by an absolute URL, so
     expect(html).toContain(`<a href="${SITE_URL}/work/${slug}"`);
 });
 
-test('on a phone the contact links and PR numbers get a 44px hit area; print is untouched', () => {
+test('on a phone the contact links, PR numbers and PR addresses get a 44px hit area; print is untouched', () => {
   const tapped = html.match(/class="[^"]*max-sm:py-3\.5[^"]*"/g) ?? [];
-  expect(tapped).toHaveLength(3 + PULL_REQUESTS.length);
+  expect(tapped).toHaveLength(3 + 2 * PULL_REQUESTS.length);
   expect(tapped.join(' ')).not.toContain('print:');
+});
+
+test('the site address and the project titles take a tap through an invisible 44px area', () => {
+  const hit = html.match(/class="[^"]*relative touch-target[^"]*"/g) ?? [];
+  expect(hit).toHaveLength(1 + publishedProjects().length);
 });

@@ -12,9 +12,14 @@ export const printedUrl = (url: string): string => url.replace(/^https?:\/\/(www
 /* Under 640px an address may break anywhere, so a long one never widens the page (reflow at 320px, 200% text). */
 const LINK = 'underline-offset-3 hover:underline focus-visible:underline max-sm:[overflow-wrap:anywhere]';
 
-/* On a phone the contact links and the pull request numbers are one short line high: padding grows
-   them to 44px. Only under 640px, so the A4 sheet, which prints wider, keeps its layout and its single page. */
+/* On a phone the contact links, the pull request numbers and their printed addresses are one short line
+   high: padding grows them to 44px. Only under 640px, so the A4 sheet, which prints wider, keeps its
+   layout and its single page. */
 const TAP = 'max-sm:inline-block max-sm:py-3.5';
+
+/* Links inside running lines (the site address, the project titles) can't grow without opening gaps in
+   the text: on a touch screen an invisible 44px area around each one takes the tap instead. */
+const HIT = 'relative touch-target';
 
 /** Dates and pull request numbers, set like the home's dates: the sans, quieter, in tabular figures. */
 const DATA = 'shrink-0 text-text-3 tabular-nums max-sm:shrink';
@@ -67,7 +72,7 @@ export function Resume() {
             <h1 className="text-ink">{NAME}</h1>
             <p className="text-text-3">{ROLE_TITLE}</p>
           </hgroup>
-          <a href={SITE_URL} className={`text-ink ${LINK}`}>
+          <a href={SITE_URL} className={`text-ink ${LINK} ${HIT}`}>
             {printedUrl(SITE_URL)}
           </a>
         </div>
@@ -106,7 +111,7 @@ export function Resume() {
               <TitleLine data={<span className={DATA}>{years}</span>}>
                 {/* Absolute, so the link still works from the PDF; nothing is printed beside it, there is no room. */}
                 <b className="font-medium text-ink">
-                  <a href={`${SITE_URL}/work/${slug}`} className={LINK}>
+                  <a href={`${SITE_URL}/work/${slug}`} className={`${LINK} ${HIT}`}>
                     {title}
                   </a>
                 </b>
@@ -139,10 +144,10 @@ export function Resume() {
             ))}
           </ul>
           {/* On paper a number resolves to nothing: one line under the list prints both addresses. */}
-          {/* Stacked on a phone they need room between them to be tappable; print keeps one line. */}
-          <p className="mt-1 flex flex-wrap gap-x-6 max-sm:gap-y-3 text-text-3">
+          {/* Stacked on a phone, each one is a 44px target; print keeps one line. */}
+          <p className="mt-1 flex flex-wrap gap-x-6 text-text-3">
             {PULL_REQUESTS.map((pr) => (
-              <a key={pr.href} href={pr.href} className={LINK}>
+              <a key={pr.href} href={pr.href} className={`${LINK} ${TAP}`}>
                 {printedUrl(pr.href)}
               </a>
             ))}
