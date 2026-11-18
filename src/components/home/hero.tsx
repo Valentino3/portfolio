@@ -20,7 +20,7 @@ const LINK = 'link-u touch-target py-1 pointer-coarse:py-2.75';
 export function Hero({ children }: { children: ReactNode }) {
   return (
     <div className="grid-12 mt-hero-top">
-      <hgroup className="col-span-full text-intro font-medium viewer:col-span-6 viewer:self-baseline">
+      <hgroup className="col-span-full text-intro viewer:col-span-6 viewer:self-baseline">
         <h1>{NAME}</h1>
         <p className="text-text-3">{HEADLINE}</p>
       </hgroup>

@@ -46,7 +46,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 /**
  * The case study template: back link, title and dek, the facts as two short paragraphs, the
- * outcomes, hero, then the sections beside their index, the contact block and the next case. The
+ * outcomes, hero, then the sections beside their index, the contact block and the next case. A
+ * case with a `headerAside` gets it beside the title, dek and facts from 1024px up (the header
+ * then takes columns 1-8); every other case keeps the header at full width. The
  * outcomes come before the hero so that a reader who only skims the first screen still gets the
  * results; the picture backs them up below. The footer comes from the layout. `id="main"` is
  * where the skip link lands. The zoom provider holds the page's one dialog for every figure
@@ -63,8 +65,25 @@ export default async function CasePage({ params }: Props) {
       <SiteHeader variant="case" />
       <ZoomProvider>
         <main id="main">
-          <CaseHeader project={project} dek={study.dek} />
-          <CaseMeta project={project} meta={study.meta} />
+          {study.headerAside ? (
+            <div className="grid-12">
+              <div className="col-span-full lg:col-span-8">
+                <CaseHeader project={project} dek={study.dek} />
+                <CaseMeta project={project} meta={study.meta} />
+              </div>
+              {/* Columns 9-12, its top on the title's cap height: the back link's space above
+                  and its own height (about 2.85rem), then half a rem down to the caps. The
+                  bottom hangs a rem into the space above the outcomes, so they barely move. */}
+              <div className="hidden lg:col-span-4 lg:col-start-9 lg:-mb-4 lg:mt-[calc(var(--spacing-back-top)+3.375rem)] lg:block lg:self-start">
+                {study.headerAside}
+              </div>
+            </div>
+          ) : (
+            <>
+              <CaseHeader project={project} dek={study.dek} />
+              <CaseMeta project={project} meta={study.meta} />
+            </>
+          )}
           <Outcomes outcomes={study.outcomes} />
           <div className="mt-case-block">
             <Figure

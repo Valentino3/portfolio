@@ -18,16 +18,19 @@ test('renders one row per project: no index, no pill, no arrow', () => {
   expect(html).toContain('<h2 id="work-h" class="sr">Selected work</h2>');
   expect(html).not.toMatch(/>0\d</);
   expect(html).not.toContain('→');
-  // Title, then its context as a smaller continuation, then the years.
-  expect(rows(html)[0]).toMatch(/>Stock Tienda<\/a><span[^>]*text-ui[^>]*>Own product<\/span><\/span><span[^>]*tabular-nums[^>]*>2026 – now</);
+  // Title, then its context as a smaller continuation, then the years, in the mono.
+  expect(rows(html)[0]).toMatch(
+    /<a [^>]*>Stock Tienda<\/a><span[^>]*text-ui[^>]*>Own product<\/span><\/span><span[^>]*><span class="figures">2026 – now</,
+  );
 });
 
 test('one step per role: title 18px, description 16px, context and years 15px, none in the faintest color', () => {
+  // The years sit in the 15px step and set themselves at 0.9em of it, in the mono.
   const row = rows(renderToStaticMarkup(<ProjectList projects={projects} />))[0];
   expect(row).toMatch(/<a [^>]*class="text-card [^"]*"[^>]*>Stock Tienda</);
   expect(row).toMatch(/<p id="desc-stock-tienda" class="[^"]*text-base text-text-2/);
   expect(row).toMatch(/<span class="text-ui text-text-2">Own product</);
-  expect(row).toMatch(/<span class="[^"]*text-ui text-text-2"[^>]*>2026 – now</);
+  expect(row).toMatch(/<span class="[^"]*text-ui text-text-2"[^>]*><span class="figures">2026 – now</);
   // Only the role stays in text-3, once: it closes the row's text at every width.
   expect(row.match(/text-text-3/g)).toHaveLength(1);
 });

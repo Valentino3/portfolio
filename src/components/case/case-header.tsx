@@ -23,7 +23,7 @@ export function CaseHeader({ project, dek }: { project: ProjectSummary; dek: str
         All work
       </InPageLink>
       <div className="mt-3 max-w-[57.5rem]">
-        <h1 className="mb-4.5 text-display font-medium">{project.title}</h1>
+        <h1 className="mb-4.5 text-display">{project.title}</h1>
         <p className="max-w-[46ch] text-dek text-text-2">{dek}</p>
       </div>
     </>

@@ -39,8 +39,9 @@ const OWN_BAR = [
   'viewer:data-active:before:block forced-colors:before:bg-[CanvasText]',
 ].join(' ');
 // The title is the only link. Its ::after covers the whole row, thumbnail included.
-const TITLE = 'text-card leading-snug font-medium text-ink after:absolute after:inset-0 after:z-1';
+const TITLE = 'text-card leading-snug text-ink after:absolute after:inset-0 after:z-1';
 // Context and years: a step under the title in size, read in the body color, not the faintest one.
+// The years themselves are data, in the mono (`figures`, sized from this step).
 const META = 'text-ui text-text-2';
 const THUMB = 'size-full object-cover object-top';
 // Under 640px a crop zooms into one region; the transform sits on the image, the box clips it.
@@ -111,7 +112,9 @@ export function ProjectList({
                   </Link>
                   <span className={META}>{p.context}</span>
                 </span>
-                <span className={`text-right whitespace-nowrap tabular-nums ${META}`}>{p.years}</span>
+                <span className={`text-right whitespace-nowrap ${META}`}>
+                  <span className="figures">{p.years}</span>
+                </span>
                 <p id={`desc-${p.slug}`} className="col-span-full mt-1 max-w-[62ch] text-base text-text-2 side-thumb:col-span-2">
                   {p.description}
                 </p>

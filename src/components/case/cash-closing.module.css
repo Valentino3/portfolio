@@ -1,0 +1,159 @@
+/*
+ * The cash closing ledger. Reserved size: every figure, rule and status is always in the box and
+ * the script changes only their transform and opacity, so the box never resizes and nothing
+ * around it moves. Without script, and with reduced motion, these rules alone are the picture: the
+ * closed state.
+ */
+/* No margin here: an unlayered rule would beat the placing utilities (preflight zeroes it). */
+.figure {
+  max-width: 24rem;
+}
+
+.sheet {
+  contain: layout paint;
+  border-radius: var(--radius-image);
+  box-shadow: 0 0 0 1px var(--color-rule);
+  background: var(--color-paper);
+  padding: 0.875rem 1.125rem 1rem;
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  line-height: 1.75rem;
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.375rem;
+  border-bottom: 1px solid var(--color-rule);
+  padding-bottom: 0.375rem;
+}
+
+.title {
+  font-weight: 500;
+}
+
+.status {
+  position: relative;
+  color: var(--color-text-3);
+}
+
+/* "Open": shown by the script, before the close. */
+.status > :first-child {
+  position: absolute;
+  right: 0;
+  opacity: 0;
+}
+
+/* At 320px with text at 200% a label and its 12ch figure don't fit on one line: the figure wraps
+   under its label, still right-aligned, so the page never scrolls sideways. */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  column-gap: 1rem;
+}
+
+.label {
+  color: var(--color-text-2);
+}
+
+.amount {
+  position: relative;
+  flex: none;
+  width: 12ch;
+  /* The figure inside is absolute: the slot keeps a line's height, so a wrapped figure gets its own line. */
+  min-height: 1lh;
+  margin-left: auto;
+  font-family: var(--font-mono, var(--font-geist-mono)), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Aligned on the decimal comma: a positive figure leaves 1ch at the right for the closing
+   parenthesis a negative one hangs there, the way a bank statement does it. */
+.fig {
+  position: absolute;
+  top: 0;
+  right: 1ch;
+  white-space: pre;
+}
+
+.neg {
+  right: 0;
+}
+
+.fig > span {
+  display: inline-block;
+}
+
+.swap {
+  position: relative;
+}
+
+.swap > :last-child {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.gap {
+  margin-top: 0.5rem;
+}
+
+.rule {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 1px;
+  transform-origin: right;
+  background: var(--color-ink);
+}
+
+.top {
+  top: -0.25rem;
+}
+
+.under {
+  bottom: 0.0625rem;
+}
+
+.under2 {
+  bottom: -0.1875rem;
+}
+
+.error {
+  color: var(--color-error);
+}
+
+/* The states before the close: shown by the script. */
+.before {
+  opacity: 0;
+}
+
+.caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0 1rem;
+  margin-top: 0.75rem;
+  color: var(--color-text-3);
+  font-family: var(--font-mono, var(--font-geist-mono)), ui-monospace, monospace;
+  font-size: var(--text-caption);
+  line-height: var(--text-caption--line-height);
+}
+
+.caption > :last-child {
+  flex: none;
+}
+
+/* Forced colors drop the ring and the ink fills: a real border and system-colored rules. */
+@media (forced-colors: active) {
+  .sheet {
+    border: 1px solid CanvasText;
+  }
+
+  .rule {
+    forced-color-adjust: none;
+    background: CanvasText;
+  }
+}

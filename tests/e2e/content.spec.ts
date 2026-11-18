@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { publishedProjects } from '@/content/projects';
 import type { Slug } from '@/content/types';
 import { findForbiddenTerms } from '../support/forbidden-terms';
-import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
+import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated, ledgerAtRest } from './helpers';
 
 /**
  * Each case against the approved prototype: its title, the facts under the dek, outcomes, sections
@@ -256,11 +256,13 @@ for (const { slug } of publishedProjects()) {
       for (const [id] of e.sections) {
         const pictures = e.pictures[id] ?? 0;
         const clips = await page.locator(`#${id} video[data-clip]`).count();
+        // The cash-closing ledger (stock-tienda, design decisions) is a figure with a caption and no picture.
+        const ledgers = await page.locator(`#${id} figure:has([data-ledger])`).count();
         // A clip's poster is an img too, but not a picture: no zoom, no size to check against a file.
         await expect(page.locator(`#${id} img:not([data-clip-poster])`)).toHaveCount(pictures);
         // Every picture can be enlarged, and every picture and clip has a caption.
         await expect(page.locator(`#${id} figure a[href^="/img/"]`)).toHaveCount(pictures);
-        await expect(page.locator(`#${id} figure figcaption`)).toHaveCount(pictures + clips);
+        await expect(page.locator(`#${id} figure figcaption`)).toHaveCount(pictures + clips + ledgers);
       }
     });
 
@@ -289,9 +291,10 @@ for (const { slug } of publishedProjects()) {
     test('no axe violations, no horizontal scroll, diagram labels inside their boxes', async ({ page }) => {
       await page.goto(`/work/${slug}`);
       await settled(page);
+      await ledgerAtRest(page);
       await expectNoAxeViolations(page);
       await expectNoHorizontalScroll(page);
-      for (const font of ['Geist Mono', 'ui-monospace, Consolas, monospace'])
+      for (const font of ['Chivo Mono', 'ui-monospace, Consolas, monospace'])
         expect(await diagramLabelsOutsideBoxes(page, font)).toEqual([]);
     });
   });

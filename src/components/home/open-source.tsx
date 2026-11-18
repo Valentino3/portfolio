@@ -21,8 +21,8 @@ export function OpenSource({ className = '' }: { className?: string }) {
                 </b>
                 {prSummary(pr)}
               </span>
-              <span className="text-ui whitespace-nowrap text-ok tabular-nums">
-                Merged, {`#${pr.number}`}{' '}
+              <span className="text-ui whitespace-nowrap text-ok">
+                Merged, <span className="figures">{`#${pr.number}`}</span>{' '}
                 <span
                   aria-hidden="true"
                   className="inline-block transition-transform duration-pop ease-spring-pop group-hover/pr:translate-x-0.5 group-hover/pr:-translate-y-0.5 group-focus-visible/pr:translate-x-0.5 group-focus-visible/pr:-translate-y-0.5"
