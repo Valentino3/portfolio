@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { publishedProjects } from '@/content/projects';
-import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated } from './helpers';
+import { diagramLabelsOutsideBoxes, expectNoAxeViolations, expectNoHorizontalScroll, hydrated, ledgerAtRest } from './helpers';
 
 // In-page links are clicked only once the page is hydrated: earlier, a click is a native jump,
 // the very thing the Back test below guards against.
@@ -45,7 +45,8 @@ test('the template follows the prototype: back link, facts, outcomes, hero, sect
   );
 
   // The hero is the likely LCP element: it skips the lazy loader.
-  const hero = main.locator('figure').first();
+  // The hero is the screenshot figure: stock-tienda also carries the cash-closing ledger figure.
+  const hero = main.locator('figure:has(img[fetchpriority])').first();
   await expect(hero.locator('img')).toHaveAttribute('fetchpriority', 'high');
   await expect(hero.locator('img')).toHaveAttribute('alt', /^Reports screen/);
   await expect(hero.locator('figcaption')).toContainText('Reports: period total, low stock and cash closings');
@@ -54,7 +55,7 @@ test('the template follows the prototype: back link, facts, outcomes, hero, sect
   // Facts, then the outcomes, then the hero: the results come before the picture.
   const tops = await main.evaluate((m) => {
     const top = (el: Element | null) => el!.getBoundingClientRect().top;
-    return [top(m.querySelector('h1')), top(m.querySelector('section[aria-labelledby="outcomes-h"]')), top(m.querySelector('figure'))];
+    return [top(m.querySelector('h1')), top(m.querySelector('section[aria-labelledby="outcomes-h"]')), top(m.querySelector('figure:has(img[fetchpriority])'))];
   });
   expect(tops).toEqual([...tops].sort((a, b) => a - b));
   await expect(main.locator('section[aria-labelledby="outcomes-h"] h2')).toHaveText('Outcomes');
@@ -146,7 +147,7 @@ test('diagram labels stay inside boxes, also with the fallback font', async ({ p
   await page.goto('/work/stock-tienda');
   // Not vacuous: there is a diagram, with labels inside its boxes.
   await expect(page.locator('.diagram svg rect + text').first()).toBeAttached();
-  for (const font of ['Geist Mono', 'ui-monospace, Consolas, monospace'])
+  for (const font of ['Chivo Mono', 'ui-monospace, Consolas, monospace'])
     expect(await diagramLabelsOutsideBoxes(page, font)).toEqual([]);
 });
 
@@ -209,6 +210,7 @@ test('a case has no axe violations and no horizontal scroll', async ({ page }) =
   // On a phone the diagram overflows: the scroll region must be focusable before axe looks at it.
   const diagram = page.getByRole('img', { name: /^Diagram: the counter app/ });
   if ((page.viewportSize()?.width ?? 0) < 640) await expect(diagram).toHaveAttribute('tabindex', '0');
+  await ledgerAtRest(page);
   await expectNoAxeViolations(page);
   await expectNoHorizontalScroll(page);
 });
@@ -230,4 +232,68 @@ test.describe('without JavaScript', () => {
     await backToTop.click();
     await expect(page.locator('#top')).toBeFocused();
   });
+});
+
+/*
+ * The cash-closing ledger: stock-tienda only. The page renders it twice (beside the header from
+ * 1024px, in the design section below that) and hides one with display: none, so exactly one is
+ * ever visible.
+ */
+const LEDGER = 'figure:has([data-ledger])';
+
+test('stock tienda shows the cash-closing ledger once, decorative, with a visible caption', async ({ page }) => {
+  await page.goto('/work/stock-tienda');
+  await hydrated(page);
+  const ledger = page.locator(LEDGER);
+  await expect(ledger).toHaveCount(2);
+  const visible = page.locator(`${LEDGER}:visible`);
+  await expect(visible).toHaveCount(1);
+  // Placement: the header slot on a wide screen, the design section below 1024px.
+  const wide = (page.viewportSize()?.width ?? 0) >= 1024;
+  await expect(page.locator(wide ? 'main > .grid-12:has(h1) figure:has([data-ledger])' : '#design figure:has([data-ledger])')).toBeVisible();
+  await expect(visible.locator('[data-ledger]')).toHaveAttribute('aria-hidden', 'true');
+  await expect(visible.locator('figcaption')).toBeVisible();
+  await expect(visible.locator('figcaption')).toContainText('Closes only at zero difference');
+  await expect(visible.locator('figcaption')).toContainText('demo figures');
+  // Decorative: none of its figures reach assistive tech.
+  expect(await visible.ariaSnapshot()).not.toContain('153.350,00');
+});
+
+test('stock tienda: with reduced motion the ledger shows its settled, closed state', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/work/stock-tienda');
+  await hydrated(page);
+  const sheet = page.locator(`${LEDGER}:visible [data-ledger]`);
+  await sheet.scrollIntoViewIfNeeded();
+  await expect(sheet.locator('[data-k="closed"]')).toHaveCSS('opacity', '1');
+  await expect(sheet.locator('[data-k="open"]')).toHaveCSS('opacity', '0');
+  await expect(sheet.locator('[data-k="zero"]')).toHaveCSS('opacity', '1');
+  await expect(sheet.locator('[data-k="zero"]')).toHaveText('0,00');
+  // The wrong difference and its old digit are gone, nothing is left mid-flight.
+  await expect(sheet.locator('[data-sum]').nth(1)).toHaveCSS('opacity', '0');
+  expect(await sheet.evaluate((el) => el.querySelectorAll('[style]').length)).toBe(0);
+});
+
+test('only stock tienda has a ledger', async ({ page }) => {
+  for (const project of publishedProjects().filter((p) => p.slug !== 'stock-tienda')) {
+    await page.goto(`/work/${project.slug}`);
+    await expect(page.locator('[data-ledger]'), project.slug).toHaveCount(0);
+  }
+});
+
+test('stock tienda has no horizontal scroll at 320px with a 200% root font size', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 800 });
+  await page.addInitScript(() => {
+    const css = document.createElement('style');
+    css.textContent = 'html{font-size:200% !important}';
+    document.addEventListener('DOMContentLoaded', () => document.head.append(css));
+  });
+  await page.goto('/work/stock-tienda');
+  await hydrated(page);
+  await page.evaluate(() => document.fonts.ready);
+  await expectNoHorizontalScroll(page);
+  const sheet = page.locator(`${LEDGER}:visible [data-ledger]`);
+  const [box, fig] = await Promise.all([sheet.boundingBox(), page.locator(`${LEDGER}:visible`).boundingBox()]);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+  expect(fig!.x).toBeGreaterThanOrEqual(0);
 });

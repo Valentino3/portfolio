@@ -1,7 +1,7 @@
 /**
  * Box-and-arrow diagram layout, the same algorithm as `flow()` and `diagram()` in the
  * prototype's generator. Every number is in SVG user units: the SVG scales as a whole, so the
- * labels are 12 units of Geist Mono whatever size the diagram is shown at.
+ * labels are 12 units of Chivo Mono whatever size the diagram is shown at.
  */
 
 /** A box. `edge` and `dashed` describe the arrow that leaves it towards the next box in the row. */
@@ -18,7 +18,7 @@ export type DiagramLayout = {
 };
 
 /**
- * Advance of one character at FONT_SIZE, with margin: Geist Mono is 7.2, Consolas 6.6 and
+ * Advance of one character at FONT_SIZE, with margin: Chivo Mono is 7.2, Consolas 6.6 and
  * DejaVu Sans Mono 7.22, so a label also fits its box when the web font has not loaded.
  */
 export const CHAR = 7.4,

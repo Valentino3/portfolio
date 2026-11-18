@@ -7,9 +7,10 @@
  * that server instead and starts nothing.
  *
  * The fonts use `display: optional`: a face that is not ready at first paint is skipped for that
- * page view. So the page is loaded until both faces are the ones in use (the second load has them
- * cached), checked through the DevTools protocol rather than assumed, and the PDF is refused unless
- * the CV is set in Geist (its text and its dates) and fits one page.
+ * page view. So the page is loaded until all three faces are the ones in use (the second load has
+ * them cached), checked through the DevTools protocol rather than assumed, and the PDF is refused
+ * unless the CV is set in its own faces (the name in Piazzolla, the text in Geist, the dates in
+ * Chivo Mono) and fits one page.
  */
 import { spawn, spawnSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
@@ -49,6 +50,21 @@ function stop(child) {
   else child.kill('SIGTERM');
 }
 
+/**
+ * The face each role of the sheet must be drawn in. A platform font name is the face's own name
+ * for its default instance ("Piazzolla Thin", "Chivo Mono Medium" for the variable files), so a
+ * role matches on the family at the start of the name, never on a fallback's.
+ */
+const ROLES = {
+  name: { selector: '[data-cv-sheet] h1', family: 'Piazzolla' },
+  text: { selector: '[data-cv-sheet] header > p', family: 'Geist' },
+  dates: { selector: '[data-cv-sheet] .figures', family: 'Chivo Mono' },
+};
+
+/** The family itself, or the family and a style ("Piazzolla Thin"); "Geist Mono" is not Geist. */
+const isFamily = (used, family) =>
+  used === family || (used.startsWith(`${family} `) && !used.startsWith(`${family} Mono`));
+
 /** The faces the browser actually used to draw an element's text. */
 async function usedFonts(cdp, selector) {
   const { root } = await cdp.send('DOM.getDocument', { depth: 0 });
@@ -71,20 +87,18 @@ async function print(url) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       await page.goto(`${url}/cv`, { waitUntil: 'load' });
       await page.evaluate(() => document.fonts.ready);
-      fonts = {
-        sans: await usedFonts(cdp, '[data-cv-sheet] h1'),
-        dates: await usedFonts(cdp, '[data-cv-sheet] .tabular-nums'),
-      };
-      if (fonts.sans.includes('Geist') && fonts.dates.includes('Geist')) break;
+      fonts = {};
+      for (const [role, { selector }] of Object.entries(ROLES)) fonts[role] = await usedFonts(cdp, selector);
+      if (Object.entries(ROLES).every(([role, { family }]) => fonts[role].some((used) => isFamily(used, family)))) break;
       fonts = { ...fonts, failed: true };
     }
-    if (fonts.failed) throw new Error(`The CV is not set in Geist: ${JSON.stringify(fonts)}`);
+    if (fonts.failed) throw new Error(`The CV is not set in Piazzolla, Geist and Chivo Mono: ${JSON.stringify(fonts)}`);
 
     const pdf = await page.pdf({ preferCSSPageSize: true, printBackground: false, tagged: true, outline: false });
     const pages = pdfPageCount(pdf);
     if (pages !== 1) throw new Error(`The CV prints on ${pages} pages, not one`);
     writeFileSync(OUT, pdf);
-    console.log(`Wrote ${OUT}: 1 page, ${(pdf.length / 1024).toFixed(0)} KB, set in ${fonts.sans[0]}`);
+    console.log(`Wrote ${OUT}: 1 page, ${(pdf.length / 1024).toFixed(0)} KB, set in ${Object.values(fonts).map((f) => f[0]).join(', ')}`);
   } finally {
     await browser.close();
   }

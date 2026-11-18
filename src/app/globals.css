@@ -118,13 +118,20 @@
   --spacing-sheet-y: 10mm;
 
   /*
-   * Type scale. Two families, two jobs: Geist (sans) carries everything that is read or pressed;
-   * Geist Mono is for data and code only (figure captions, the text inside diagrams, inline
-   * code). Hierarchy comes from size, weight and the three text colors, never from a label.
+   * Type scale. Three families, three jobs: Geist (sans) carries everything that is read or
+   * pressed; Piazzolla (display) sets the headings, every role from card up (18px and larger, where
+   * its optical sizes are drawn for); Chivo Mono is for data and code only (years and dates, pull
+   * request numbers, figure captions, the text inside diagrams, inline code). Hierarchy comes from
+   * size, weight and the three text colors, never from a label.
    *
-   * Fixed steps: caption 0.75rem (the one mono size), small 0.8125rem (tertiary UI: footer,
-   * index, status lines), UI small 0.875rem (header, captions), UI base 0.9375rem (metadata:
-   * a row's context, years and dates), base 1rem (home body: descriptions, summaries, stack),
+   * The heading roles carry their own weight and tracking: a serif with real sidebearings needs far
+   * less negative tracking than Geist did, and each size gets the weight that makes it read as one
+   * family (the larger, the lighter). So a heading names its role (text-heading) and nothing more;
+   * a font-* weight on it would override the role's.
+   *
+   * Fixed steps: caption 0.75rem (the mono at its own size; figures set inside a line take 0.9em
+   * of it), small 0.8125rem (tertiary UI: footer, index, status lines), UI small 0.875rem
+   * (header, captions), UI base 0.9375rem (metadata: a row's context, years and dates), base 1rem (home body: descriptions, summaries, stack),
    * case prose 1.0625rem and card 1.125rem (a project title on the home, a decision's title).
    * Fluid clamp() steps above that: lead (home lede and About), outcome (a case outcome title),
    * dek (a case's summary), section (a home section heading), heading (case h2), next
@@ -147,7 +154,8 @@
   --text-prose--line-height: 1.65;
   --text-card: 1.125rem;
   --text-card--line-height: 1.65; /* it sits in the prose */
-  --text-card--letter-spacing: -0.015em;
+  --text-card--letter-spacing: 0;
+  --text-card--font-weight: 540;
   --text-lead: clamp(1rem, 0.9rem + 0.35vw, 1.1875rem);
   --text-lead--line-height: 1.5;
   /* The prototype's body line height, for text set in a step that brings its own (About, in lead). */
@@ -155,40 +163,49 @@
   /* Between the dek and a case h2: the results lead the skim without outshouting the dek above. */
   --text-outcome: clamp(1.25rem, 1.05rem + 0.6vw, 1.5rem);
   --text-outcome--line-height: 1.2;
-  --text-outcome--letter-spacing: -0.02em;
+  --text-outcome--letter-spacing: -0.005em;
+  --text-outcome--font-weight: 520;
   --text-dek: clamp(1.0625rem, 0.95rem + 0.55vw, 1.4375rem);
   --text-dek--line-height: 1.4;
   --text-dek--letter-spacing: -0.015em;
   --text-section: clamp(1.5rem, 1.15rem + 0.95vw, 2rem); /* home section headings */
   --text-section--line-height: 1.15;
-  --text-section--letter-spacing: -0.025em;
+  --text-section--letter-spacing: -0.01em;
+  --text-section--font-weight: 500;
   --text-heading: clamp(1.5rem, 1.2rem + 0.8vw, 1.875rem);
   --text-heading--line-height: 1.15;
-  --text-heading--letter-spacing: -0.025em;
+  --text-heading--letter-spacing: -0.01em;
+  --text-heading--font-weight: 500;
   --text-display: clamp(2rem, 1.2rem + 3vw, 3.5rem);
-  --text-display--line-height: 1.04;
-  --text-display--letter-spacing: -0.04em;
+  --text-display--line-height: 1.02;
+  --text-display--letter-spacing: -0.018em;
+  --text-display--font-weight: 480;
   --text-next: clamp(1.5rem, 1rem + 2vw, 2.5rem);
   --text-next--line-height: 1.2;
-  --text-next--letter-spacing: -0.035em;
+  --text-next--letter-spacing: -0.012em;
+  --text-next--font-weight: 480;
   --text-intro: clamp(1.625rem, 0.95rem + 2vw, 2.75rem); /* home h1 */
-  --text-intro--line-height: 1.1;
-  --text-intro--letter-spacing: -0.035em;
+  --text-intro--line-height: 1.08;
+  --text-intro--letter-spacing: -0.008em;
+  --text-intro--font-weight: 470;
   /* The contact address: confident, a step under the home h1, never a banner. */
   --text-mail: clamp(1.375rem, 1.05rem + 1.4vw, 2.25rem);
   --text-mail--letter-spacing: -0.04em;
   /* The CV: the name at a fixed size (a sheet does not scale with a viewport), and a denser
-     line height for its text, set in the small step. */
+     line height for its text, set in the small step. The name's line is 1.1, not 1.15: the sheet
+     has no slack on A4, and Piazzolla's taller ascenders would otherwise add a pixel. */
   --text-cv-name: 1.625rem;
-  --text-cv-name--line-height: 1.15;
-  --text-cv-name--letter-spacing: -0.03em;
+  --text-cv-name--line-height: 1.1;
+  --text-cv-name--letter-spacing: -0.01em;
+  --text-cv-name--font-weight: 520;
   --leading-cv: 1.45;
 }
 
 /* Font variables are set on <html> by next/font at runtime, hence inline. */
 @theme inline {
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-piazzolla);
+  --font-mono: var(--font-chivo-mono);
 }
 
 @layer base {
@@ -215,6 +232,34 @@
   :focus-visible {
     outline: 2px solid var(--color-ink);
     outline-offset: 3px;
+  }
+}
+
+/*
+ * Every heading role is set in the display face: the text-* step names the role, the role brings
+ * the face. In the components layer, so a utility on the element still wins. Piazzolla draws
+ * oldstyle figures by default; headings that carry a year or a count ("500-website study") get
+ * lining ones, so they sit with the Geist around them.
+ */
+@layer components {
+  .text-intro,
+  .text-display,
+  .text-section,
+  .text-heading,
+  .text-outcome,
+  .text-next,
+  .text-card,
+  .text-cv-name {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-variant-numeric: lining-nums;
+  }
+
+  /* Piazzolla's word space is narrow (0.15em). Tracked tighter, the gap in the PDF is too small for
+     a text extractor to read as a space, and an applicant tracking system reads "ValentinoRota".
+     A touch of word spacing keeps the name two words on paper. */
+  .text-cv-name {
+    word-spacing: 0.05em;
   }
 }
 
@@ -278,6 +323,20 @@
       font-size: 0.86em;
     }
   }
+}
+
+/*
+ * Data set in the mono: a project's years, a role's dates, a pull request number. Chivo Mono runs
+ * large next to Geist, so it is set at 0.9em of the text around it, in the regular weight. A mono
+ * space and an en dash take a full cell each, so "2026 – now" would read "2026  -  now": the word
+ * spacing gives half of each space back. Only the figures go in it, never the words around them.
+ */
+@utility figures {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  word-spacing: -0.3em;
 }
 
 /* The 12-column page grid (spec 4.1). Items place themselves with col-span-* / col-start-*. */

@@ -55,3 +55,18 @@ export async function diagramLabelsOutsideBoxes(page: Page, font: string): Promi
     }),
   );
 }
+
+/**
+ * The cash-closing ledger (stock-tienda) plays once when it is on screen, and a half-faded figure
+ * is not a contrast failure worth reporting. A ledger in view is waited out until the animation
+ * rests (it clears its inline styles); one below the fold has not started and is measured as is.
+ */
+export async function ledgerAtRest(page: Page): Promise<void> {
+  const sheet = page.locator('figure:visible [data-ledger]');
+  if (!(await sheet.count())) return;
+  const inView = await sheet.evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return r.top < innerHeight && r.bottom > 0;
+  });
+  if (inView) await expect(sheet.locator('[style]')).toHaveCount(0, { timeout: 15_000 });
+}

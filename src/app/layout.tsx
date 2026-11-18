@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { HydrationFlag } from "@/components/site/hydration-flag";
 import { SiteFooter } from "@/components/site/site-footer";
 import { OPEN_GRAPH_SITE, SITE_URL } from "@/lib/site";
-import { geistMono, geistSans } from "./fonts";
+import { chivoMono, geistSans, piazzolla } from "./fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +22,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      className={`${geistSans.variable} ${piazzolla.variable} ${chivoMono.variable}`}
     >
       <body>
         {/* The first stop for Tab: past the header, straight to the page's own content. Hidden

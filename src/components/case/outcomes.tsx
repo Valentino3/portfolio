@@ -16,7 +16,7 @@ export function Outcomes({ outcomes }: { outcomes: Outcome[] }) {
       <ul aria-labelledby="outcomes-h" className="grid-12 gap-y-7">
         {outcomes.map(({ title, body }) => (
           <li key={title} className="col-span-4 border-t border-ink pt-4 max-lg:col-span-full">
-            <h3 className="text-outcome font-medium text-ink">{title}</h3>
+            <h3 className="text-outcome text-ink">{title}</h3>
             <p className="mt-2.5 text-ui text-text-2">{body}</p>
           </li>
         ))}

@@ -21,7 +21,7 @@ export default function NotFound() {
     <>
       <SiteHeader variant="other" />
       <main id="main" className="mt-back-top">
-        <h1 className="text-display font-medium">Page not found</h1>
+        <h1 className="text-display">Page not found</h1>
         <p className="mt-4.5 max-w-[54ch] text-dek text-text-2">There is no page at this address, or it has moved.</p>
         <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-1 text-ui-sm">
           <li>

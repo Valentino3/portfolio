@@ -94,14 +94,17 @@ test('sections in order, each with the shared content', () => {
   expect(text).toContain(languagesLine());
 });
 
-test('dates are set like the home’s: the sans, in tabular figures, never the mono face', () => {
+test('dates and pull request numbers are set like the home’s, in the mono figures, and nothing else is', () => {
   expect(html).not.toContain('font-mono');
-  const dates = [...html.matchAll(/<span class="[^"]*tabular-nums[^"]*">(.*?)<\/span>/g)].map((m) => m[1]);
+  const dates = [...html.matchAll(/<span class="[^"]*\bfigures\b[^"]*">(.*?)<\/span>/g)].map((m) => m[1]);
   expect(dates).toEqual([
     ...workHistory().map((e) => e.when),
     ...publishedProjects().map((p) => p.years),
     ...studies().map((e) => e.when),
   ]);
+  const numbers = [...html.matchAll(/<a [^>]*class="[^"]*\bfigures\b[^"]*"[^>]*>(.*?)<\/a>/g)].map((m) => m[1]);
+  expect(numbers).toEqual(PULL_REQUESTS.map((pr) => `#${pr.number}`));
+  expect(html.match(/\bfigures\b/g)).toHaveLength(dates.length + numbers.length);
 });
 
 test('no phone number, and no unpublished term', () => {

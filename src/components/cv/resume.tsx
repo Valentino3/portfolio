@@ -21,8 +21,8 @@ const TAP = 'max-sm:inline-block max-sm:py-3.5';
    the text: on a touch screen an invisible 44px area around each one takes the tap instead. */
 const HIT = 'relative touch-target';
 
-/** Dates and pull request numbers, set like the home's dates: the sans, quieter, in tabular figures. */
-const DATA = 'shrink-0 text-text-3 tabular-nums max-sm:shrink';
+/** Dates and pull request numbers, set like the home's dates: in the mono, quieter. */
+const DATA = 'shrink-0 text-text-3 figures max-sm:shrink';
 
 /**
  * One section: its heading in the narrow left column, its entries in the wide right one, a
@@ -68,7 +68,7 @@ export function Resume() {
     >
       <header>
         <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-          <hgroup className="flex flex-wrap items-baseline gap-x-3 text-cv-name font-medium">
+          <hgroup className="flex flex-wrap items-baseline gap-x-3 text-cv-name">
             <h1 className="text-ink">{NAME}</h1>
             <p className="text-text-3">{ROLE_TITLE}</p>
           </hgroup>

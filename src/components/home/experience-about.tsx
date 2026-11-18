@@ -21,7 +21,9 @@ export function ExperienceAbout() {
               key={role}
               className="grid grid-cols-[9.5rem_minmax(0,1fr)] items-baseline gap-x-4 gap-y-1 border-b border-rule py-4 max-sm:grid-cols-1"
             >
-              <span className="text-ui text-text-2 tabular-nums">{when}</span>
+              <span className="text-ui text-text-2">
+                <span className="figures">{when}</span>
+              </span>
               <span className="text-base">
                 <b className="font-medium">{role}</b>
                 <span className="text-text-2">, {org}</span>

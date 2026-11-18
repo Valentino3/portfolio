@@ -3,5 +3,5 @@
  * room above it, since what it follows is usually a figure.
  */
 export function Subhead({ children }: { children: string }) {
-  return <h3 className="mt-10 mb-1.5 text-card font-medium">{children}</h3>;
+  return <h3 className="mt-10 mb-1.5 text-card">{children}</h3>;
 }

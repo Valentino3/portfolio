@@ -20,7 +20,7 @@ for (const p of [...reflowPages, ...notFound]) {
 
 /*
  * Mono has one job: data and code. On every page, any element that sets text in the mono face
- * must sit in a figure caption, a diagram or a code element. The failure names the offending text.
+ * must sit in a figure caption, a diagram, a code element, a `.figures` span (real data: years, dates, numbers) or the cash-closing ledger (figures). The failure names the offending text.
  */
 for (const p of [...pages, '/cv', notFound[0]]) {
   test(`mono only in captions, diagrams and code on ${p}`, async ({ page }) => {
@@ -38,7 +38,7 @@ for (const p of [...pages, '/cv', notFound[0]]) {
       return [...document.body.querySelectorAll('*')]
         .filter((el) => [...el.childNodes].some((n) => n.nodeType === Node.TEXT_NODE && n.textContent!.trim()))
         .filter((el) => family(el).startsWith(mono))
-        .filter((el) => !el.closest('figcaption, .diagram, code'))
+        .filter((el) => !el.closest('figcaption, .diagram, code, .figures, [data-ledger]'))
         .map((el) => `<${el.tagName.toLowerCase()}> ${el.textContent!.trim().slice(0, 60)}`);
     });
     expect(offenders).toEqual([]);

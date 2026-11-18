@@ -19,6 +19,12 @@ export type CaseStudy = {
    * with, then where to see it or where the screens come from.
    */
   meta: [ReactNode, ReactNode];
+  /**
+   * Optional: a small piece set beside the title, dek and facts from 1024px up (columns 9 to 12,
+   * top aligned with the title), hidden below that. A case that has one shows the same piece in
+   * its body for narrower screens. Cases without it keep the header at full width.
+   */
+  headerAside?: ReactNode;
   /** `note`: where the pictures of this case come from. Said once, here, on the first figure. */
   hero: { image: Media; caption: string; note: string };
   outcomes: [Outcome, Outcome, Outcome];

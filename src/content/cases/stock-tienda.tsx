@@ -1,3 +1,4 @@
+import { CashClosing } from '@/components/case/cash-closing';
 import { Clip } from '@/components/case/clip';
 import { Decision, Decisions, Result } from '@/components/case/decisions';
 import { Diagram } from '@/components/case/diagram';
@@ -32,6 +33,8 @@ export const stockTienda: CaseStudy = {
       from a test store with demo data.
     </>,
   ],
+  // The cash closing in the header from 1024px up; below that, it opens "Design decisions".
+  headerAside: <CashClosing />,
   hero: {
     image: projectSummary('stock-tienda').image,
     caption: 'Reports: period total, low stock and cash closings',
@@ -92,6 +95,7 @@ export const stockTienda: CaseStudy = {
             ledger you can trust at a glance. The tokens and rules are written down in the repository, so every new
             screen follows them.
           </p>
+          <CashClosing inBody />
           <Clip
             name="stock-counter"
             alt="Screen recording of the Vender screen: the cursor searches ‘bolt’, adds Lightning Bolt, raises the quantity to 3, switches the line to the cash price list so the total drops from $ 13.500,00 to $ 12.600,00, and confirms; a notice reads ‘Venta #1 registrada’ and the cart returns to empty."

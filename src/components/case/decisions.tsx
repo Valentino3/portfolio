@@ -12,7 +12,7 @@ export function Decisions({ children }: { children: ReactNode }) {
 export function Decision({ title, children, figure }: { title: string; children: ReactNode; figure?: ReactNode }) {
   return (
     <article className="border-t border-rule pt-5 [&>p]:mb-2 [&>p:last-of-type]:mb-0">
-      <h3 className="mb-1.5 text-card font-medium">{title}</h3>
+      <h3 className="mb-1.5 text-card">{title}</h3>
       {children}
       {figure && <div className="mt-5">{figure}</div>}
     </article>
