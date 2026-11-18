@@ -36,3 +36,15 @@ test('every in-page target can take focus without joining the tab order', () => 
     expect(section, id).toContain('focus:outline-none');
   }
 });
+
+test('the case CTA gives the address and the CV link a touch hit area, and the CV link reads as a peer', () => {
+  const html = renderToStaticMarkup(<CaseCta />);
+  expect(html).toMatch(/<a href="mailto:[^"]*" class="touch-target [^"]*">/);
+  expect(html).toMatch(/<a class="[^"]*touch-target[^"]*font-medium text-ink[^"]*" href="\/cv">CV<\/a>/);
+});
+
+test('the mobile index links grow to 44px on a touch screen', async () => {
+  const { TocMobile } = await import('@/components/case/toc-mobile');
+  const html = renderToStaticMarkup(<TocMobile sections={[{ id: 'a', title: 'A' }]} />);
+  expect(html).toContain('pointer-coarse:py-2.5');
+});

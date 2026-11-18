@@ -3,7 +3,7 @@ import { BOX_H, CHAR, MIN_GAP, PADX, ROW_GAP, layoutDiagram, type DiagramNode } 
 
 const rows: DiagramNode[][] = [
   [
-    { l1: 'Counter app', l2: 'local catalogue' },
+    { l1: 'Counter app', l2: 'local catalog' },
     { l1: 'Offline queue', l2: 'sales + keys', edge: 'replay' },
     { l1: 'Server', l2: 'permissions, one tx', dark: true },
   ],
@@ -44,7 +44,7 @@ test('rows stack with a fixed gap, the note sits under them, and the canvas fits
   const st = layoutDiagram(
     [
       [
-        { l1: 'Counter app', l2: 'local catalogue' },
+        { l1: 'Counter app', l2: 'local catalog' },
         { l1: 'Offline queue', l2: 'sales + keys', edge: 'replay' },
         { l1: 'Server', l2: 'permissions, one tx', dark: true },
         { l1: 'PostgreSQL', l2: 'Neon' },

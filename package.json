@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "e2e": "playwright test",
+    "resume": "next build && node scripts/build-resume.mjs",
     "lhci:mobile": "npx @lhci/cli@0.16 autorun",
     "lhci:desktop": "npx @lhci/cli@0.16 autorun --collect.settings.preset=desktop",
     "lhci": "npm run lhci:mobile && npm run lhci:desktop"

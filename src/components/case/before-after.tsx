@@ -1,7 +1,11 @@
 import type { Media } from '@/content/types';
-import { type Crop, Figure, cropSizes } from './figure';
+import { type Crop, Figure, type Mark, cropSizes } from './figure';
 
-type Side = { image: Media; caption: string };
+/**
+ * One side of the pair. `zoom` is the whole screen when `image` is a close-up of it (the zoom
+ * opens the whole); `marks` box what changed on this side (see Figure).
+ */
+type Side = { image: Media; caption: string; zoom?: Media; marks?: Mark[] };
 
 /**
  * The same screen before and after a change, at the same crop. `side` (the default) sets them
@@ -31,8 +35,17 @@ export function BeforeAfter({
   const grid = layout === 'stack' ? 'grid-cols-1' : 'grid-cols-2 max-sm:grid-cols-1';
   return (
     <div className={`mt-5 grid gap-5 ${grid}`} data-before-after={layout}>
-      {[before, after].map(({ image, caption }) => (
-        <Figure key={image.src} image={image} caption={caption} sizes={sizes} crop={crop} zoom />
+      {[before, after].map(({ image, caption, zoom, marks }) => (
+        <Figure
+          key={image.src}
+          image={image}
+          caption={caption}
+          sizes={sizes}
+          crop={crop}
+          zoom
+          zoomImage={zoom}
+          marks={marks}
+        />
       ))}
     </div>
   );

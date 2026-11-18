@@ -118,7 +118,7 @@ export function Clip({
           <button
             type="button"
             onClick={toggle}
-            className="-mt-1 min-w-16 shrink-0 cursor-pointer rounded-full border border-rule-strong px-3 py-1 text-small text-ink transition-[border-color,scale] duration-pop ease-spring-pop hover:border-ink active:scale-95"
+            className="-mt-1 min-w-16 shrink-0 cursor-pointer rounded-full border border-rule-strong px-3 py-1 pointer-coarse:min-h-11 text-small text-ink transition-[border-color,scale] duration-pop ease-spring-pop hover:border-ink active:scale-95"
           >
             {playing ? 'Pause' : 'Play'}
           </button>

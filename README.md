@@ -23,6 +23,7 @@ Open http://localhost:3000. Requires Node 22 or later.
 | `npm run build` / `npm run start` | Production build and server |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+| `npm run resume` | Builds the site and prints `/cv` to `public/valentino-rota-resume.pdf`, the file the CV links point at |
 
 ## Test it
 

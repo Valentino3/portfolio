@@ -16,6 +16,8 @@ export const ALL_PROJECTS: ProjectSummary[] = [
       height: 900,
       alt: 'Reports screen: total for the period, products with low stock, cash closings with differences',
     },
+    // The period total and the low-stock and cash-closing counts, with the report title over them.
+    crop: { x: 33, y: 0, zoom: 2.4 },
     published: true,
   },
   {
@@ -32,6 +34,8 @@ export const ALL_PROJECTS: ProjectSummary[] = [
       height: 1500,
       alt: 'Releases: a strip of albums and singles above the embedded player and track list',
     },
+    // The "Lanzamientos" heading and the strip of releases under it.
+    crop: { x: 18, y: 40, zoom: 2 },
     published: true,
   },
   {
@@ -40,7 +44,7 @@ export const ALL_PROJECTS: ProjectSummary[] = [
     context: 'Reset Digital',
     years: '2024 – now',
     description:
-      'Programmatic ad platform and the design system behind it. Led the security hardening for its first outside client.',
+      'Software that buys and sells online ad space automatically, and the design system behind it. Led the security work for its first outside client.',
     role: 'Lead UI Developer',
     stack: ['Next.js', 'TypeScript', 'MUI', 'Prisma'],
     image: {
@@ -49,6 +53,8 @@ export const ALL_PROJECTS: ProjectSummary[] = [
       height: 1500,
       alt: 'Reset GUI analytics components: emotional coverage bar chart, delivery treemap by domain and a scoring-weights panel',
     },
+    // The delivery treemap: colored blocks with a domain and a share each.
+    crop: { x: 8, y: 84, zoom: 2.5 },
     published: true,
   },
   {
@@ -57,7 +63,7 @@ export const ALL_PROJECTS: ProjectSummary[] = [
     context: 'Reset Digital',
     years: '2025 – now',
     description:
-      'AI service that scores websites by emotional fit for ads. Auth rollout and a 500-domain study of its scores.',
+      'AI service that scores websites by the emotions their pages evoke, so ads can be placed where the mood fits. Added login and ran a 500-website study of how reliable the scores are.',
     role: 'Main contributor',
     stack: ['React', 'Python', 'Keycloak'],
     image: {
@@ -66,6 +72,8 @@ export const ALL_PROJECTS: ProjectSummary[] = [
       height: 1500,
       alt: 'Websites table with propensity scores and the top three emotions per site, next to an emotion radar chart',
     },
+    // The websites table: score rings, domains and the emotion tags.
+    crop: { x: 8, y: 34, zoom: 2.8 },
     published: true,
   },
   {

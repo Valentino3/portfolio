@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, test } from 'vitest';
 import { BeforeAfter } from '@/components/case/before-after';
@@ -157,20 +158,20 @@ const after: Media = { src: '/img/dsp2-badges-after.webp', width: 1876, height: 
 test('a before/after pair is two captioned figures, side by side from 640px, each opening its own zoom', () => {
   const html = renderToStaticMarkup(
     <BeforeAfter
-      before={{ image: before, caption: 'Before: colour only' }}
+      before={{ image: before, caption: 'Before: color only' }}
       after={{ image: after, caption: 'After: the score on the badge' }}
     />,
   );
   expect(html).toMatch(/^<div class="[^"]*\bgrid-cols-2\b[^"]*\bmax-sm:grid-cols-1\b/);
   expect(html.match(/<figure>/g)).toHaveLength(2);
   expect([...html.matchAll(/<figcaption[^>]*>(.*?)<\/figcaption>/g)].map((m) => m[1])).toEqual([
-    '<span>Before: colour only</span>',
+    '<span>Before: color only</span>',
     '<span>After: the score on the badge</span>',
   ]);
   const links = [...html.matchAll(/<a [^>]*>/g)].map((m) => m[0]);
   expect(links).toHaveLength(2);
   expect(links[0]).toContain('href="/img/dsp2-badges-before.webp"');
-  expect(links[0]).toContain('aria-label="Enlarge: Before: colour only"');
+  expect(links[0]).toContain('aria-label="Enlarge: Before: color only"');
   expect(links[1]).toContain('href="/img/dsp2-badges-after.webp"');
   expect(html).toMatch(/<img [^>]*alt="Badges, names only"/);
   expect(html).toMatch(/<img [^>]*alt="Badges with scores"/);
@@ -186,7 +187,7 @@ test('a stacked pair is one above the other at every width, each asking for the 
   const html = renderToStaticMarkup(
     <BeforeAfter
       layout="stack"
-      before={{ image: before, caption: 'Before: colour only' }}
+      before={{ image: before, caption: 'Before: color only' }}
       after={{ image: after, caption: 'After: the score on the badge' }}
     />,
   );
@@ -224,4 +225,50 @@ test('a cropped pair shows the same strip of both pictures on a phone, larger, a
   }
   // The zoom still opens the whole file.
   expect(html).toContain('href="/img/dsp2-badges-before.webp"');
+});
+
+const closeUp: Media = { src: '/img/dsp2-sort-after-detail.webp', width: 628, height: 132, alt: 'The two headers' };
+const whole: Media = { src: '/img/dsp2-sort-after.webp', width: 1876, height: 790, alt: 'The whole table' };
+
+test('a close-up shows its own picture and opens the whole screen in the zoom', () => {
+  const html = renderToStaticMarkup(
+    <Figure image={closeUp} zoomImage={whole} caption="After: rank" sizes="330px" zoom />,
+  );
+  expect(html).toMatch(/<a [^>]*href="\/img\/dsp2-sort-after\.webp"/);
+  expect(html).toMatch(/<img [^>]*alt="The two headers"/);
+  expect(html).toMatch(/<img [^>]*width="628"[^>]*height="132"/);
+  // Without zoomImage the link is to the picture itself, as before.
+  const plain = renderToStaticMarkup(<Figure image={closeUp} caption="After: rank" sizes="330px" zoom />);
+  expect(plain).toMatch(/<a [^>]*href="\/img\/dsp2-sort-after-detail\.webp"/);
+});
+
+test('marks are hairline boxes over the picture, at shares of its size, hidden from assistive tech', () => {
+  const html = renderToStaticMarkup(
+    <Figure image={closeUp} caption="After" sizes="330px" marks={[{ x: 0.3, y: 0.33, width: 0.04, height: 0.29 }]} />,
+  );
+  const marks = [...html.matchAll(/<span [^>]*data-mark=""[^>]*>/g)].map((m) => m[0]);
+  expect(marks).toHaveLength(1);
+  expect(marks[0]).toContain('aria-hidden="true"');
+  expect(marks[0]).toMatch(/class="[^"]*\babsolute\b[^"]*\bring-1\b[^"]*\bring-ink\b/);
+  expect(marks[0]).toMatch(/style="left:30%;top:33%;width:4%;height:29%"/);
+  // The boxes come after the picture, inside the frame.
+  expect(html.indexOf('<img')).toBeLessThan(html.indexOf('data-mark'));
+  // No marks, no boxes.
+  expect(renderToStaticMarkup(<Figure image={closeUp} caption="After" sizes="330px" />)).not.toContain('data-mark');
+});
+
+test('a pair passes each side its close-up zoom and marks', () => {
+  const html = renderToStaticMarkup(
+    <BeforeAfter
+      before={{ image: before, caption: 'Before' }}
+      after={{ image: closeUp, zoom: whole, caption: 'After', marks: [{ x: 0.9, y: 0.3, width: 0.05, height: 0.3 }] }}
+    />,
+  );
+  const links = [...html.matchAll(/<a [^>]*href="([^"]+)"/g)].map((m) => m[1]);
+  expect(links).toEqual(['/img/dsp2-badges-before.webp', '/img/dsp2-sort-after.webp']);
+  expect(html.match(/data-mark=""/g)).toHaveLength(1);
+});
+
+test('the Play button is at least 44px tall on a touch screen (it is not in the server markup, so the source says so)', () => {
+  expect(readFileSync('src/components/case/clip.tsx', 'utf8')).toMatch(/type="button"[\s\S]*pointer-coarse:min-h-11/);
 });
